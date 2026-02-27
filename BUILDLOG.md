@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session 0 (Brainstorming complete, ready to build)
+# Last updated: Session A1 complete (2026-02-27)
 
 ---
 
@@ -220,38 +220,33 @@ export const db = {
 
 ---
 
-#### SESSION A1 — Get It Running ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A1 — Get It Running
+**Status:** ✅ COMPLETE (2026-02-27)
 
-**Goal:** Working app in browser with all screens functional
+**What was done:**
+1. Unzipped project into `~/premium-journal`
+2. `npm install` — 280 packages, clean install
+3. `npm run dev` — app running at http://localhost:5173
+4. All 14 views confirmed working, no errors
+5. Write → Save → Entry confirmed saving to localStorage
+6. GitHub private repo created: `git@github.com:Krishna-Yelnure/premium-journal.git`
+7. SSH key configured (ed25519 with passphrase)
+8. `.gitignore` added (node_modules, dist, .env)
+9. node_modules removed from repo, clean push done
 
-**Exact steps:**
-1. Unzip `Premium_Journal_App__3_.zip`
-2. Run `npm install` (expect warnings, that's fine)
-3. Run `npm run dev`
-4. Open `http://localhost:5173`
-5. Click through all 14 navigation views — note anything broken
-6. Fix any broken imports, missing dependencies, TypeScript errors
-7. Confirm all views render without crashing
+**Issues fixed:**
+- node_modules accidentally in first push — fixed with `git rm -r --cached node_modules`
 
-**Known risks:**
-- Tailwind v4 + Vite config may need adjustment
-- Some MUI + Radix combinations can conflict
-- pnpm overrides in package.json but we use npm — may need cleanup
-
-**Deliverable:** Screenshot or confirmation of every view loading correctly
-
-**Session end checklist:**
-- [ ] All 14 views render
-- [ ] Write view saves an entry
-- [ ] Entry appears in Entries view
-- [ ] Mood chart shows data
-- [ ] No console errors blocking functionality
-- [ ] Update BUILDLOG with what was fixed
+**Session checklist:**
+- [x] All 14 views render
+- [x] Write saves entry, appears in Entries view
+- [x] GitHub repo connected and clean
+- [x] .gitignore in place
+- [x] BUILDLOG updated and pushed
 
 ---
 
-#### SESSION A2 — Storage + 21-Day Habit Visual
+#### SESSION A2 — Storage Abstraction + 21-Day Habit Visual ← START HERE NEXT
 **Status:** NOT STARTED
 
 **Goal:** Robust data layer + the new habit visualisation
@@ -384,17 +379,25 @@ export const db = {
 
 ---
 
-## HOW TO START SESSION A1
+## HOW TO START SESSION A2
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. I have a BUILDLOG.md that contains all decisions and a zip file of the existing React codebase. Please read the BUILDLOG.md carefully, then help me complete Session A1 as described in it."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A2."
 
 Then attach:
-1. `Premium_Journal_App__3_.zip`
-2. This `BUILDLOG.md`
+1. This `BUILDLOG.md`
+2. These specific files from `~/premium-journal/src/app/utils/`:
+   - `storage.ts`
+   - `habits.ts`
+   - `eras.ts`
+   - `threads.ts`
+   - `questions.ts`
+   - `preferences.ts`
+3. `src/app/components/HabitBuilder.tsx`
+4. `src/app/types.ts`
 
-Claude will have full context and can start immediately without re-explaining anything.
+**No need to upload the full zip** — Claude only needs the files being changed in A2.
 
 ---
 
@@ -403,8 +406,8 @@ Claude will have full context and can start immediately without re-explaining an
 | Session | Date | What was done | Status |
 |---|---|---|---|
 | Session 0 | 2026-02-27 | Full brainstorming. All decisions locked. BUILDLOG created. | ✅ Complete |
-| Session A1 | — | Get app running in browser | ⏳ Next |
-| Session A2 | — | Storage abstraction + 21-day habit visual | ⏳ Pending |
+| Session A1 | 2026-02-27 | App running in browser, all 14 views confirmed, GitHub repo set up, .gitignore added | ✅ Complete |
+| Session A2 | — | Storage abstraction + 21-day habit visual | ⏳ Next |
 | Session A3 | — | Visual review and iterations | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
@@ -422,6 +425,11 @@ Claude will have full context and can start immediately without re-explaining an
 - **2026-02-27:** Storage abstraction is critical — must be done in A2 before any more features are added
 - **2026-02-27:** Portfolio strategy: demo video + case study, not just a GitHub link
 - **2026-02-27:** Figma source available at https://www.figma.com/design/7Gf3HV2SR2CUKwy5n7JhKi/Premium-Journal-App
+- **2026-02-27 (A1):** GitHub repo is `git@github.com:Krishna-Yelnure/premium-journal.git` (private)
+- **2026-02-27 (A1):** SSH key configured on Linux Mint with passphrase — needed for every git push
+- **2026-02-27 (A1):** App runs with `npm run dev` from `~/premium-journal` — opens at http://localhost:5173
+- **2026-02-27 (A1):** node_modules must never be committed — .gitignore is in place
+- **2026-02-27 (A1):** For A2, upload only the specific files being changed, not the full zip — saves tokens
 
 ---
 
