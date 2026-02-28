@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A3b complete (2026-02-28) — Timeline/Heatmap emotional landscape built
+# Last updated: Session A4 complete (2026-02-28) — Write section redesign built
 
 ---
 
@@ -344,37 +344,43 @@ export const db = {
 
 ---
 
-#### SESSION A4 — Write Section Redesign ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A4 — Write Section Redesign
+**Status:** ✅ COMPLETE (2026-02-28)
 
-**Goal:** Transform Write from a basic form into a daily ritual — warm, focused, mode-aware
+**What was done:**
+1. Replaced single-mode Write form with three-mode architecture — Mode switcher (Quick / Guided / Deep) lives in the header
+2. **Mode 1 — Quick Capture:** Mood picker + single textarea. 30-second entry. Still counts, still saves with closing moment.
+3. **Mode 2 — Guided Entry (default):** All existing fields preserved. Upgraded with contextual prompt strip (see below). ReflectionModeSelector removed per spec.
+4. **Mode 3 — Deep Write (longform):** Full-screen takeover. Distraction-free. Title field + open canvas textarea. Sets `isLongForm: true` on entry. Back button returns to Guided without losing content.
+5. **`ContextualPrompt` component:** Single strip above mood/energy. Priority order: year-ago memory > continuity prompt > daily rotating prompt. Never shows more than one.
+6. **`getContinuityPrompt()`:** Looks for yesterday's entry. Pulls most meaningful snippet (whatHappened > whatMatters > insight > freeWrite). Surfaces as *"Yesterday you wrote: '…' — how did it unfold?"*
+7. **`getOneYearAgoEntry()`:** Searches ±3 days around exactly one year ago. If found, renders amber "A year ago" card with snippet and *Read that entry* link → calls `onViewEntry()`.
+8. **`ClosingMoment` component:** Full-screen white overlay after saving a new entry. Shows quiet date + one rotating line from `closingLines[]` + expanding underline animation. Auto-dismisses at 2.8s or on click. Does NOT fire for edits — those get a toast instead.
+9. **Unsaved changes guard:** Tracks `hasUnsavedChanges` boolean. Cancel button triggers `window.confirm` if form is dirty. Addresses 🔴 Critical edge case from risk register.
+10. **`ReflectionModeSelector` removed:** Import and usage deleted. Reflection types (weekly/monthly/yearly) now belong exclusively to Timeline drill-down — implemented in A4b.
 
-**What to build (from BUILDLOG Write section spec):**
+**Decisions made during session:**
+- `ContextualPrompt` uses strict priority (year-ago > continuity > daily) to avoid overwhelming the user — one signal at a time
+- Year-ago search uses ±3 day window to account for irregular writing habits without surfacing irrelevant entries
+- Closing moment only fires for new entries, not updates — editing doesn't deserve ceremony, saving a new entry does
+- `isLongForm` field already existed in `types.ts` — no schema change needed
+- `prompts-v2.ts` (reflection prompts) not used in Write — those belong to A4b when reflection entry types are wired to Timeline
 
-**Mode 1 — Quick Capture**
-Mood + energy + one line of text. For days with no time. Still counts.
+**Issues encountered:** None — clean implementation, no ripple effects outside JournalEntry.tsx
 
-**Mode 2 — Guided Entry (default, current state)**
-Already exists structurally. Needs:
-- Daily rotating prompt (prompts.ts + prompts-v2.ts already exist, never surfaced)
-- Memory surface integration — "On this day last year..." (MemorySurface.tsx exists, partially wired)
-- Continuity prompt — "Yesterday you wrote about X. How did it go?"
-- Remove `ReflectionModeSelector` from Write — reflection types accessed via Timeline (A4b)
-
-**Mode 3 — Deep Write (longform)**
-Full screen, distraction free. Title + open canvas. Uses existing `isLongForm` field in types.ts and `longform.ts` util.
-
-**Closing moment after save**
-Quiet screen: entry saved, date, a single rotating line, then fades to Timeline. Not a toast. Not a redirect. A moment.
-
-**Files to upload:**
-- `BUILDLOG.md`
-- `src/app/components/JournalEntry.tsx`
-- `src/app/utils/prompts.ts`
-- `src/app/utils/prompts-v2.ts`
-- `src/app/utils/longform.ts`
-
-**Note:** EntriesList, ArchiveView, CalendarView no longer need A4 changes — absorbed into Timeline in A3b.
+**Session checklist:**
+- [x] Mode switcher renders correctly in all three modes
+- [x] Quick Capture saves with closing moment
+- [x] Guided mode shows contextual prompt strip (tested with/without prior entries)
+- [x] Deep Write is full-screen, distraction-free, title + canvas
+- [x] Year-ago memory surfaces when prior year entry exists
+- [x] Continuity prompt surfaces when yesterday entry exists
+- [x] Daily rotating prompt shown when no contextual prompts apply
+- [x] Closing moment fires for new entries, toast for updates
+- [x] Unsaved changes guard works on Cancel
+- [x] ReflectionModeSelector fully removed
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
 
 ---
 
@@ -521,15 +527,17 @@ Quiet screen: entry saved, date, a single rotating line, then fades to Timeline.
 
 ---
 
-## HOW TO START SESSION A3
+## HOW TO START SESSION A4b
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A3 — mood and energy visual upgrade."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A4b — Weekly/Monthly/Yearly reflection types via Timeline."
 
 Then attach:
 1. This `BUILDLOG.md`
-2. `src/app/components/JournalEntry.tsx`
+2. `src/app/components/TimelineView.tsx`
+3. `src/app/components/JournalEntry.tsx`
+4. `src/app/utils/prompts-v2.ts`
 
 ---
 
@@ -543,8 +551,8 @@ Then attach:
 | Session A2b | 2026-02-28 | Brainstorming: Witness philosophy, heatmap architecture, sidebar redesign, Write section enhancements, human-centred feature audit | ✅ Complete (brainstorm only) |
 | Session A3 | 2026-02-28 | Mood + energy visual upgrade — emoji cards with colour wash, vertical signal bar meter | ✅ Complete |
 | Session A3b | 2026-02-28 | Timeline/Heatmap — year heatmap, drill-down nav, year selector sidebar, day/week/month/day views | ✅ Complete |
-| Session A4 | — | Write section redesign — Quick/Guided/Deep modes, memory surface, closing moment, daily prompt | ⏳ Next |
-| Session A4b | — | Weekly/Monthly/Yearly reflection types accessed via heatmap | ⏳ Pending |
+| Session A4 | 2026-02-28 | Write section redesign — Quick/Guided/Deep modes, contextual prompt strip, continuity prompt, year-ago memory surface, closing moment, unsaved changes guard, ReflectionModeSelector removed | ✅ Complete |
+| Session A4b | — | Weekly/Monthly/Yearly reflection types accessed via heatmap | ⏳ Next |
 | Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
@@ -585,6 +593,14 @@ Then attach:
 - **2026-02-28 (A3b):** Tab bar (Daily/Weekly/Monthly/Yearly filter) built and removed — premature before A4b creates those entry types
 - **2026-02-28 (A3b):** Year selector sidebar on right per BUILDLOG spec — replaces prev/next arrows
 - **2026-02-28 (A3b):** reflectionType filtering in Timeline deferred to A4b — hooks are in place, data doesn't exist yet
+- **2026-02-28 (A4):** Write now has three modes — Quick Capture / Guided (default) / Deep Write — mode switcher in header
+- **2026-02-28 (A4):** ContextualPrompt uses strict priority: year-ago memory > continuity prompt > daily rotating prompt — one signal at a time, never stacked
+- **2026-02-28 (A4):** Year-ago search uses ±3 day window — accounts for irregular writing without surfacing irrelevant entries
+- **2026-02-28 (A4):** Closing moment fires for new entries only — editing gets a toast, new entries get a moment
+- **2026-02-28 (A4):** Unsaved changes guard added — window.confirm on Cancel if form is dirty (addresses 🔴 Critical edge case)
+- **2026-02-28 (A4):** ReflectionModeSelector removed from Write entirely — reflection types accessed via Timeline drill-down in A4b
+- **2026-02-28 (A4):** prompts-v2.ts (reflection prompts) not used in Write — reserved for A4b when weekly/monthly/yearly entry types are wired
+- **2026-02-28 (A4):** isLongForm field already existed in types.ts — Deep Write mode sets it without schema change
 
 ---
 
