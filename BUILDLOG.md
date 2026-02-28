@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A2 complete (2026-02-28)
+# Last updated: Session A2 brainstorm complete (2026-02-28)
 
 ---
 
@@ -491,9 +491,12 @@ Then attach:
 | Session 0 | 2026-02-27 | Full brainstorming. All decisions locked. BUILDLOG created. | ✅ Complete |
 | Session A1 | 2026-02-27 | App running in browser, all 14 views confirmed, GitHub repo set up, .gitignore added | ✅ Complete |
 | Session A2 | 2026-02-28 | Storage abstraction layer, 21-day habit tracker, sidebar navigation, design principles + product vision brainstorm | ✅ Complete |
-| Session A3 | — | Mood + energy visual upgrade | ⏳ Next |
-| Session A4 | — | Weekly/Monthly/Yearly reflection types + ripple effects | ⏳ Pending |
-| Session A5 | — | Design polish pass | ⏳ Pending |
+| Session A2b | 2026-02-28 | Brainstorming: Witness philosophy, heatmap architecture, sidebar redesign, Write section enhancements, human-centred feature audit | ✅ Complete (brainstorm only) |
+| Session A3 | — | Mood + energy visual upgrade in JournalEntry.tsx | ⏳ Next |
+| Session A3b | — | Timeline/Heatmap — emotional landscape view replacing Entries + Archive + Calendar | ⏳ Pending |
+| Session A4 | — | Write section redesign — Quick/Guided/Deep modes, memory surface, closing moment, daily prompt | ⏳ Pending |
+| Session A4b | — | Weekly/Monthly/Yearly reflection types accessed via heatmap | ⏳ Pending |
+| Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
 | Session B3 | — | Polish and final testing | ⏳ Pending |
@@ -515,69 +518,255 @@ Then attach:
 - **2026-02-27 (A1):** App runs with `npm run dev` from `~/premium-journal` — opens at http://localhost:5173
 - **2026-02-27 (A1):** node_modules must never be committed — .gitignore is in place
 - **2026-02-28 (A2):** db/index.ts is the single storage interface — never import localStorage directly anywhere else
-- **2026-02-28 (A2):** Weekly/Monthly/Yearly ripple effects mapped — defer to A4, too big for end of A2
+- **2026-02-28 (A2):** Weekly/Monthly/Yearly ripple effects mapped — defer to A4b, accessed via heatmap not Write buttons
 - **2026-02-28 (A2):** Screen space/layout — keep centred max-width for now, revisit in A5
 - **2026-02-28 (A2):** All entries belong to the day written, tagged with reflectionType — no date ranges
 - **2026-02-28 (A2):** App currently rated 6.5/10 — good bones, needs narrative continuity to reach 9/10
+- **2026-02-28 (A2b):** Core design philosophy is "Witness" — app is a quiet witness to your life, never a manager
+- **2026-02-28 (A2b):** Heatmap = emotional landscape map — colour encodes mood not activity, empty = unknown not failed
+- **2026-02-28 (A2b):** Heatmap replaces Entries + Archive + Calendar — one coherent experience
+- **2026-02-28 (A2b):** Weekly/Monthly/Yearly accessed by clicking week column/month label/year in heatmap — not Write buttons
+- **2026-02-28 (A2b):** Write section becomes Daily entry only — clean, focused, no type switcher
+- **2026-02-28 (A2b):** Default landing view = Timeline (heatmap) not Write — returning user sees their story first
+- **2026-02-28 (A2b):** Sidebar reduced from 14 to 11 items in 3 groups + settings
+- **2026-02-28 (A2b):** Word count REMOVED from plan — violates Witness philosophy (manager not witness)
+- **2026-02-28 (A2b):** Streaks NEVER — violates emotional safety, gamification is anti-human for journaling
+- **2026-02-28 (A2b):** Questions + Threads — consider merging in A5 as both connect entries across time
 
 ---
 
-## DESIGN PRINCIPLES (for Session A5 visual review)
+## CORE PHILOSOPHY — THE WITNESS
+
+> "A quiet witness to your life. Holds your memories. Surfaces your patterns. Never judges. Always remembers."
+
+This is the product. Every feature decision passes this test:
+**"Does this make the app feel more like a witness — or more like a manager?"**
+
+| Feature | Test result |
+|---|---|
+| Closing moment after save | ✅ Witness |
+| Memory surface in Write | ✅ Witness |
+| Continuity prompt | ✅ Witness |
+| Daily rotating prompt | ✅ Witness |
+| Emotional landscape heatmap | ✅ Witness |
+| Quick/Guided/Deep write modes | ✅ Witness |
+| Mood visual upgrade | ✅ Witness |
+| Word count | ❌ Manager — removed |
+| Streaks | ❌ Manager — never build |
+| Activity-based heatmap (green = wrote) | ❌ Manager — reframed to mood-based |
+
+---
+
+## DESIGN LANGUAGE — WARM MINIMAL / WITNESS
+
+**Aesthetic direction:** Warm Minimal
+
+- Muted warm background tones — cream, slate, soft white
+- One accent colour — amber/gold for active and selected states
+- Colour used semantically — mood colours carry meaning, not decoration
+- Generous whitespace — nothing cramped, breathing room everywhere
+- Typography-led — headings do the heavy lifting
+- Data visualisation that feels human, not corporate
+- Empty states are peaceful and inviting, never alarming
+- Motion is subtle — things slide and fade, never bounce or flash
+- No badges, no notification dots, no urgency indicators
+
+**Mood colour system (to be finalised in A5):**
+- Great → warm amber
+- Good → soft sage green
+- Okay → neutral warm grey
+- Low → cool muted blue
+- Difficult → deep muted slate
+- No entry → light empty (not red, not marked as failure)
+
+---
+
+## DESIGN PRINCIPLES (checklist for Session A5)
 
 1. **Calm Technology** — no aggressive colours, no urgent language, no guilt
 2. **Progressive Disclosure** — simple for new users, depth for power users
 3. **Emotional Safety** — every label and prompt written with care, never judgmental
 4. **Typographic Hierarchy** — strong display font for headings, lighter for body
-5. **Microinteractions** — intentional, warm, satisfying moments at key actions
+5. **Microinteractions** — intentional, warm, satisfying at key moments
 6. **Spatial Breathing Room** — generous padding, whitespace signals quality
 7. **Consistent Visual Language** — same border radius, shadow, colour logic everywhere
-8. **Feedback at Every Action** — quiet confirmations, not loud toasts for everything
-9. **Purposeful Colour** — one warm accent, semantic use, colour carries meaning not decoration
+8. **Feedback at Every Action** — quiet confirmations, not loud toasts everywhere
+9. **Purposeful Colour** — mood colours, one accent, colour carries meaning
 10. **Empty States as Invitations** — open door copy, not a void
 
 **Top 3 highest impact for A5:**
 - Typographic hierarchy
-- Purposeful accent colour applied consistently
+- Mood colour system applied consistently
 - Emotional safety audit of all copy and placeholders
 
 ---
 
-## PRODUCT VISION & ROADMAP (north star for post-A5)
+## HEATMAP — EMOTIONAL LANDSCAPE VIEW
+
+**What it is:**
+The central navigation paradigm of the app. Replaces Entries, Archive, and Calendar as three separate views with one coherent experience.
+
+**Not a GitHub contribution graph** — reframed entirely:
+- GitHub: green = committed code (activity)
+- Ours: colour = mood of that day (emotion)
+- Empty cell = unknown, not failed. Peaceful, not alarming.
+
+**Year view layout:**
+```
+Your Journal — 2026                    2026 ←
+                                       2025
+  Jan Feb Mar Apr May Jun              2024
+  ░░░ ░░░ ░░░ ░░░ ░░░ ░░░             2023
+  ░░█ ░░░ ░█░ ░░░ ██░ ░░░             2022
+  ░░░ ░░░ ░░░ ░░░ ░░░ ░░░
+                                       
+  287 entries · Mostly good · 3 lows
+```
+
+**Drill-down navigation:**
+```
+YEAR VIEW (heatmap)
+    ↓ click month label
+MONTH VIEW (weeks laid out, mood colours, entry previews)
+    ↓ click week
+WEEK VIEW (timeline dots — vertical line, one dot per day)
+    ↓ click day dot
+DAY VIEW (full entry in read mode + Edit button)
+```
+
+**Reflection type access via heatmap:**
+- Click any day cell → Daily entry form for that date
+- Click any week column header → Weekly reflection form
+- Click any month label → Monthly reflection form
+- Click year selector → Yearly reflection form
+
+This eliminates the broken Weekly/Monthly/Yearly buttons in Write section entirely.
+
+**Day cell states:**
+- Empty → opens Write form with that date pre-selected (invitation)
+- Has entry → opens Day View in read mode
+- Edit from Day View → opens Write form pre-filled
+
+**Default landing view:** Timeline (heatmap) — not Write.
+Returning user sees their story first, then chooses to write.
+
+---
+
+## SIDEBAR — REDESIGNED (11 items, 3 groups)
+
+**Down from 14 to 11 items. Cleaner, more logical.**
+
+```
+TODAY
+├── Write          (daily entry — clean, focused)
+└── Timeline       (heatmap — replaces Entries, Archive, Calendar)
+
+UNDERSTAND
+├── Insights       (computed patterns and observations)
+├── Mood           (detailed mood chart over time)
+└── Language       (writing pattern analysis)
+
+EXPLORE
+├── Habits         (21-day gentle start)
+├── Anchors        (values, intentions, questions)
+├── Eras           (life chapters overlaid on timeline)
+└── Threads        (curated memory collections)
+
+(no group label — bottom of sidebar)
+├── Privacy
+└── Legacy
+```
+
+**Items removed from original 14:**
+- Entries → absorbed into Timeline
+- Archive → absorbed into Timeline
+- Calendar → absorbed into Timeline
+- Questions → consider merging into Anchors in A5
+
+---
+
+## WRITE SECTION — REDESIGNED
+
+**Write becomes Daily entry only.** Type switcher removed — reflection types accessed via heatmap.
+
+**Three modes within Write:**
+
+**Mode 1 — Quick Capture (30 seconds)**
+Mood + energy + one line. For days with no time or energy for more. Still counts. Still valuable.
+
+**Mode 2 — Guided Entry (default)**
+```
+Memory surface (if exists)       ← "A year ago you wrote..."
+Daily rotating prompt            ← one question, changes daily
+─────────────────────────────
+Mood selector (visual, warm)     ← A3 upgrade
+Energy meter (vertical bars)     ← A3 upgrade
+─────────────────────────────
+What happened today
+How did it feel
+What mattered most
+One insight or lesson
+Free write
+─────────────────────────────
+Tags    Era tag
+─────────────────────────────
+Save Entry
+```
+
+**Mode 3 — Deep Write (longform)**
+Full screen, distraction free. Title + open canvas. No fields, no structure. For essays, letters to future self, big life processing. Uses existing `isLongForm` field in types.ts.
+
+**New Write features:**
+- Daily rotating prompt — one thoughtful question from prompts.ts/prompts-v2.ts (already exists, never surfaced)
+- Memory surface integration — "On this day last year..." (MemorySurface.tsx already exists, never integrated)
+- Continuity prompt — "Yesterday you wrote about X. How did it go?"
+- Closing moment after save — quiet screen: entry saved, date, a rotating thought, then fades to Timeline
+- NO word count — violates Witness philosophy
+
+**Feature priority for Write (by session):**
+
+| Feature | Session |
+|---|---|
+| Mood + energy visual upgrade | A3 |
+| Quick/Guided/Deep mode toggle | A4 |
+| Daily rotating prompt | A4 |
+| Memory surface in Write | A4 |
+| Closing moment after save | A4 |
+| Continuity prompt | A4 |
+| Longform / deep write mode | A4 |
+
+---
+
+## PRODUCT VISION & ROADMAP
 
 **Core vision:**
 > "Record the thought process of that day and how it impacts the next set of days and life itself."
 
-**Current rating: 6.5/10** — good bones, needs narrative continuity.
+**The Witness promise:**
+> "A quiet witness to your life. Holds your memories. Surfaces your patterns. Never judges. Always remembers."
 
-**Biggest gap — Narrative & Continuity:**
-- Entries exist in isolation, no thread between them
-- No "story of me" view — timeline with emotional shape
-- No connections between entries across time
-- Eras and Threads exist but are manual and disconnected from writing
+**Current rating: 6.5/10** — good bones, needs narrative continuity and human-centred UX to reach 9/10.
 
-**Incomplete daily loop:**
-- Current: Open → blank form → write → save → redirects to list
-- Needed: Open → welcomed back → prompted by recent writing → write → feel heard → closing moment → close
+**What makes this different from every competitor:**
+- Day One, Notion, Reflectly → activity tracking, telemetry, cloud dependency
+- This app → emotional witness, local-first, privacy by architecture, no judgement
 
-**Personality development features (future):**
+**What takes this to 9/10:**
+1. Emotional landscape heatmap as primary navigation
+2. Satisfying daily ritual — welcome, write, closing moment
+3. Narrative continuity — entries that know about each other
+4. Search (critical missing feature)
+5. Reading mode — distraction-free, like a book
+
+**Future features (post-public release):**
 - Belief tracker — what did you believe in Jan vs now?
 - Decision journal — record why, revisit outcome later
 - Growth markers — explicit "I've changed on this" moments
-- Pattern recognition — app notices recurring themes automatically
-
-**Critical missing features:**
-- Search — no search at all, serious omission for a memory app
-- Import — from Day One, Notion, plain text
-- Reading mode — distraction-free view of past entries like a book
-- Local reminders — browser notification at chosen time, no server needed
-- Photos/attachments — even one photo per entry anchors memory
-
-**What takes this to 9/10:**
-1. Narrative continuity — entries that know about each other
-2. Satisfying daily ritual loop with welcome and closing moment
-3. Search
-4. Reading mode
-5. Belief tracking + decision journal + growth markers
+- Pattern recognition — automatic theme detection
+- Import from Day One, Notion, plain text
+- Local reminders — browser notification, no server
+- Photos/attachments — one photo per entry anchors memory
+- E2E encrypted optional sync (Obsidian model)
 
 ---
 
