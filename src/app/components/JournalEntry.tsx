@@ -771,7 +771,7 @@ export function JournalEntry({
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <ModeSwitcher mode={mode} onChange={handleModeChange} />
+            {!isReflection && <ModeSwitcher mode={mode} onChange={handleModeChange} />}
             <button
               onClick={handleCancel}
               className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
@@ -793,7 +793,8 @@ export function JournalEntry({
           />
         </div>
 
-        {/* ── Mood & Energy ────────────────────────────────────────────────── */}
+        {/* ── Mood & Energy — daily entries only ──────────────────────────── */}
+        {!isReflection && (
         <div className="mb-8 space-y-8">
           {/* Mood */}
           <div>
@@ -903,6 +904,7 @@ export function JournalEntry({
             </div>
           </div>
         </div>
+        )} {/* end !isReflection mood+energy */}
 
         {/* ── Writing fields — reflection-aware ────────────────────────────── */}
         {(() => {

@@ -91,7 +91,7 @@ function ReflectionDot({ type }: { type: ReflectionEntryType }) {
   const colours: Record<ReflectionEntryType, string> = {
     weekly:  'bg-violet-400',
     monthly: 'bg-sky-400',
-    yearly:  'bg-rose-400',
+    yearly:  'bg-amber-400',
   };
   return (
     <span
@@ -443,11 +443,11 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       label:        'Yearly reflection',
       emptyLabel:   'No yearly reflection yet',
       emptyPrompt:  'What chapters defined this year? Who did you become?',
-      accentBg:     'bg-rose-50',
-      accentBorder: 'border-rose-100',
-      accentText:   'text-rose-700',
-      accentButton: 'text-rose-600 hover:text-rose-800 border-rose-200 hover:border-rose-400',
-      dotCls:       'bg-rose-400',
+      accentBg:     'bg-amber-50',
+      accentBorder: 'border-amber-100',
+      accentText:   'text-amber-700',
+      accentButton: 'text-amber-600 hover:text-amber-800 border-amber-200 hover:border-amber-400',
+      dotCls:       'bg-amber-400',
     },
   };
 
@@ -770,7 +770,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     const REFLECTION_BADGE: Record<string, { label: string; cls: string }> = {
       weekly:  { label: 'Weekly reflection', cls: 'bg-violet-100 text-violet-700' },
       monthly: { label: 'Monthly reflection', cls: 'bg-sky-100 text-sky-700' },
-      yearly:  { label: 'Yearly reflection', cls: 'bg-rose-100 text-rose-700' },
+      yearly:  { label: 'Yearly reflection', cls: 'bg-amber-100 text-amber-700' },
     };
     const badge = entry.reflectionType && entry.reflectionType !== 'daily'
       ? REFLECTION_BADGE[entry.reflectionType]
@@ -875,16 +875,18 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 {showWelcome && <WelcomeCard />}
               </AnimatePresence>
               <DailyHeatmap />
-              {/* Yearly reflection panel — shown inline below the heatmap */}
+              {/* Yearly reflection panel — only shown when written. Empty state lives
+                  behind the sidebar '+' button so it never appears uninvited. */}
               {(() => {
                 const yearlyReflection = findReflectionEntry(entries, 'yearly', String(year));
+                if (!yearlyReflection) return null;
                 return (
                   <div className="mt-8 max-w-xl">
                     <ReflectionPanel
                       type="yearly"
                       reflection={yearlyReflection}
                       onWrite={() => onReflectionEntry(`reflection-yearly-${year}`, 'yearly')}
-                      onEdit={() => onEditEntry(yearlyReflection!.date)}
+                      onEdit={() => onEditEntry(yearlyReflection.date)}
                     />
                   </div>
                 );
@@ -949,7 +951,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   absolute right-1 top-1/2 -translate-y-1/2 text-[10px] opacity-0 group-hover:opacity-100
                   transition-opacity px-1.5 py-0.5 rounded
                   ${yearlyReflection
-                    ? 'text-rose-500 hover:text-rose-700'
+                    ? 'text-amber-500 hover:text-amber-700'
                     : 'text-slate-400 hover:text-slate-600'
                   }
                 `}
