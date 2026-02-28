@@ -14,6 +14,7 @@ export interface JournalEntry {
   visibility?: 'normal' | 'never-resurface' | 'request-only' | 'safe-to-revisit'; // v3: memory control
   isLongForm?: boolean; // v3: essay vs daily entry
   questionId?: string; // v3: response to a persistent question
+  intention?: string;  // A4c: forward intention set at end of a reflection entry
   createdAt: string;
   updatedAt: string;
 }

@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4d complete (2026-03-01)
+# Last updated: Session A4c complete (2026-03-01)
 
 ---
 
@@ -423,19 +423,50 @@ export const db = {
 
 ---
 
-#### SESSION A4c — Reflection Panels + Intentions Loop ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A4c — Reflection Panels + Intentions Loop
+**Status:** ✅ COMPLETE (2026-03-01)
 
 **Goal:** Make reflections readable inline. Close the loop between past reflection and future intention.
 
-**What to build:**
-1. **`types.ts`** — add `intention?: string` to `JournalEntry` interface
-2. **`TimelineView.tsx`** — `ReflectionPanel` component replaces current banners — shows full text, mood, date written, Edit button. Empty state: invitation to write.
-3. **`JournalEntry.tsx`** — intention field at bottom of reflection forms. `getPreviousPeriodIntention()` helper surfaces last period's intention as opening prompt: *"Last week you intended: '[X]' — how did that unfold?"*
+**What was done:**
 
-**Witness test:** ✅ — intention surfaced as prompt, never tracked for completion
+**`types.ts`**
+- Added `intention?: string` to `JournalEntry` interface. Optional, additive — no migration needed.
 
-**Files needed:** `BUILDLOG.md`, `src/app/types.ts`, `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
+**`JournalEntry.tsx`**
+1. **`getPreviousPeriodIntention()` helper** — filters entries by reflection type prefix, finds most recent with a non-empty intention, returns *"Last week you intended: '[X]' — how did that unfold?"* Truncates at 80 chars. Returns null cleanly when nothing exists.
+2. **`previousIntention` computed** — joins `continuityPrompt` and `yearAgoEntry` in contextual prompts block. Reflection entries only, never daily.
+3. **`ContextualPrompt` updated** — new `previousIntention` prop. Priority order: year-ago → continuity → **previous intention** → daily prompt. Renders in violet card with 🔁 icon.
+4. **Intention textarea** — bottom of guided mode for reflection entries only, after writing fields, before Tags. Label/placeholder vary by type (weekly/monthly/yearly). Subtext: *"Not a goal. Not a commitment. Just a direction."*
+
+**`TimelineView.tsx`**
+1. **`ReflectionPanel` component** — replaces all flat banners. Empty state: accent card with quiet prompt + "Write →". Written state: all non-empty fields with period-appropriate labels, mood emoji, Edit button, intention in italic accent text at bottom. Colour-coded: violet/weekly, sky/monthly, rose/yearly.
+2. **MonthView** — banner → `ReflectionPanel type="monthly"`
+3. **WeekView** — banner → `ReflectionPanel type="weekly"`
+4. **Year view** — `ReflectionPanel type="yearly"` added inline below heatmap, above BelowHeatmap. Year sidebar hover button kept as quick-action shortcut.
+
+**`App.tsx`** — no changes needed. `activeIntention` wired in A4d now returns real values once reflections with intentions exist.
+
+**Witness test:** ✅ — intention surfaced as prompt, never tracked for completion. No checkboxes, no status, no urgency.
+
+**Issues encountered:** None — all changes self-contained in three files.
+
+**Session checklist:**
+- [x] `intention` field in types.ts
+- [x] Intention textarea appears on weekly/monthly/yearly reflection forms only
+- [x] Previous intention surfaces as contextual prompt on next period's reflection
+- [x] ReflectionPanel renders correctly in empty and written states
+- [x] MonthView, WeekView, Year view all use ReflectionPanel
+- [x] Intention displayed in ReflectionPanel written state
+- [x] Colour coding correct (violet/sky/rose)
+- [x] Witness philosophy maintained — no tracking, no completion state
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/app/types.ts`
+- `src/app/components/JournalEntry.tsx`
+- `src/app/components/TimelineView.tsx`
 
 ---
 
@@ -491,7 +522,7 @@ export const db = {
 
 ---
 
-#### SESSION A5 — Design Polish Pass
+#### SESSION A5 — Design Polish Pass ← START HERE NEXT
 **Status:** NOT STARTED
 
 **Goal:** Apply design principles, audit copy, elevate visual quality

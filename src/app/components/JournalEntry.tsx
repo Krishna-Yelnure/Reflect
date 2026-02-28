@@ -200,6 +200,34 @@ function getOneYearAgoEntry(allEntries: JournalEntryType[], today: string): Jour
 }
 
 /**
+ * Finds the most recent prior-period reflection that has an intention set.
+ * Returns a prompt string like "Last week you intended: '[X]' — how did that unfold?"
+ * Only fires for reflection entries (weekly/monthly/yearly), never for daily.
+ */
+function getPreviousPeriodIntention(
+  allEntries: JournalEntryType[],
+  type: 'weekly' | 'monthly' | 'yearly'
+): string | null {
+  const prefix = `reflection-${type}-`;
+  const periodEntries = allEntries
+    .filter(e => e.date.startsWith(prefix) && e.intention && e.intention.trim().length > 0)
+    .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+
+  if (periodEntries.length === 0) return null;
+
+  const last = periodEntries[0];
+  const intention = last.intention!.trim();
+  const preview = intention.length > 80 ? intention.slice(0, 80).trim() + '…' : intention;
+
+  const periodLabel: Record<string, string> = {
+    weekly:  'Last week',
+    monthly: 'Last month',
+    yearly:  'Last year',
+  };
+  return `${periodLabel[type]} you intended: "${preview}" — how did that unfold?`;
+}
+
+/**
  * Format a date string for display — handles both real dates (yyyy-MM-dd)
  * and synthetic reflection keys (reflection-weekly-..., reflection-monthly-..., reflection-yearly-...)
  */
@@ -266,14 +294,16 @@ function ContextualPrompt({
   prompt,
   continuityPrompt,
   yearAgoEntry,
+  previousIntention,
   onViewYearAgo,
 }: {
   prompt: string;
   continuityPrompt: string | null;
   yearAgoEntry: JournalEntryType | null;
+  previousIntention: string | null;
   onViewYearAgo: () => void;
 }) {
-  // Priority: year-ago memory > continuity > daily prompt
+  // Priority: year-ago memory > continuity > previous intention > daily prompt
   if (yearAgoEntry) {
     const preview = yearAgoEntry.whatHappened || yearAgoEntry.freeWrite || yearAgoEntry.feelings || '';
     const snippet = preview.trim().slice(0, 80) + (preview.length > 80 ? '…' : '');
@@ -313,6 +343,19 @@ function ContextualPrompt({
       >
         <span className="text-lg mt-0.5 flex-shrink-0">💬</span>
         <p className="text-sm text-slate-600 italic leading-relaxed">{continuityPrompt}</p>
+      </motion.div>
+    );
+  }
+
+  if (previousIntention) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-start gap-3 p-4 bg-violet-50 border border-violet-100 rounded-xl"
+      >
+        <span className="text-lg mt-0.5 flex-shrink-0">🔁</span>
+        <p className="text-sm text-violet-800 italic leading-relaxed">{previousIntention}</p>
       </motion.div>
     );
   }
@@ -418,6 +461,10 @@ export function JournalEntry({
   // Reflection entries have no "yesterday" or "year ago" — suppress those prompts
   const continuityPrompt = isReflection ? null : getContinuityPrompt(allEntries, selectedDate);
   const yearAgoEntry = isReflection ? null : getOneYearAgoEntry(allEntries, selectedDate);
+  // For reflection entries: surface last period's intention as an opening prompt
+  const previousIntention = isReflection
+    ? getPreviousPeriodIntention(allEntries, initialReflectionType as 'weekly' | 'monthly' | 'yearly')
+    : null;
 
   // ── Load existing entry ────────────────────────────────────────────────────
 
@@ -741,6 +788,7 @@ export function JournalEntry({
             prompt={prompt}
             continuityPrompt={continuityPrompt}
             yearAgoEntry={yearAgoEntry}
+            previousIntention={previousIntention}
             onViewYearAgo={() => yearAgoEntry && onViewEntry?.(yearAgoEntry.date)}
           />
         </div>
@@ -890,6 +938,37 @@ export function JournalEntry({
             </div>
           );
         })()}
+
+        {/* ── Intention field — reflection entries only ─────────────────────── */}
+        {isReflection && (
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            {(() => {
+              const intentionMeta: Record<string, { label: string; placeholder: string }> = {
+                weekly:  { label: 'An intention for next week',  placeholder: 'One thing you want to carry forward or try…' },
+                monthly: { label: 'An intention for next month', placeholder: 'Something you want to explore or lean into…' },
+                yearly:  { label: 'An intention for the year ahead', placeholder: 'A direction, a word, a quiet promise to yourself…' },
+              };
+              const meta = intentionMeta[initialReflectionType] ?? intentionMeta.weekly;
+              return (
+                <>
+                  <Label htmlFor="intention" className="text-sm text-slate-500 mb-1 block">
+                    {meta.label}
+                  </Label>
+                  <p className="text-xs text-slate-400 mb-3">
+                    Not a goal. Not a commitment. Just a direction.
+                  </p>
+                  <Textarea
+                    id="intention"
+                    value={(entry.intention as string) || ''}
+                    onChange={e => updateField('intention', e.target.value)}
+                    placeholder={meta.placeholder}
+                    className="min-h-[80px] resize-none border-slate-200 focus:border-slate-400"
+                  />
+                </>
+              );
+            })()}
+          </div>
+        )}
 
         {/* ── Memory Surface (similar past entries) ────────────────────────── */}
         <AnimatePresence>

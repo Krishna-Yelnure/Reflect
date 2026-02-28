@@ -408,6 +408,163 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     </div>
   );
 
+  // ── REFLECTION PANEL — replaces flat banners in Month/Week/Year views ─
+  const REFLECTION_PANEL_META: Record<ReflectionEntryType, {
+    label: string;
+    emptyLabel: string;
+    emptyPrompt: string;
+    accentBg: string;
+    accentBorder: string;
+    accentText: string;
+    accentButton: string;
+    dotCls: string;
+  }> = {
+    weekly: {
+      label:        'Weekly reflection',
+      emptyLabel:   'No weekly reflection yet',
+      emptyPrompt:  'How did the week unfold? What mattered most?',
+      accentBg:     'bg-violet-50',
+      accentBorder: 'border-violet-100',
+      accentText:   'text-violet-700',
+      accentButton: 'text-violet-600 hover:text-violet-800 border-violet-200 hover:border-violet-400',
+      dotCls:       'bg-violet-400',
+    },
+    monthly: {
+      label:        'Monthly reflection',
+      emptyLabel:   'No monthly reflection yet',
+      emptyPrompt:  'What defined this month? What shifted?',
+      accentBg:     'bg-sky-50',
+      accentBorder: 'border-sky-100',
+      accentText:   'text-sky-700',
+      accentButton: 'text-sky-600 hover:text-sky-800 border-sky-200 hover:border-sky-400',
+      dotCls:       'bg-sky-400',
+    },
+    yearly: {
+      label:        'Yearly reflection',
+      emptyLabel:   'No yearly reflection yet',
+      emptyPrompt:  'What chapters defined this year? Who did you become?',
+      accentBg:     'bg-rose-50',
+      accentBorder: 'border-rose-100',
+      accentText:   'text-rose-700',
+      accentButton: 'text-rose-600 hover:text-rose-800 border-rose-200 hover:border-rose-400',
+      dotCls:       'bg-rose-400',
+    },
+  };
+
+  const ReflectionPanel = ({
+    type,
+    reflection,
+    onWrite,
+    onEdit,
+  }: {
+    type: ReflectionEntryType;
+    reflection: JournalEntry | undefined;
+    onWrite: () => void;
+    onEdit: () => void;
+  }) => {
+    const meta = REFLECTION_PANEL_META[type];
+
+    const FIELD_LABELS: Record<string, string> = {
+      whatHappened: type === 'weekly'  ? 'This week'
+                  : type === 'monthly' ? 'This month'
+                  : 'This year',
+      feelings:     'How it felt',
+      whatMatters:  'What mattered most',
+      insight:      'What I learned',
+      freeWrite:    type === 'weekly'  ? 'Carrying forward'
+                  : type === 'monthly' ? 'Carrying forward'
+                  : 'Leaving behind',
+    };
+
+    if (!reflection) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`rounded-2xl border px-5 py-4 mb-5 ${meta.accentBg} ${meta.accentBorder}`}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className={`text-xs font-semibold uppercase tracking-wide mb-0.5 ${meta.accentText}`}>
+                {meta.emptyLabel}
+              </p>
+              <p className="text-sm text-slate-500 italic">{meta.emptyPrompt}</p>
+            </div>
+            <button
+              onClick={onWrite}
+              className={`ml-4 shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors ${meta.accentButton}`}
+            >
+              Write →
+            </button>
+          </div>
+        </motion.div>
+      );
+    }
+
+    // Written state — show full content
+    const fields: { key: keyof JournalEntry; label: string }[] = [
+      { key: 'whatHappened', label: FIELD_LABELS.whatHappened },
+      { key: 'feelings',     label: FIELD_LABELS.feelings },
+      { key: 'whatMatters',  label: FIELD_LABELS.whatMatters },
+      { key: 'insight',      label: FIELD_LABELS.insight },
+      { key: 'freeWrite',    label: FIELD_LABELS.freeWrite },
+    ];
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`rounded-2xl border px-5 py-4 mb-5 ${meta.accentBg} ${meta.accentBorder}`}
+      >
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dotCls}`} />
+            <p className={`text-xs font-semibold uppercase tracking-wide ${meta.accentText}`}>
+              {meta.label}
+            </p>
+            {reflection.mood && (
+              <span className="text-base leading-none ml-1">{MOOD_EMOJI[reflection.mood]}</span>
+            )}
+          </div>
+          <button
+            onClick={onEdit}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors ${meta.accentButton}`}
+          >
+            <Edit className="size-3" />
+            Edit
+          </button>
+        </div>
+
+        {/* Content fields */}
+        <div className="space-y-3">
+          {fields.map(({ key, label }) => {
+            const val = reflection[key] as string | undefined;
+            if (!val) return null;
+            return (
+              <div key={String(key)}>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">{label}</p>
+                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap line-clamp-4">
+                  {val}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Intention */}
+        {(reflection as JournalEntry & { intention?: string }).intention && (
+          <div className={`mt-3 pt-3 border-t ${meta.accentBorder}`}>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">Intention</p>
+            <p className={`text-sm italic ${meta.accentText} leading-relaxed`}>
+              "{(reflection as JournalEntry & { intention?: string }).intention}"
+            </p>
+          </div>
+        )}
+      </motion.div>
+    );
+  };
+
   // ── MONTH VIEW ─────────────────────────────────────────────────────────
   const MonthView = () => {
     const mStart = startOfMonth(new Date(year, focusMonth, 1));
@@ -415,32 +572,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     const weeks  = eachWeekOfInterval({ start: mStart, end: mEnd });
     const periodKey = format(mStart, 'yyyy-MM');
     const monthlyReflection = findReflectionEntry(entries, 'monthly', periodKey);
-    const monthlyReflectionDate = monthlyReflection?.date;
 
     return (
       <div className="space-y-3">
-        {/* Monthly reflection banner */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-          <span className="text-xs text-slate-400 uppercase tracking-wide">
-            {MONTH_NAMES[focusMonth]} {year}
-          </span>
-          {monthlyReflection ? (
-            <button
-              onClick={() => onEditEntry(monthlyReflection.date)}
-              className="flex items-center gap-1.5 text-xs text-sky-600 hover:text-sky-800 transition-colors"
-            >
-              <ReflectionDot type="monthly" />
-              Monthly reflection written — edit
-            </button>
-          ) : (
-            <button
-              onClick={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
-              className="text-xs text-slate-400 hover:text-sky-600 transition-colors"
-            >
-              + Write monthly reflection
-            </button>
-          )}
-        </div>
+        {/* Monthly reflection panel */}
+        <ReflectionPanel
+          type="monthly"
+          reflection={monthlyReflection}
+          onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
+          onEdit={() => onEditEntry(monthlyReflection!.date)}
+        />
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-2 mb-1">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
@@ -527,28 +668,13 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     return (
       <div className="max-w-lg">
-        {/* Weekly reflection banner */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-          <span className="text-xs text-slate-400 uppercase tracking-wide">
-            Week of {format(focusWeek, 'MMM d')}
-          </span>
-          {weeklyReflection ? (
-            <button
-              onClick={() => onEditEntry(weeklyReflection.date)}
-              className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 transition-colors"
-            >
-              <ReflectionDot type="weekly" />
-              Weekly reflection written — edit
-            </button>
-          ) : (
-            <button
-              onClick={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
-              className="text-xs text-slate-400 hover:text-violet-600 transition-colors"
-            >
-              + Write weekly reflection
-            </button>
-          )}
-        </div>
+        {/* Weekly reflection panel */}
+        <ReflectionPanel
+          type="weekly"
+          reflection={weeklyReflection}
+          onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
+          onEdit={() => onEditEntry(weeklyReflection!.date)}
+        />
 
         <div className="relative">
           {/* Vertical line */}
@@ -749,6 +875,20 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 {showWelcome && <WelcomeCard />}
               </AnimatePresence>
               <DailyHeatmap />
+              {/* Yearly reflection panel — shown inline below the heatmap */}
+              {(() => {
+                const yearlyReflection = findReflectionEntry(entries, 'yearly', String(year));
+                return (
+                  <div className="mt-8 max-w-xl">
+                    <ReflectionPanel
+                      type="yearly"
+                      reflection={yearlyReflection}
+                      onWrite={() => onReflectionEntry(`reflection-yearly-${year}`, 'yearly')}
+                      onEdit={() => onEditEntry(yearlyReflection!.date)}
+                    />
+                  </div>
+                );
+              })()}
               <BelowHeatmap />
             </motion.div>
           )}
