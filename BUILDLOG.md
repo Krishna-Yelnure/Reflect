@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A3 complete (2026-02-28) — mood & energy visual upgrade done
+# Last updated: Session A3b complete (2026-02-28) — Timeline/Heatmap emotional landscape built
 
 ---
 
@@ -294,17 +294,6 @@ export const db = {
 #### SESSION A3 — Mood & Energy Visual Upgrade
 **Status:** ✅ COMPLETE (2026-02-28)
 
-**Goal:** Make mood and energy inputs feel premium, warm and expressive
-
-**Decided approach (from A2 brainstorm):**
-- Mood: Large emoji buttons with soft colour wash on selected state. No text needed.
-  - Great = warm amber glow, Good = soft green, Okay = neutral, Low = cool blue, Difficult = muted grey
-- Energy: 5 vertical bars like a signal meter, amber/gold colour, grows left to right
-
-**Files to upload for this session:**
-- `BUILDLOG.md`
-- `src/app/components/JournalEntry.tsx`
-
 **What was done:**
 1. Replaced flat mood pill buttons with large emoji cards — colour-washed selected state per mood (amber/green/neutral/blue/stone), scale + glow + ring on select, toggle to deselect
 2. Replaced energy circles with vertical signal-bar meter — 5 bars grow in height left to right, amber/gold fill on selected, active level shown in amber below bar, ✕ to clear
@@ -312,47 +301,102 @@ export const db = {
 
 **Session checklist:**
 - [x] Mood buttons feel premium and expressive
-- [x] Each mood has a distinct colour wash (not just dark/light toggle)
+- [x] Each mood has a distinct colour wash
 - [x] Energy meter reads like a signal strength bar
-- [x] Toggle behaviour on both mood and energy (click again to deselect)
+- [x] Toggle behaviour on both mood and energy
 - [x] Committed and pushed to GitHub
 - [x] BUILDLOG updated
 
 ---
 
-#### SESSION A3b — Timeline/Heatmap Emotional Landscape ← START HERE NEXT
+#### SESSION A3b — Timeline/Heatmap Emotional Landscape
+**Status:** ✅ COMPLETE (2026-02-28)
+
+**What was done:**
+1. Created `src/app/components/TimelineView.tsx` — new central navigation component
+   - Year heatmap: 12 months × daily dots, mood-coloured per BUILDLOG spec
+   - Drill-down: year → month → week → day with breadcrumb nav (click any level to jump directly)
+   - Year selector sidebar on right — newest year first, mood dot per inactive year
+   - Empty cells = quiet `bg-slate-100`, peaceful not alarming — Witness philosophy
+   - Month label click → month view. Week number click → week view. Day dot → day view or Write
+   - Day view: full read mode with mood/energy bar, all fields, Edit button
+   - Week view: vertical timeline dots connected by line, day cards with entry preview
+   - Month view: full calendar grid with mood-coloured day tiles
+2. Updated `src/app/App.tsx`
+   - Default landing view: `write` → `timeline`
+   - Sidebar: 14 items → 11 items in 3 groups (Today / Understand / Explore)
+   - Entries, Archive, Calendar removed from router — absorbed into Timeline
+   - After save → Timeline. Cancel → Timeline
+3. Decisions made during session:
+   - Tab bar (Daily/Weekly/Monthly/Yearly filter) built then removed — premature, A4b handles this
+   - Year prev/next arrows → year selector sidebar per BUILDLOG ASCII spec
+   - reflectionType filtering deferred to A4b when Write actually creates those entry types
+
+**Session checklist:**
+- [x] Year heatmap renders with mood colours
+- [x] Drill-down navigation correct at all levels
+- [x] Breadcrumb shows correct path, clickable at each segment
+- [x] Year selector sidebar matches BUILDLOG spec
+- [x] Empty states are invitations, not voids
+- [x] Witness philosophy — calm, no urgency, no judgement
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
+
+---
+
+#### SESSION A4 — Write Section Redesign ← START HERE NEXT
 **Status:** NOT STARTED
-**Status:** NOT STARTED
 
-**Goal:** Different prompt sets per reflection type — not just a label change
+**Goal:** Transform Write from a basic form into a daily ritual — warm, focused, mode-aware
 
-**Ripple effects to handle (mapped in A2):**
+**What to build (from BUILDLOG Write section spec):**
 
-| Component | Change needed |
-|---|---|
-| JournalEntry.tsx | Different prompts per type |
-| EntriesList.tsx | Badge/filter by type |
-| ArchiveView.tsx | Group or filter by type |
-| CalendarView.tsx | Weekly/monthly shown on day written |
-| MoodChart.tsx | Filter by entry type |
-| Insights.tsx | Weight weekly/monthly entries differently |
-| LanguageInsights.tsx | Option to filter by type |
+**Mode 1 — Quick Capture**
+Mood + energy + one line of text. For days with no time. Still counts.
 
-**Decision locked:** All entries belong to the day they were written, tagged with type. No date ranges.
+**Mode 2 — Guided Entry (default, current state)**
+Already exists structurally. Needs:
+- Daily rotating prompt (prompts.ts + prompts-v2.ts already exist, never surfaced)
+- Memory surface integration — "On this day last year..." (MemorySurface.tsx exists, partially wired)
+- Continuity prompt — "Yesterday you wrote about X. How did it go?"
+- Remove `ReflectionModeSelector` from Write — reflection types accessed via Timeline (A4b)
 
-**Prompt sets to build:**
-- Daily: what happened, feelings, what mattered, insight, free write (current)
-- Weekly: wins this week, challenges, patterns noticed, next week intention, one word summary
-- Monthly: biggest shift, what you'd tell past self, growth area, what to carry forward
-- Yearly: major chapters, who you became, what to leave behind, word for the year
+**Mode 3 — Deep Write (longform)**
+Full screen, distraction free. Title + open canvas. Uses existing `isLongForm` field in types.ts and `longform.ts` util.
 
-**Files to upload for this session:**
+**Closing moment after save**
+Quiet screen: entry saved, date, a single rotating line, then fades to Timeline. Not a toast. Not a redirect. A moment.
+
+**Files to upload:**
 - `BUILDLOG.md`
 - `src/app/components/JournalEntry.tsx`
-- `src/app/components/EntriesList.tsx`
-- `src/app/components/ArchiveView.tsx`
-- `src/app/components/MoodChart.tsx`
-- `src/app/components/Insights.tsx`
+- `src/app/utils/prompts.ts`
+- `src/app/utils/prompts-v2.ts`
+- `src/app/utils/longform.ts`
+
+**Note:** EntriesList, ArchiveView, CalendarView no longer need A4 changes — absorbed into Timeline in A3b.
+
+---
+
+#### SESSION A4b — Weekly/Monthly/Yearly Reflection Types via Timeline
+**Status:** NOT STARTED
+
+**Goal:** Clicking month label in Timeline → Monthly reflection form. Week → Weekly. Year → Yearly.
+
+**What to build:**
+- Monthly prompt set: biggest shift, what you'd tell past self, growth area, what to carry forward
+- Weekly prompt set: wins, challenges, patterns, next week intention, one word summary
+- Yearly prompt set: major chapters, who you became, what to leave behind, word for the year
+- Wire Timeline month label click → Write with reflectionType pre-set to 'monthly'
+- Wire Timeline week click → Write with reflectionType pre-set to 'weekly'
+- Wire Timeline year selector → Write with reflectionType pre-set to 'yearly'
+- Timeline then shows those entry types with appropriate colour/indicator
+
+**Files to upload:**
+- `BUILDLOG.md`
+- `src/app/components/TimelineView.tsx`
+- `src/app/components/JournalEntry.tsx`
+- `src/app/utils/prompts-v2.ts`
 
 ---
 
@@ -498,8 +542,8 @@ Then attach:
 | Session A2 | 2026-02-28 | Storage abstraction layer, 21-day habit tracker, sidebar navigation, design principles + product vision brainstorm | ✅ Complete |
 | Session A2b | 2026-02-28 | Brainstorming: Witness philosophy, heatmap architecture, sidebar redesign, Write section enhancements, human-centred feature audit | ✅ Complete (brainstorm only) |
 | Session A3 | 2026-02-28 | Mood + energy visual upgrade — emoji cards with colour wash, vertical signal bar meter | ✅ Complete |
-| Session A3b | — | Timeline/Heatmap — emotional landscape view replacing Entries + Archive + Calendar | ⏳ Next |
-| Session A4 | — | Write section redesign — Quick/Guided/Deep modes, memory surface, closing moment, daily prompt | ⏳ Pending |
+| Session A3b | 2026-02-28 | Timeline/Heatmap — year heatmap, drill-down nav, year selector sidebar, day/week/month/day views | ✅ Complete |
+| Session A4 | — | Write section redesign — Quick/Guided/Deep modes, memory surface, closing moment, daily prompt | ⏳ Next |
 | Session A4b | — | Weekly/Monthly/Yearly reflection types accessed via heatmap | ⏳ Pending |
 | Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
@@ -536,7 +580,11 @@ Then attach:
 - **2026-02-28 (A2b):** Sidebar reduced from 14 to 11 items in 3 groups + settings
 - **2026-02-28 (A2b):** Word count REMOVED from plan — violates Witness philosophy (manager not witness)
 - **2026-02-28 (A2b):** Streaks NEVER — violates emotional safety, gamification is anti-human for journaling
-- **2026-02-28 (A2b):** Questions + Threads — consider merging in A5 as both connect entries across time
+- **2026-02-28 (A3):** Mood cards + energy signal bar — self-contained in JournalEntry.tsx, no ripple effects
+- **2026-02-28 (A3b):** TimelineView created — replaces Entries, Archive, Calendar as single coherent view
+- **2026-02-28 (A3b):** Tab bar (Daily/Weekly/Monthly/Yearly filter) built and removed — premature before A4b creates those entry types
+- **2026-02-28 (A3b):** Year selector sidebar on right per BUILDLOG spec — replaces prev/next arrows
+- **2026-02-28 (A3b):** reflectionType filtering in Timeline deferred to A4b — hooks are in place, data doesn't exist yet
 
 ---
 

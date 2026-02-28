@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
 import {
   PenLine,
-  BookOpen,
   Lightbulb,
   TrendingUp,
   Calendar,
@@ -13,25 +12,21 @@ import {
   Heart,
   Shield,
   Layers,
-  Archive,
-  HelpCircle,
   FileText,
   Target,
   ChevronLeft,
 } from "lucide-react";
 import { Toaster } from "@/app/components/ui/sonner";
 import { JournalEntry } from "@/app/components/JournalEntry";
-import { EntriesList } from "@/app/components/EntriesList";
+import { TimelineView } from "@/app/components/TimelineView";
 import { Insights } from "@/app/components/Insights";
 import { MoodChart } from "@/app/components/MoodChart";
-import { CalendarView } from "@/app/components/CalendarView";
 import { LanguageInsights } from "@/app/components/LanguageInsights";
 import { ReflectionAnchors } from "@/app/components/ReflectionAnchors";
 import { PrivacySettings } from "@/app/components/PrivacySettings";
 import { ErasManager } from "@/app/components/ErasManager";
 import { PersistentQuestions } from "@/app/components/PersistentQuestions";
 import { MemoryThreads } from "@/app/components/MemoryThreads";
-import { ArchiveView } from "@/app/components/ArchiveView";
 import { DataLegacy } from "@/app/components/DataLegacy";
 import { WelcomeMessage } from "@/app/components/WelcomeMessage";
 import { HabitBuilder } from "@/app/components/HabitBuilder";
@@ -40,54 +35,49 @@ import type { JournalEntry as JournalEntryType } from "@/app/types";
 
 type View =
   | "write"
-  | "entries"
+  | "timeline"
   | "insights"
   | "mood"
-  | "calendar"
   | "language"
   | "anchors"
   | "privacy"
   | "eras"
   | "questions"
   | "threads"
-  | "archive"
   | "legacy"
   | "habits";
 
 // ── Navigation groups ──────────────────────────────────────────────────────
 const NAV_GROUPS = [
   {
-    label: "Journal",
+    label: "Today",
     items: [
-      { id: "write" as View,   label: "Write",    icon: PenLine },
-      { id: "entries" as View, label: "Entries",  icon: BookOpen },
-      { id: "archive" as View, label: "Archive",  icon: Archive },
-      { id: "calendar" as View,label: "Calendar", icon: Calendar },
+      { id: "write"    as View, label: "Write",    icon: PenLine },
+      { id: "timeline" as View, label: "Timeline", icon: Calendar },
     ],
   },
   {
-    label: "Reflect",
+    label: "Understand",
     items: [
-      { id: "mood" as View,      label: "Mood",      icon: TrendingUp },
-      { id: "insights" as View,  label: "Insights",  icon: Lightbulb },
-      { id: "language" as View,  label: "Language",  icon: MessageSquare },
-      { id: "anchors" as View,   label: "Anchors",   icon: Heart },
+      { id: "insights"  as View, label: "Insights",  icon: Lightbulb },
+      { id: "mood"      as View, label: "Mood",       icon: TrendingUp },
+      { id: "language"  as View, label: "Language",   icon: MessageSquare },
     ],
   },
   {
     label: "Explore",
     items: [
-      { id: "eras" as View,      label: "Eras",      icon: Layers },
-      { id: "threads" as View,   label: "Threads",   icon: FileText },
-      { id: "questions" as View, label: "Questions", icon: HelpCircle },
-      { id: "habits" as View,    label: "Habits",    icon: Target },
+      { id: "habits"    as View, label: "Habits",     icon: Target },
+      { id: "anchors"   as View, label: "Anchors",    icon: Heart },
+      { id: "eras"      as View, label: "Eras",       icon: Layers },
+      { id: "threads"   as View, label: "Threads",    icon: FileText },
     ],
   },
   {
     label: "Settings",
     items: [
       { id: "privacy" as View, label: "Privacy", icon: Shield },
-      { id: "legacy" as View,  label: "Legacy",  icon: FileText },
+      { id: "legacy"  as View, label: "Legacy",  icon: FileText },
     ],
   },
 ];
@@ -96,10 +86,9 @@ const NAV_GROUPS = [
 const ALL_NAV = NAV_GROUPS.flatMap(g => g.items);
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<View>("write");
+  const [currentView, setCurrentView] = useState<View>("timeline");
   const [entries, setEntries] = useState<JournalEntryType[]>([]);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -107,7 +96,7 @@ export default function App() {
 
   const loadEntries = () => setEntries(storage.getEntries());
 
-  const handleSaveEntry = () => { loadEntries(); setCurrentView("entries"); };
+  const handleSaveEntry = () => { loadEntries(); setCurrentView("timeline"); };
   const handleEditEntry = (date: string) => { setSelectedDate(date); setCurrentView("write"); };
   const handleDeleteEntry = (id: string) => { storage.deleteEntry(id); loadEntries(); };
   const handleNewEntry = () => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setCurrentView("write"); };
@@ -174,17 +163,12 @@ export default function App() {
     <AnimatePresence mode="wait">
       {currentView === "write" && (
         <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("entries")} allEntries={entries} onViewEntry={handleEditEntry} />
+          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} allEntries={entries} onViewEntry={handleEditEntry} />
         </motion.div>
       )}
-      {currentView === "entries" && (
-        <motion.div key="entries" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <EntriesList entries={entries} onEdit={handleEditEntry} onDelete={handleDeleteEntry} />
-        </motion.div>
-      )}
-      {currentView === "calendar" && (
-        <motion.div key="calendar" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <CalendarView entries={entries} onSelectDate={handleSelectDate} selectedMonth={selectedMonth} />
+      {currentView === "timeline" && (
+        <motion.div key="timeline" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <TimelineView entries={entries} onSelectDate={handleSelectDate} onEditEntry={handleEditEntry} />
         </motion.div>
       )}
       {currentView === "mood" && (
@@ -231,11 +215,6 @@ export default function App() {
       {currentView === "threads" && (
         <motion.div key="threads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
           <MemoryThreads entries={entries} onViewEntry={handleEditEntry} />
-        </motion.div>
-      )}
-      {currentView === "archive" && (
-        <motion.div key="archive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <ArchiveView entries={entries} onSelectEntry={handleEditEntry} />
         </motion.div>
       )}
       {currentView === "legacy" && (
