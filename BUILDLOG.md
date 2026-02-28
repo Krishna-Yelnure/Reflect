@@ -768,6 +768,87 @@ Full screen, distraction free. Title + open canvas. No fields, no structure. For
 - Photos/attachments — one photo per entry anchors memory
 - E2E encrypted optional sync (Obsidian model)
 
+## EDGE CASES & RISK REGISTER
+
+*Identified during A2 brainstorm. Address before or during the relevant session.*
+
+---
+
+### 🔴 Critical — Fix Before Feature Ships
+
+| Edge case | Risk | Session |
+|---|---|---|
+| Unsaved changes — no warning when navigating away | Data loss — user writes 500 words, clicks sidebar, loses everything | A4 |
+| Delete all data — no confirmation | Catastrophic, irreversible, one click currently | A3 (quick fix) |
+| Import collision — old backup overwrites newer entries | Silent data loss, no merge strategy | A4b |
+| Multiple tabs open simultaneously | Race condition — second save overwrites first on localStorage | B1 |
+
+---
+
+### 🟡 Important — Design For Before Building
+
+| Edge case | Risk | Session |
+|---|---|---|
+| Multiple entries same day — heatmap colour logic | Core heatmap feature — morning Great + evening Difficult = what colour? | A3b |
+| Empty heatmap on day 1 | First impression — feels like a void not an invitation | A3b |
+| Entries with no mood recorded — heatmap cell colour | Show grey? Transparent? Different opacity? Needs decision | A3b |
+| Week column spanning two months in drill-down | Dec 28–Jan 3 — which month does it belong to? | A3b |
+| Memory surface on day 1 — "A year ago you wrote..." | No entries from a year ago — needs graceful empty state | A4 |
+| Grief/sensitive entry resurfacing via memory surface | "A year ago you wrote about your father" — could be devastating | A5 |
+| localStorage quota exceeded mid-write | Silent failure — no warning, entry lost | B1 (Electron fixes) |
+| Corrupt data — browser crash mid-write | No recovery path currently | B1 |
+
+---
+
+### 🟢 Known — Address When Relevant
+
+| Edge case | Risk | Session |
+|---|---|---|
+| Multiple entries same day — which one shows in heatmap | Average mood? Last entry? Most intense? | A3b |
+| Weekly reflection written mid-week | Does week column highlight from Monday or day written? | A4b |
+| Yearly reflection written in March for previous year | Belongs to March or to the year reflected on? | A4b |
+| Switching reflection type after saving | Can user change type? What happens to heatmap? | A4b |
+| Overlapping eras | Two eras share the same date range — which wins? | A5 |
+| Open-ended era — does it auto-close when new era created? | UX decision needed | A5 |
+| Deleting an era with 50 entries tagged to it | Entries lose eraId — show as untagged? | A5 |
+| Habit 21-day — user changes device | localStorage is device-specific — progress disappears on new device | B1 |
+| Habit archived mid gentle-start | Does 21-day continue or stop? | A5 |
+| Engagement recorded for future date | System currently allows it — heatmap shows future cell filled | A4 |
+| Leap year — February 29th | Grid layout needs to handle 366 days cleanly | A3b |
+| Export file too large | 10 years of data could be 50MB+ — browser download may struggle | B3 |
+| Import wrong file format | Basic validation exists but partial corruption still possible | A4b |
+| Closing moment — user clicks away immediately | Back button behaviour unclear during 2-second closing screen | A4 |
+| Daily prompt rotation exhausted | Finite prompts — user notices the cycle repeating | A4 |
+| Continuity prompt false positives | Irrelevant prompt surfaces and feels jarring | A4 |
+| Clock/timezone issues — entry lands on wrong date | User travels, writes at 11pm, entry appears on yesterday | B1 |
+| Browser updates break localStorage | Safari periodically changes storage behaviour | B1 |
+| Very long entries — 5000+ words | localStorage 5-10MB limit — power user over years could hit this | B1 |
+| Backdated entries | User writes entry for last Tuesday — heatmap and continuity prompts handle correctly? | A4 |
+
+---
+
+### 🔵 Human & Philosophical — Handle With Care
+
+| Edge case | Consideration |
+|---|---|
+| Grief entries resurfaced by memory surface | Need content sensitivity controls or "never resurface" visibility flag (already in types.ts) — ensure it's surfaced clearly in UI |
+| Entries about other people | If device shared or compromised — those people are exposed. Entry-level privacy flag needed long term |
+| Re-reading painful old self | User finds 5-year-old entries embarrassing or painful — "seal entry" or "archive deeply" feature beyond current visibility flags |
+| The journal outlives the user | Legacy feature exists but underdeveloped — who gets the data, how, when? Profound product question for future |
+| Therapeutic use | No safeguards for users processing trauma or grief — not a crisis but worth awareness. Copy must always be careful |
+
+---
+
+### Key Decisions Needed Before A3b (Heatmap)
+
+These must be decided before building the heatmap — they affect the data model:
+
+1. **Multiple entries same day** — one entry per day (enforce) or multiple allowed?
+2. **Heatmap cell colour logic** — mood of last entry? average? most intense?
+3. **No mood recorded** — cell colour fallback?
+4. **Week column boundary** — entries belong to week of their date, full stop
+5. **Empty state** — what does a new user see on their first open of Timeline?
+
 ---
 
 *End of BUILDLOG.md*
