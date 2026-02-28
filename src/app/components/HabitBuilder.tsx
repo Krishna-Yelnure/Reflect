@@ -4,6 +4,7 @@ import { Plus, Archive, Play, Edit2, Trash2, CheckCircle2, Circle, Target } from
 import { format, parseISO, differenceInDays, eachDayOfInterval } from 'date-fns';
 import type { Habit, GentleStart, HabitEngagement, JournalEntry } from '@/app/types';
 import { habitsStorage } from '@/app/utils/habits';
+import { GentleStartTracker } from '@/app/components/GentleStartTracker';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Textarea } from '@/app/components/ui/textarea';
@@ -238,12 +239,9 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
 
                     {/* Gentle Start Progress */}
                     {gentleStart && (
-                      <GentleStartProgress
+                      <GentleStartTracker
                         gentleStart={gentleStart}
                         engagements={allEngagements.filter(e => e.gentleStartId === gentleStart.id)}
-                        onComplete={() => completeGentleStart(gentleStart.id)}
-                        habitName={habit.name}
-                        onReflect={() => setEngagingHabit(habit.id)}
                       />
                     )}
 
