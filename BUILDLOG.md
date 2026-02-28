@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A1 complete (2026-02-27)
+# Last updated: Session A2 complete (2026-02-28)
 
 ---
 
@@ -246,34 +246,127 @@ export const db = {
 
 ---
 
-#### SESSION A2 — Storage Abstraction + 21-Day Habit Visual ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A2 — Storage Abstraction + 21-Day Habit Visual + Sidebar Nav
+**Status:** ✅ COMPLETE (2026-02-28)
 
-**Goal:** Robust data layer + the new habit visualisation
+**What was done:**
+1. Created `src/app/db/index.ts` — unified storage abstraction layer
+   - Single `db` object wraps ALL localStorage across entire app
+   - Covers: entries, habits, gentleStarts, engagements, prefs, anchors, eras, threads, questions, longform
+   - Full export/import — `db.backup.exportAll()` and `db.backup.importAll(json)`
+   - In Phase 2 (Electron): only this file changes, nothing else
+2. Updated `src/app/utils/storage.ts` → thin shim pointing to `db.entries`
+3. Updated `src/app/utils/habits.ts` → thin shim pointing to `db.habits`, `db.gentleStarts`, `db.engagements`
+4. Updated `src/app/utils/preferences.ts` → thin shim pointing to `db.prefs`, `db.anchors`
+5. Created `src/app/components/GentleStartTracker.tsx` — new 21-day visual component
+   - 3 rows × 7 cols grid
+   - Day counter "Day X of 21"
+   - Milestone dots at day 7, 14, 21
+   - Warm celebration state at completion
+   - Tone: curious, never punishing
+6. Updated `src/app/components/HabitBuilder.tsx` — swapped old `GentleStartProgress` for new `GentleStartTracker`
+7. Redesigned `src/app/App.tsx` — horizontal top nav → left sidebar
+   - 4 grouped sections: Journal, Reflect, Explore, Settings
+   - Collapsible to icon-only mode
+   - Mobile slide-in drawer
+   - Clean "Private. Secure. Always yours." footer
 
-**Steps:**
-1. Create `src/app/storage/index.ts` — abstracted storage layer
-2. Replace all direct localStorage calls with the new storage module
-3. Build 21-day grid component for HabitBuilder
-4. Test export/import of complete data snapshot
-5. Verify data survives page refresh
+**Issues fixed:**
+- `src/app/db/index.ts` initially named `db-index.ts` — renamed to `index.ts`
 
-**Deliverable:** Data persists properly + 21-day habit grid visible
+**Brainstorming completed this session:**
+- Screen space: leave centred layout for now, revisit in A5
+- Weekly/Monthly/Yearly reflection types: deferred to A4 — has ripple effects across 8 components
+- Mood + energy visual options analysed — decision deferred to A3
+- Design principles documented (see section below)
+- Product vision and roadmap documented (see section below)
+
+**Session checklist:**
+- [x] Storage abstraction layer created and working
+- [x] All existing imports still work via shims
+- [x] 21-day habit grid rendering correctly
+- [x] Sidebar navigation working on desktop and mobile
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
 
 ---
 
-#### SESSION A3 — Visual Review & Iterations
+#### SESSION A3 — Mood & Energy Visual Upgrade ← START HERE NEXT
 **Status:** NOT STARTED
 
-**Goal:** User (you) reviews every screen and requests changes
+**Goal:** Make mood and energy inputs feel premium, warm and expressive
+
+**Decided approach (from A2 brainstorm):**
+- Mood: Large emoji buttons with soft colour wash on selected state. No text needed.
+  - Great = warm amber glow, Good = soft green, Okay = neutral, Low = cool blue, Difficult = muted grey
+- Energy: 5 vertical bars like a signal meter, amber/gold colour, grows left to right
+
+**Files to upload for this session:**
+- `BUILDLOG.md`
+- `src/app/components/JournalEntry.tsx`
 
 **Steps:**
-1. Walk through every view with fresh eyes
-2. List anything to change: layout, copy, missing features, confusing UX
-3. Implement changes
-4. Repeat until satisfied
+1. Read JournalEntry.tsx to understand current mood/energy implementation
+2. Replace mood buttons with large emoji + colour wash design
+3. Replace energy circles with vertical bar meter
+4. Confirm all views still work
+5. Commit and push
 
-**Deliverable:** App locked and approved. No more visual changes after this.
+**Deliverable:** Mood and energy inputs feel polished and warm
+
+---
+
+#### SESSION A4 — Weekly/Monthly/Yearly Reflection Types
+**Status:** NOT STARTED
+
+**Goal:** Different prompt sets per reflection type — not just a label change
+
+**Ripple effects to handle (mapped in A2):**
+
+| Component | Change needed |
+|---|---|
+| JournalEntry.tsx | Different prompts per type |
+| EntriesList.tsx | Badge/filter by type |
+| ArchiveView.tsx | Group or filter by type |
+| CalendarView.tsx | Weekly/monthly shown on day written |
+| MoodChart.tsx | Filter by entry type |
+| Insights.tsx | Weight weekly/monthly entries differently |
+| LanguageInsights.tsx | Option to filter by type |
+
+**Decision locked:** All entries belong to the day they were written, tagged with type. No date ranges.
+
+**Prompt sets to build:**
+- Daily: what happened, feelings, what mattered, insight, free write (current)
+- Weekly: wins this week, challenges, patterns noticed, next week intention, one word summary
+- Monthly: biggest shift, what you'd tell past self, growth area, what to carry forward
+- Yearly: major chapters, who you became, what to leave behind, word for the year
+
+**Files to upload for this session:**
+- `BUILDLOG.md`
+- `src/app/components/JournalEntry.tsx`
+- `src/app/components/EntriesList.tsx`
+- `src/app/components/ArchiveView.tsx`
+- `src/app/components/MoodChart.tsx`
+- `src/app/components/Insights.tsx`
+
+---
+
+#### SESSION A5 — Design Polish Pass
+**Status:** NOT STARTED
+
+**Goal:** Apply design principles, audit copy, elevate visual quality
+
+**Checklist (from design principles):**
+- [ ] Typographic hierarchy — stronger heading font, lighter body
+- [ ] Purposeful accent colour — one warm colour applied consistently
+- [ ] Copy audit — every label, placeholder, empty state checked for emotional safety tone
+- [ ] Empty states — turn bare empty views into invitations
+- [ ] Microinteractions — review key moments: save, delete, mood select
+- [ ] Consistent visual language — border radius, shadow, colour logic unified
+- [ ] Welcome/home state — "Good morning. You last wrote X days ago about..."
+- [ ] Closing moment after save — not just redirect to entries list
+
+**Files needed:** Multiple — assess at session start
 
 ---
 
@@ -379,25 +472,15 @@ export const db = {
 
 ---
 
-## HOW TO START SESSION A2
+## HOW TO START SESSION A3
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A2."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A3 — mood and energy visual upgrade."
 
 Then attach:
 1. This `BUILDLOG.md`
-2. These specific files from `~/premium-journal/src/app/utils/`:
-   - `storage.ts`
-   - `habits.ts`
-   - `eras.ts`
-   - `threads.ts`
-   - `questions.ts`
-   - `preferences.ts`
-3. `src/app/components/HabitBuilder.tsx`
-4. `src/app/types.ts`
-
-**No need to upload the full zip** — Claude only needs the files being changed in A2.
+2. `src/app/components/JournalEntry.tsx`
 
 ---
 
@@ -407,8 +490,10 @@ Then attach:
 |---|---|---|---|
 | Session 0 | 2026-02-27 | Full brainstorming. All decisions locked. BUILDLOG created. | ✅ Complete |
 | Session A1 | 2026-02-27 | App running in browser, all 14 views confirmed, GitHub repo set up, .gitignore added | ✅ Complete |
-| Session A2 | — | Storage abstraction + 21-day habit visual | ⏳ Next |
-| Session A3 | — | Visual review and iterations | ⏳ Pending |
+| Session A2 | 2026-02-28 | Storage abstraction layer, 21-day habit tracker, sidebar navigation, design principles + product vision brainstorm | ✅ Complete |
+| Session A3 | — | Mood + energy visual upgrade | ⏳ Next |
+| Session A4 | — | Weekly/Monthly/Yearly reflection types + ripple effects | ⏳ Pending |
+| Session A5 | — | Design polish pass | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
 | Session B3 | — | Polish and final testing | ⏳ Pending |
@@ -429,7 +514,70 @@ Then attach:
 - **2026-02-27 (A1):** SSH key configured on Linux Mint with passphrase — needed for every git push
 - **2026-02-27 (A1):** App runs with `npm run dev` from `~/premium-journal` — opens at http://localhost:5173
 - **2026-02-27 (A1):** node_modules must never be committed — .gitignore is in place
-- **2026-02-27 (A1):** For A2, upload only the specific files being changed, not the full zip — saves tokens
+- **2026-02-28 (A2):** db/index.ts is the single storage interface — never import localStorage directly anywhere else
+- **2026-02-28 (A2):** Weekly/Monthly/Yearly ripple effects mapped — defer to A4, too big for end of A2
+- **2026-02-28 (A2):** Screen space/layout — keep centred max-width for now, revisit in A5
+- **2026-02-28 (A2):** All entries belong to the day written, tagged with reflectionType — no date ranges
+- **2026-02-28 (A2):** App currently rated 6.5/10 — good bones, needs narrative continuity to reach 9/10
+
+---
+
+## DESIGN PRINCIPLES (for Session A5 visual review)
+
+1. **Calm Technology** — no aggressive colours, no urgent language, no guilt
+2. **Progressive Disclosure** — simple for new users, depth for power users
+3. **Emotional Safety** — every label and prompt written with care, never judgmental
+4. **Typographic Hierarchy** — strong display font for headings, lighter for body
+5. **Microinteractions** — intentional, warm, satisfying moments at key actions
+6. **Spatial Breathing Room** — generous padding, whitespace signals quality
+7. **Consistent Visual Language** — same border radius, shadow, colour logic everywhere
+8. **Feedback at Every Action** — quiet confirmations, not loud toasts for everything
+9. **Purposeful Colour** — one warm accent, semantic use, colour carries meaning not decoration
+10. **Empty States as Invitations** — open door copy, not a void
+
+**Top 3 highest impact for A5:**
+- Typographic hierarchy
+- Purposeful accent colour applied consistently
+- Emotional safety audit of all copy and placeholders
+
+---
+
+## PRODUCT VISION & ROADMAP (north star for post-A5)
+
+**Core vision:**
+> "Record the thought process of that day and how it impacts the next set of days and life itself."
+
+**Current rating: 6.5/10** — good bones, needs narrative continuity.
+
+**Biggest gap — Narrative & Continuity:**
+- Entries exist in isolation, no thread between them
+- No "story of me" view — timeline with emotional shape
+- No connections between entries across time
+- Eras and Threads exist but are manual and disconnected from writing
+
+**Incomplete daily loop:**
+- Current: Open → blank form → write → save → redirects to list
+- Needed: Open → welcomed back → prompted by recent writing → write → feel heard → closing moment → close
+
+**Personality development features (future):**
+- Belief tracker — what did you believe in Jan vs now?
+- Decision journal — record why, revisit outcome later
+- Growth markers — explicit "I've changed on this" moments
+- Pattern recognition — app notices recurring themes automatically
+
+**Critical missing features:**
+- Search — no search at all, serious omission for a memory app
+- Import — from Day One, Notion, plain text
+- Reading mode — distraction-free view of past entries like a book
+- Local reminders — browser notification at chosen time, no server needed
+- Photos/attachments — even one photo per entry anchors memory
+
+**What takes this to 9/10:**
+1. Narrative continuity — entries that know about each other
+2. Satisfying daily ritual loop with welcome and closing moment
+3. Search
+4. Reading mode
+5. Belief tracking + decision journal + growth markers
 
 ---
 
