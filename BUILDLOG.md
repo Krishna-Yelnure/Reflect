@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4b complete (2026-02-28) — Weekly/Monthly/Yearly reflection types via Timeline
+# Last updated: Session A4c planned (2026-02-28) — Reflection panels + Intentions loop designed
 
 ---
 
@@ -391,67 +391,154 @@ export const db = {
 
 1. **`TimelineView.tsx` — new prop `onReflectionEntry(date, type)`**
    - New `ReflectionEntryType = 'weekly' | 'monthly' | 'yearly'` type
-   - New `findReflectionEntry()` helper — checks if a reflection entry already exists for a period key
-   - New `ReflectionDot` component — small coloured dot (violet/sky/rose per type) used throughout
+   - `findReflectionEntry()` helper — looks up by synthetic date key per type
+   - `ReflectionDot` component — small coloured dot (violet/sky/rose per type)
 
-2. **Timeline visual indicators:**
-   - Heatmap month labels — show sky dot when a monthly reflection exists for that month
-   - Month view week numbers (W1, W2...) — show violet dot when a weekly reflection exists for that week
-   - Year sidebar — hover over any year row reveals `+` / `✎` button for yearly reflections; rose dot on existing
+2. **Synthetic date keys** — reflection entries stored on non-calendar date strings that can never collide with daily entries:
+   - Weekly: `reflection-weekly-YYYY-MM-DD` (week start date)
+   - Monthly: `reflection-monthly-YYYY-MM`
+   - Yearly: `reflection-yearly-YYYY`
 
-3. **Timeline reflection banners:**
-   - Month view header — "Write monthly reflection" button; if one exists shows "Monthly reflection written — edit"
-   - Week view header — same pattern for weekly, violet colour
-   - Year sidebar — hover action for yearly, rose colour
+3. **Timeline visual indicators** — month label dots (sky), week number dots (violet), year sidebar dots (rose) when reflection exists for that period
 
-4. **DayView** — shows coloured badge ("Weekly reflection", "Monthly reflection", "Yearly reflection") when reading a non-daily entry
+4. **Timeline reflection banners** — Month and Week views show "+ Write reflection" / "reflection written — edit" header banners; Year sidebar shows hover action
 
-5. **`JournalEntry.tsx` — new prop `initialReflectionType` (default `'daily'`)**
-   - `getReflectionPrompt` imported from `prompts-v2.ts` — fires correct prompt set for each reflection type
-   - `REFLECTION_META` constant — custom field labels and placeholders per type (e.g. "What defined this month?" instead of "What happened today?")
-   - Reflection badge shown in Guided mode header (violet/sky/rose per type)
-   - `reflectionType` field saved correctly on every entry — Timeline dot indicators work immediately on save
-   - Writing fields rendered dynamically from `reflectionMeta.fields` — daily mode unchanged
+5. **DayView** — coloured badge shown when reading a non-daily entry
 
-6. **`App.tsx` — fully wired:**
-   - `pendingReflectionType` state — defaults to `'daily'`, always reset on regular date selects and edits
-   - `handleReflectionEntry(date, type)` — sets date + type, routes to write
-   - `JournalEntry` receives `initialReflectionType={pendingReflectionType}`
-   - `TimelineView` receives `onReflectionEntry={handleReflectionEntry}`
+6. **`JournalEntry.tsx` — `initialReflectionType` prop**
+   - `getReflectionPrompt` wired from `prompts-v2.ts`
+   - `REFLECTION_META` — custom field labels/placeholders per type
+   - `formatEntryDate()` helper — renders synthetic keys as human-readable strings ("February 2026", "Week of Feb 2, 2026")
+   - Continuity prompt and year-ago memory suppressed for reflection entries
+   - Reflection type badge in Guided header
 
-**Complete data flow:**
-```
-Timeline "Write monthly reflection" button
-  → handleReflectionEntry('2026-02-01', 'monthly')
-    → pendingReflectionType = 'monthly', view = 'write'
-      → JournalEntry: badge "Monthly reflection", custom field labels, prompts from reflectionPrompts.monthly
-        → saves entry with reflectionType: 'monthly'
-          → Timeline shows sky dot on Feb label ✓
-```
+7. **`App.tsx`** — `pendingReflectionType` state, `handleReflectionEntry()` handler, both components wired
 
-**Decisions made during session:**
-- `pendingReflectionType` always reset to `'daily'` on `handleSelectDate`, `handleEditEntry`, `handleNewEntry` — prevents type leaking between navigations
-- Weekly reflection date key = week start date (`yyyy-MM-dd`) — simplest unambiguous key, no week-number edge cases
-- Monthly reflection date key = first day of month — entry lands on that date in heatmap, correctly colour-coded
-- Yearly reflection date key = `YYYY-01-01` — same principle
-- `±3 day` year-ago search from A4 means yearly reflections from Jan 1 won't accidentally surface as "year-ago" memories — they have `reflectionType: 'yearly'` and will be filtered in A5 if needed
-- `prompts-v2.ts` unchanged — existing prompt sets used as-is, no new prompts added
-
-**Issues encountered:** None — clean three-file change, no ripple effects
+8. **Bug fix** — curly apostrophes in single-quoted strings in `REFLECTION_META` placeholders fixed (5 strings switched to double quotes)
 
 **Session checklist:**
-- [x] Month view shows "Write monthly reflection" / "edit" banner
-- [x] Week view shows "Write weekly reflection" / "edit" banner
-- [x] Year sidebar shows yearly reflection action on hover
-- [x] Reflection dots appear on month labels, week numbers, year sidebar
-- [x] DayView shows reflection type badge for non-daily entries
-- [x] JournalEntry renders custom field labels for each reflection type
-- [x] JournalEntry renders correct reflection prompt from prompts-v2.ts
-- [x] JournalEntry shows badge in header for non-daily types
-- [x] App.tsx wired — pendingReflectionType flows correctly, no type leakage
-- [x] reflectionType saved correctly on every entry
+- [x] Reflection entries stored on synthetic keys — no collision with daily entries
+- [x] Month/Week/Year views show readable reflection banners
+- [x] Reflection dots appear on heatmap at correct levels
+- [x] Custom field labels and prompts render per reflection type
+- [x] Header shows human-readable period name not raw date key
+- [x] Continuity/year-ago prompts suppressed for reflection entries
+- [x] App.tsx fully wired, no type leakage between navigations
 - [x] Committed and pushed to GitHub
 - [x] BUILDLOG updated
+
+---
+
+#### SESSION A4c — Reflection Panels + Intentions Loop ← START HERE NEXT
+**Status:** NOT STARTED
+
+**Goal:** Make reflections readable, not just editable. Close the loop between past reflection and future intention.
+
+**Problem identified:**
+- Once a reflection is written, the only way to see it is the tiny dot + "edit" link — reflections are invisible as content
+- Reflections currently look backward only — no forward motion, no loop between periods
+
+**Design decisions (brainstormed 2026-02-28):**
+
+**1. Inline Reflection Panels**
+
+Replace the current banner (just a button) with a full readable panel at each Timeline level:
+
+```
+Week view:
+┌─────────────────────────────────────────────────┐
+│  Weekly reflection                        ✎ Edit │
+│                                                  │
+│  "This week I avoided a conversation I           │
+│   needed to have. Kept finding reasons           │
+│   to postpone it..."                             │
+│                                                  │
+│  Mood: Okay  ·  Written Feb 28                   │
+└─────────────────────────────────────────────────┘
+
+When empty:
+┌─────────────────────────────────────────────────┐
+│  Weekly reflection                               │
+│  Nothing written yet.                            │
+│  + Write weekly reflection →                     │
+└─────────────────────────────────────────────────┘
+```
+
+- Reflection panel lives at the top of Week view, Month view, and Year view
+- Shows full text (truncated to ~4 lines with expand), mood, date written, Edit button
+- Replaces the current header banner entirely
+- Panel is the primary surface for reflections — not hidden behind a dot
+
+**2. Intentions Loop**
+
+Single optional field added to the bottom of every reflection form (weekly/monthly/yearly):
+
+```
+─────────────────────────────────────────
+One intention for [next week / next month / next year]
+
+"I want to be more present in conversations
+ instead of thinking about what to say next."
+─────────────────────────────────────────
+```
+
+- One line only. Not a list. Not tasks. A single intention.
+- Stored as `intention?: string` on `JournalEntry` type
+- When the *next* period's reflection opens, surfaces the previous intention as the opening contextual prompt:
+
+```
+┌─────────────────────────────────────────────────┐
+│  Last week you intended:                         │
+│  "Be more present in conversations"              │
+│                                                  │
+│  How did that unfold?                            │
+└─────────────────────────────────────────────────┘
+```
+
+- Intention is surfaced as a *prompt*, never a metric
+- No tracking, no completion state, no failure state — pure Witness philosophy
+- If no intention was set last period, the panel simply doesn't appear
+
+**The reflection loop:**
+```
+Weekly reflection (Week 4)
+  → writes: what happened, how it felt, what mattered
+  → sets intention: "Spend less time on my phone after 9pm"
+
+Weekly reflection (Week 5) opens
+  → surfaces: "Last week you intended: spend less time on phone after 9pm"
+  → first prompt: "How did that unfold?"
+  → user reflects, sets new intention or carries it forward
+```
+
+**Witness test:** ✅ — the intention is surfaced as a question, never judged for completion. Missed intentions are not tracked. The app holds the thought, doesn't manage the outcome.
+
+**What to build:**
+
+1. **`types.ts`** — add `intention?: string` to `JournalEntry` interface
+
+2. **`TimelineView.tsx`** — replace banners with `ReflectionPanel` component:
+   - Props: `entry | null`, `type`, `onWrite`, `onEdit`
+   - Shows full content when entry exists (truncated + expand)
+   - Shows invitation when empty
+   - Used in WeekView, MonthView, and year-level
+
+3. **`JournalEntry.tsx`** — add intention field:
+   - Appears only in reflection mode (weekly/monthly/yearly)
+   - Placed after the last writing field, before tags
+   - Label: "One intention for next [week/month/year]"
+   - Placeholder: "Something you want to be true by then…"
+   - `getPreviousPeriodIntention()` helper — finds last period's entry and extracts `intention`
+   - Surfaces as contextual prompt strip at top of form (above mood/energy)
+
+4. **`prompts-v2.ts`** — add intention follow-up prompt:
+   - When previous intention exists, first prompt becomes: "Last [week] you intended: '[X]' — how did that unfold?"
+
+**Files needed for session:**
+- `BUILDLOG.md`
+- `src/app/types.ts`
+- `src/app/components/TimelineView.tsx`
+- `src/app/components/JournalEntry.tsx`
 
 ---
 
@@ -576,18 +663,17 @@ Timeline "Write monthly reflection" button
 
 ---
 
-## HOW TO START SESSION A5
+## HOW TO START SESSION A4c
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A5 — design polish pass."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A4c — Reflection panels and Intentions loop."
 
 Then attach:
 1. This `BUILDLOG.md`
-2. `src/app/App.tsx`
-3. `src/app/components/JournalEntry.tsx`
-4. `src/app/components/TimelineView.tsx`
-5. Any other component files flagged during the session
+2. `src/app/types.ts`
+3. `src/app/components/TimelineView.tsx`
+4. `src/app/components/JournalEntry.tsx`
 
 ---
 
@@ -602,8 +688,9 @@ Then attach:
 | Session A3 | 2026-02-28 | Mood + energy visual upgrade — emoji cards with colour wash, vertical signal bar meter | ✅ Complete |
 | Session A3b | 2026-02-28 | Timeline/Heatmap — year heatmap, drill-down nav, year selector sidebar, day/week/month/day views | ✅ Complete |
 | Session A4 | 2026-02-28 | Write section redesign — Quick/Guided/Deep modes, contextual prompt strip, continuity prompt, year-ago memory surface, closing moment, unsaved changes guard, ReflectionModeSelector removed | ✅ Complete |
-| Session A4b | 2026-02-28 | Weekly/Monthly/Yearly reflection types wired from Timeline → Write — reflection dots, banners, custom prompts/fields, App.tsx fully wired | ✅ Complete |
-| Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Next |
+| Session A4b | 2026-02-28 | Weekly/Monthly/Yearly reflection types wired from Timeline → Write — synthetic date keys, reflection dots, banners, custom prompts/fields, App.tsx fully wired | ✅ Complete |
+| Session A4c | — | Reflection panels (inline readable) + Intentions loop | ⏳ Next |
+| Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
 | Session B3 | — | Polish and final testing | ⏳ Pending |
@@ -651,11 +738,16 @@ Then attach:
 - **2026-02-28 (A4):** ReflectionModeSelector removed from Write entirely — reflection types accessed via Timeline drill-down in A4b
 - **2026-02-28 (A4):** prompts-v2.ts (reflection prompts) not used in Write — reserved for A4b when weekly/monthly/yearly entry types are wired
 - **2026-02-28 (A4):** isLongForm field already existed in types.ts — Deep Write mode sets it without schema change
-- **2026-02-28 (A4b):** pendingReflectionType always reset to 'daily' on regular navigation — prevents type leaking between navigations
-- **2026-02-28 (A4b):** Weekly reflection date key = week start date (yyyy-MM-dd) — simplest unambiguous key, no week-number edge cases
-- **2026-02-28 (A4b):** Monthly/Yearly reflection date keys = first day of period (YYYY-MM-01, YYYY-01-01) — lands correctly in heatmap
-- **2026-02-28 (A4b):** prompts-v2.ts used as-is for reflection prompts — no changes needed to existing prompt sets
-- **2026-02-28 (A4b):** Reflection dot colours: weekly = violet, monthly = sky, yearly = rose — distinct, non-mood colours to avoid confusion with mood system
+- **2026-02-28 (A4b):** Reflection entries use synthetic date keys (reflection-weekly-..., reflection-monthly-..., reflection-yearly-...) — can never collide with daily entries
+- **2026-02-28 (A4b):** Reflection dot colours: weekly = violet, monthly = sky, yearly = rose — distinct from mood colour system
+- **2026-02-28 (A4b):** pendingReflectionType always reset to 'daily' on regular navigation — prevents type leaking
+- **2026-02-28 (A4b):** formatEntryDate() helper renders synthetic keys as human-readable period names throughout JournalEntry
+- **2026-02-28 (A4c brainstorm):** Reflections need to be readable inline at their Timeline level — not just editable via a dot
+- **2026-02-28 (A4c brainstorm):** ReflectionPanel replaces current banner — shows full text, mood, date written, Edit button; invitation when empty
+- **2026-02-28 (A4c brainstorm):** Intentions are a single optional line at end of each reflection — not a task list, not tracked for completion
+- **2026-02-28 (A4c brainstorm):** Intention surfaced as a prompt in next period's reflection ("Last week you intended: X — how did that unfold?") — never as a metric
+- **2026-02-28 (A4c brainstorm):** Intention passes Witness test — app holds the thought, never manages the outcome
+- **2026-02-28 (A4c brainstorm):** `intention?: string` field to be added to JournalEntry type in types.ts
 
 ---
 
