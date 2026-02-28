@@ -17,6 +17,7 @@ import {
   HelpCircle,
   FileText,
   Target,
+  ChevronLeft,
 } from "lucide-react";
 import { Toaster } from "@/app/components/ui/sonner";
 import { JournalEntry } from "@/app/components/JournalEntry";
@@ -53,414 +54,307 @@ type View =
   | "legacy"
   | "habits";
 
+// ── Navigation groups ──────────────────────────────────────────────────────
+const NAV_GROUPS = [
+  {
+    label: "Journal",
+    items: [
+      { id: "write" as View,   label: "Write",    icon: PenLine },
+      { id: "entries" as View, label: "Entries",  icon: BookOpen },
+      { id: "archive" as View, label: "Archive",  icon: Archive },
+      { id: "calendar" as View,label: "Calendar", icon: Calendar },
+    ],
+  },
+  {
+    label: "Reflect",
+    items: [
+      { id: "mood" as View,      label: "Mood",      icon: TrendingUp },
+      { id: "insights" as View,  label: "Insights",  icon: Lightbulb },
+      { id: "language" as View,  label: "Language",  icon: MessageSquare },
+      { id: "anchors" as View,   label: "Anchors",   icon: Heart },
+    ],
+  },
+  {
+    label: "Explore",
+    items: [
+      { id: "eras" as View,      label: "Eras",      icon: Layers },
+      { id: "threads" as View,   label: "Threads",   icon: FileText },
+      { id: "questions" as View, label: "Questions", icon: HelpCircle },
+      { id: "habits" as View,    label: "Habits",    icon: Target },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { id: "privacy" as View, label: "Privacy", icon: Shield },
+      { id: "legacy" as View,  label: "Legacy",  icon: FileText },
+    ],
+  },
+];
+
+// Flat list for mobile
+const ALL_NAV = NAV_GROUPS.flatMap(g => g.items);
+
 export default function App() {
   const [currentView, setCurrentView] = useState<View>("write");
-  const [entries, setEntries] = useState<JournalEntryType[]>(
-    [],
-  );
-  const [selectedDate, setSelectedDate] = useState(
-    format(new Date(), "yyyy-MM-dd"),
-  );
-  const [selectedMonth, setSelectedMonth] = useState(
-    new Date(),
-  );
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [entries, setEntries] = useState<JournalEntryType[]>([]);
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    loadEntries();
-  }, []);
+  useEffect(() => { loadEntries(); }, []);
 
-  const loadEntries = () => {
-    setEntries(storage.getEntries());
+  const loadEntries = () => setEntries(storage.getEntries());
+
+  const handleSaveEntry = () => { loadEntries(); setCurrentView("entries"); };
+  const handleEditEntry = (date: string) => { setSelectedDate(date); setCurrentView("write"); };
+  const handleDeleteEntry = (id: string) => { storage.deleteEntry(id); loadEntries(); };
+  const handleNewEntry = () => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setCurrentView("write"); };
+  const handleSelectDate = (date: string) => { setSelectedDate(date); setCurrentView("write"); };
+
+  const navigate = (id: View) => {
+    if (id === "write") handleNewEntry();
+    else setCurrentView(id);
+    setMobileSidebarOpen(false);
   };
 
-  const handleSaveEntry = () => {
-    loadEntries();
-    setCurrentView("entries");
-  };
+  // ── Sidebar content ────────────────────────────────────────────────────
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-5 py-6 border-b border-slate-100">
+        <h1 className="text-base font-medium tracking-tight text-slate-900">Journal</h1>
+        <p className="text-xs text-slate-400 mt-0.5">A quiet space to think clearly</p>
+      </div>
 
-  const handleEditEntry = (date: string) => {
-    setSelectedDate(date);
-    setCurrentView("write");
-  };
-
-  const handleDeleteEntry = (id: string) => {
-    storage.deleteEntry(id);
-    loadEntries();
-  };
-
-  const handleNewEntry = () => {
-    setSelectedDate(format(new Date(), "yyyy-MM-dd"));
-    setCurrentView("write");
-  };
-
-  const handleSelectDate = (date: string) => {
-    setSelectedDate(date);
-    setCurrentView("write");
-  };
-
-  const navigation = [
-    { id: "write" as View, label: "Write", icon: PenLine },
-    { id: "entries" as View, label: "Entries", icon: BookOpen },
-    { id: "archive" as View, label: "Archive", icon: Archive },
-    {
-      id: "calendar" as View,
-      label: "Calendar",
-      icon: Calendar,
-    },
-    { id: "mood" as View, label: "Mood", icon: TrendingUp },
-    {
-      id: "insights" as View,
-      label: "Insights",
-      icon: Lightbulb,
-    },
-    {
-      id: "language" as View,
-      label: "Language",
-      icon: MessageSquare,
-    },
-    { id: "eras" as View, label: "Eras", icon: Layers },
-    { id: "threads" as View, label: "Threads", icon: FileText },
-    {
-      id: "questions" as View,
-      label: "Questions",
-      icon: HelpCircle,
-    },
-    { id: "anchors" as View, label: "Anchors", icon: Heart },
-    {
-      id: "habits" as View,
-      label: "Habits",
-      icon: Target,
-      optional: true,
-    }, // v3.1: optional enhancement
-    { id: "privacy" as View, label: "Privacy", icon: Shield },
-    { id: "legacy" as View, label: "Legacy", icon: FileText },
-  ];
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <Toaster position="top-center" />
-
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-light tracking-tight">
-                Journal
-              </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                A quiet space to think clearly
-              </p>
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2"
-            >
-              {mobileMenuOpen ? (
-                <X className="size-6" />
-              ) : (
-                <Menu className="size-6" />
-              )}
-            </button>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      if (item.id === "write") {
-                        handleNewEntry();
-                      } else {
-                        setCurrentView(item.id);
-                      }
-                    }}
-                    className={`
-                      px-4 py-2 rounded-lg flex items-center gap-2 transition-all
-                      ${
-                        currentView === item.id
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-slate-100"
-                      }
-                    `}
-                  >
-                    <Icon className="size-4" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+      {/* Nav groups */}
+      <nav className="flex-1 overflow-y-auto py-4 px-3">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label} className="mb-5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 px-3 mb-1">
+              {group.label}
+            </p>
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(item.id)}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+                    transition-all duration-150 mb-0.5
+                    ${isActive
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    }
+                  `}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
-
-          {/* Mobile Navigation */}
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <motion.nav
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="md:hidden mt-4 pb-2 border-t border-slate-200 pt-4"
-              >
-                <div className="flex flex-col gap-1">
-                  {navigation.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          if (item.id === "write") {
-                            handleNewEntry();
-                          } else {
-                            setCurrentView(item.id);
-                          }
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`
-                          px-4 py-3 rounded-lg flex items-center gap-3 transition-all
-                          ${
-                            currentView === item.id
-                              ? "bg-slate-900 text-white"
-                              : "text-slate-600 hover:bg-slate-100"
-                          }
-                        `}
-                      >
-                        <Icon className="size-5" />
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.nav>
-            )}
-          </AnimatePresence>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="pb-16">
-        <AnimatePresence mode="wait">
-          {currentView === "write" && (
-            <motion.div
-              key="write"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <JournalEntry
-                selectedDate={selectedDate}
-                onSave={handleSaveEntry}
-                onCancel={() => setCurrentView("entries")}
-                allEntries={entries}
-                onViewEntry={handleEditEntry}
-              />
-            </motion.div>
-          )}
-
-          {currentView === "entries" && (
-            <motion.div
-              key="entries"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <EntriesList
-                entries={entries}
-                onEdit={handleEditEntry}
-                onDelete={handleDeleteEntry}
-              />
-            </motion.div>
-          )}
-
-          {currentView === "calendar" && (
-            <motion.div
-              key="calendar"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <CalendarView
-                entries={entries}
-                onSelectDate={handleSelectDate}
-                selectedMonth={selectedMonth}
-              />
-            </motion.div>
-          )}
-
-          {currentView === "mood" && (
-            <motion.div
-              key="mood"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MoodChart entries={entries} />
-            </motion.div>
-          )}
-
-          {currentView === "insights" && (
-            <motion.div
-              key="insights"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Insights entries={entries} />
-            </motion.div>
-          )}
-
-          {currentView === "language" && (
-            <motion.div
-              key="language"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="max-w-3xl mx-auto px-6 py-8">
-                <div className="mb-8">
-                  <h2 className="text-2xl mb-2">
-                    Language Patterns
-                  </h2>
-                  <p className="text-slate-600">
-                    Descriptive observations from your writing
-                  </p>
-                </div>
-                <LanguageInsights entries={entries} />
-              </div>
-            </motion.div>
-          )}
-
-          {currentView === "anchors" && (
-            <motion.div
-              key="anchors"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ReflectionAnchors />
-            </motion.div>
-          )}
-
-          {currentView === "privacy" && (
-            <motion.div
-              key="privacy"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <PrivacySettings
-                entries={entries}
-                onImport={loadEntries}
-              />
-            </motion.div>
-          )}
-
-          {currentView === "eras" && (
-            <motion.div
-              key="eras"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ErasManager entries={entries} />
-            </motion.div>
-          )}
-
-          {currentView === "questions" && (
-            <motion.div
-              key="questions"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <PersistentQuestions entries={entries} />
-            </motion.div>
-          )}
-
-          {currentView === "threads" && (
-            <motion.div
-              key="threads"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MemoryThreads
-                entries={entries}
-                onViewEntry={handleEditEntry}
-              />
-            </motion.div>
-          )}
-
-          {currentView === "archive" && (
-            <motion.div
-              key="archive"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ArchiveView
-                entries={entries}
-                onSelectEntry={handleEditEntry}
-              />
-            </motion.div>
-          )}
-
-          {currentView === "legacy" && (
-            <motion.div
-              key="legacy"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <DataLegacy entries={entries} />
-            </motion.div>
-          )}
-
-          {currentView === "habits" && (
-            <motion.div
-              key="habits"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <HabitBuilder entries={entries} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+        ))}
+      </nav>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="text-center text-sm text-slate-500">
-            <p>
-              Your journal entries are stored locally in your
-              browser.
-            </p>
-            <p className="mt-1">
-              Private. Secure. Always yours.
-            </p>
+      <div className="px-5 py-4 border-t border-slate-100">
+        <p className="text-[10px] text-slate-400 leading-relaxed">
+          Private. Secure. Always yours.
+        </p>
+      </div>
+    </div>
+  );
+
+  // ── Main content ───────────────────────────────────────────────────────
+  const MainContent = () => (
+    <AnimatePresence mode="wait">
+      {currentView === "write" && (
+        <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("entries")} allEntries={entries} onViewEntry={handleEditEntry} />
+        </motion.div>
+      )}
+      {currentView === "entries" && (
+        <motion.div key="entries" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <EntriesList entries={entries} onEdit={handleEditEntry} onDelete={handleDeleteEntry} />
+        </motion.div>
+      )}
+      {currentView === "calendar" && (
+        <motion.div key="calendar" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <CalendarView entries={entries} onSelectDate={handleSelectDate} selectedMonth={selectedMonth} />
+        </motion.div>
+      )}
+      {currentView === "mood" && (
+        <motion.div key="mood" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <MoodChart entries={entries} />
+        </motion.div>
+      )}
+      {currentView === "insights" && (
+        <motion.div key="insights" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <Insights entries={entries} />
+        </motion.div>
+      )}
+      {currentView === "language" && (
+        <motion.div key="language" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <div className="max-w-3xl mx-auto px-6 py-8">
+            <div className="mb-8">
+              <h2 className="text-2xl mb-2">Language Patterns</h2>
+              <p className="text-slate-600">Descriptive observations from your writing</p>
+            </div>
+            <LanguageInsights entries={entries} />
           </div>
-        </div>
-      </footer>
+        </motion.div>
+      )}
+      {currentView === "anchors" && (
+        <motion.div key="anchors" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <ReflectionAnchors />
+        </motion.div>
+      )}
+      {currentView === "privacy" && (
+        <motion.div key="privacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <PrivacySettings entries={entries} onImport={loadEntries} />
+        </motion.div>
+      )}
+      {currentView === "eras" && (
+        <motion.div key="eras" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <ErasManager entries={entries} />
+        </motion.div>
+      )}
+      {currentView === "questions" && (
+        <motion.div key="questions" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <PersistentQuestions entries={entries} />
+        </motion.div>
+      )}
+      {currentView === "threads" && (
+        <motion.div key="threads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <MemoryThreads entries={entries} onViewEntry={handleEditEntry} />
+        </motion.div>
+      )}
+      {currentView === "archive" && (
+        <motion.div key="archive" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <ArchiveView entries={entries} onSelectEntry={handleEditEntry} />
+        </motion.div>
+      )}
+      {currentView === "legacy" && (
+        <motion.div key="legacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <DataLegacy entries={entries} />
+        </motion.div>
+      )}
+      {currentView === "habits" && (
+        <motion.div key="habits" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <HabitBuilder entries={entries} />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      <Toaster position="top-center" />
+
+      {/* ── Desktop Sidebar ── */}
+      <aside
+        className={`
+          hidden md:flex flex-col shrink-0 bg-white border-r border-slate-200
+          transition-all duration-200 sticky top-0 h-screen overflow-hidden
+          ${sidebarOpen ? "w-52" : "w-14"}
+        `}
+      >
+        {sidebarOpen ? (
+          <>
+            <SidebarContent />
+            {/* Collapse button */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="absolute top-4 right-3 p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+              title="Collapse sidebar"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+          </>
+        ) : (
+          /* Collapsed — icons only */
+          <div className="flex flex-col items-center py-4 gap-1">
+            {/* Expand button */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 mb-3"
+              title="Expand sidebar"
+            >
+              <Menu className="size-4" />
+            </button>
+            {ALL_NAV.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(item.id)}
+                  title={item.label}
+                  className={`
+                    p-2 rounded-lg transition-all
+                    ${isActive ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"}
+                  `}
+                >
+                  <Icon className="size-4" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </aside>
+
+      {/* ── Mobile header + drawer ── */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Mobile top bar */}
+        <header className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+          <div>
+            <span className="text-sm font-medium text-slate-900">Journal</span>
+          </div>
+          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <Menu className="size-5" />
+          </button>
+        </header>
+
+        {/* Mobile sidebar drawer */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/30 z-30 md:hidden"
+                onClick={() => setMobileSidebarOpen(false)}
+              />
+              {/* Drawer */}
+              <motion.div
+                initial={{ x: -280 }}
+                animate={{ x: 0 }}
+                exit={{ x: -280 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="fixed left-0 top-0 bottom-0 w-64 bg-white z-40 md:hidden shadow-xl"
+              >
+                <div className="absolute top-3 right-3">
+                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-slate-400 hover:bg-slate-100">
+                    <X className="size-4" />
+                  </button>
+                </div>
+                <SidebarContent />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ── Main content area ── */}
+        <main className="flex-1 overflow-y-auto pb-16">
+          <MainContent />
+        </main>
+      </div>
     </div>
   );
 }
