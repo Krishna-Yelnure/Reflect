@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A2 brainstorm complete (2026-02-28)
+# Last updated: Session A2 brainstorm complete (2026-02-28) — user journey + human layer added
 
 ---
 
@@ -1109,6 +1109,291 @@ That's the true form. Not a feature. Not a design. A moment of recognition betwe
 **Trust the philosophy.** When a feature feels tempting but doesn't pass the Witness test — don't build it. The restraint is the product.
 
 **Ship before it's ready.** The app doesn't need to be perfect to show employers. It needs to be honest and considered. The BUILDLOG already proves that.
+
+---
+
+## USER JOURNEY — DAY 1 TO DAY 10,000
+
+*The north star for every design decision. Ask: which day does this serve?*
+
+---
+
+### Day 1 — The Stranger
+
+**Who they are:** Someone who has tried journaling before and stopped. Going through a transition, a loss, a new chapter. Cautious hope — "maybe this time."
+
+**What they see:** Empty heatmap. A full year of grey cells. No colour.
+
+**The critical question:** Does the empty heatmap feel like an invitation or an accusation?
+
+**What it must feel like:** A blank journal, freshly opened. Emptiness is potential, not failure.
+
+**Empty state copy — the Witness test:**
+- ❌ "No entries yet — start writing!" (manager)
+- ✅ "This is yours. Start whenever you're ready." (witness)
+
+**The first save:**
+Must be specially warm. Not a celebration — a quiet acknowledgement.
+> "Your first entry. It's here now. It'll always be here."
+Then one cell lights up with colour. They see it. Something shifts.
+
+**What brings them back on Day 2:** Not a notification. Not a streak. The memory of how it felt to write something true and have somewhere safe to put it.
+
+**Gaps revealed at Day 1:**
+- Empty heatmap needs carefully designed invitation state
+- First save closing moment needs special treatment — warmer than regular saves
+- No guided first entry — lands on blank form with no context
+- Philosophy needs to be communicated before first write, not after
+
+---
+
+### Day 7 — The Returner
+
+**Who they are:** Showed up more days than not. Maybe 5 of 7, maybe 3 of 7. They came back. Tentative sense of routine — not a habit yet, a possibility.
+
+**What they see:** A small cluster of colour in the heatmap. This week. Their week. It looks like something.
+
+**The first meaningful moment:** They click on a cell from 3 days ago. Read what they wrote. Think — "I forgot I felt that way." The memory machine begins to work.
+
+**First continuity prompt — must land right:**
+> "A few days ago you wrote about feeling uncertain at work. Still on your mind?"
+- If tone is right → they feel understood
+- If tone is wrong → they feel surveilled
+The difference is entirely in phrasing and timing.
+
+**The friction point at Day 7:** The form. They know which fields they always fill and which they always skip. 5 fields starts feeling like homework. Quick mode becomes essential here.
+
+**Gaps revealed at Day 7:**
+- Continuity prompt doesn't exist yet
+- Quick mode doesn't exist — can't drop below 5 fields
+- Memory surface not integrated into Write
+
+---
+
+### Day 30 — The Practitioner
+
+**Who they are:** A journaler — they might not call themselves that yet. Writing has become part of how they process. The app is where they go when something happens.
+
+**What they feel:** Ownership. "This is mine. These are my words."
+
+**What they see:** A month of colour. Patterns they didn't know were there. Maybe they always write Sunday evenings. Maybe energy is always low on Thursdays. Maybe three entries mention the same person.
+
+**The first revelation:** Insights start to mean something at Day 30. Not before — you need enough data. At 30 days the language analysis, mood chart, pattern recognition stop being features and start being mirrors.
+
+**What the app should do:** Gently surface the monthly reflection option. Not push — offer.
+> "You've been writing for a month. Some people find it useful to reflect on the whole month at once. No pressure."
+
+**The risk at Day 30:** Complacency. Ritual established but app hasn't grown with them. Every day feeling identical — same form, same structure — practice becomes mechanical. Daily rotating prompts earn their place here.
+
+**Gaps revealed at Day 30:**
+- Monthly reflection not accessible naturally
+- Insights give no indication they need 30 days of data to new users
+- No "you've been writing for a month" quiet acknowledgement
+- Daily prompts not rotating — same structure every day
+
+---
+
+### Day 365 — The Anniversary
+
+**Who they are:** Someone whose year is in here. All of it. The good months and the hard ones. The decisions made, the feelings processed, the person they were becoming.
+
+**What they feel:** Something between pride and vulnerability. A year of honest writing is a significant thing to have done.
+
+**What they see:** The full heatmap. A complete year. The emotional shape of their life rendered in colour.
+
+**This moment is what everything is being built toward.** Every other feature is in service of this.
+
+**They will:**
+- Click the darkest cells. The hard weeks. Re-read what they wrote.
+- Click the brightest cells. The good months. Remember.
+- Notice patterns they never could have seen from inside the year.
+- Find an entry that makes them cry or laugh or feel proud.
+- Feel, perhaps for the first time, that they have been witnessed.
+
+**What the app should do on Day 365:** Nothing aggressive. No banner, no badge, no streak congratulations. Just — if they open near the anniversary — a quiet acknowledgement:
+> "A year of writing. That's something."
+Then get out of the way.
+
+**Gaps revealed at Day 365:**
+- No anniversary acknowledgement
+- Yearly reflection prompt needs to feel earned — not just another form
+- Heatmap must carry the emotional weight of a full year beautifully
+- Search — critical by this point, doesn't exist
+
+---
+
+### Day 10,000 — The Life
+
+**27 years of daily entries.**
+
+**Who they are:** Someone who has used this app through multiple chapters of life. Jobs changed. Relationships formed and ended. People were lost. A self that has transformed multiple times.
+
+**What they feel:** The app is an old friend. It knows things about them that no other person knows. It has held what they couldn't say out loud.
+
+**What they see:** 27 years of heatmaps. A life in colour. Each year a different emotional texture.
+
+**What the app owes this person:** Everything. Trusted with the most private contents of a human mind across decades. Owes them permanence, respect, and the ability to access every word instantly.
+
+**The failure mode at Day 10,000:** The app doesn't exist anymore. The company shut down. The format became unreadable. The file was lost. This is why local-first matters. This is why open JSON matters. This is why export matters. Not for convenience — for permanence.
+
+> A journal kept in a proprietary cloud app is a journal that can be taken away.
+> A journal kept in a local file, in human-readable JSON, backed up wherever the user chooses — that's a journal that lasts a lifetime.
+
+**Gaps revealed at Day 10,000:**
+- Search — now existential, not just convenient
+- Performance at scale — 10,000 entries in localStorage is impossible (Electron + indexed file storage needed)
+- Legacy feature needs real thinking — not just an export button
+- Data portability must be guaranteed — open format, local file, user-controlled backup
+
+---
+
+### The Feature-to-Day Framework
+
+*Every feature decision should be mapped to which day it primarily serves.*
+
+| Feature | Primary day | Notes |
+|---|---|---|
+| Empty heatmap invitation state | Day 1 | First impression — critical |
+| First save closing moment (special) | Day 1 | Must be warmer than regular saves |
+| Guided first entry | Day 1 | Not built |
+| Quick mode | Day 7 | Reduces friction for returning users |
+| Continuity prompt | Day 7 | Must feel understood not surveilled |
+| Memory surface in Write | Day 7+ | Already exists, not integrated |
+| Rotating daily prompts | Day 30 | Prevents mechanical sameness |
+| Monthly reflection | Day 30 | Needs natural access point |
+| Insights with data threshold | Day 30 | Show "building" state before 30 days |
+| Full year heatmap | Day 365 | The moment everything is for |
+| Yearly reflection earned | Day 365 | Must feel significant |
+| Anniversary acknowledgement | Day 365 | Quiet, not celebratory |
+| Search | Day 365 (critical) | Day 10,000 (existential) |
+| Performance at scale | Day 10,000 | Electron partially solves |
+| Legacy — real thinking | Day 10,000 | Currently just an export button |
+| Local-first, open format | Every day | Non-negotiable from day 1 |
+| Witness philosophy in copy | Every day | Audit every string in A5 |
+
+---
+
+## THE HUMAN LAYER
+
+*What a human truly cherishes — and how to serve that without scope creep.*
+
+---
+
+### The Real Need
+
+People want to feel **known**. Not categorised — known. There's a profound difference.
+
+Age-based versions, gender-based themes, birthday notifications — these are attempts to serve the need to be known through demographics. They assume who you are before you've said a word.
+
+The Witness never assumes. The Witness listens.
+
+The deepest feeling of being known doesn't come from a purple theme or a birthday notification. It comes from someone saying — "remember when you told me that thing three years ago? I never forgot."
+
+**That's what the app can do. That's already in the vision. The Human Layer is how we build toward it specifically.**
+
+---
+
+### What Was Considered and Why It Was Set Aside
+
+| Idea | Why set aside |
+|---|---|
+| Age-based versions (teen, 20s, 30s+) | 16-year-old becomes 17, then 25 — infinite maintenance, unclear transitions |
+| Gender-based themes | Reductive, binary, doesn't make anyone feel known — makes them feel categorised |
+| Birthday notifications from app | Sweet once, expected forever — magic evaporates second time |
+| Streak counters | Gamification — violates Witness philosophy completely |
+
+These all fail the Witness test: they make the app feel like a manager who has filed you under a category.
+
+---
+
+### Tier 1 — Core (Sessions A3–A5)
+
+Already planned. Serves every human on every day.
+
+- Heatmap emotional landscape
+- Write section redesign
+- Memory surface integrated
+- Closing moment after save
+- Design language applied consistently
+
+---
+
+### Tier 2 — Human Layer (Post Phase A, before public release)
+
+Features that ask the user to tell the app about their life — so the app can be a better witness to it.
+
+**Important Dates System**
+
+The dates that matter to a specific human:
+- Birthday (self)
+- Anniversary (relationship, recurring yearly)
+- Memorial (loss, endings — recurring yearly)
+- Milestone (one-time — first day of something significant)
+- Birthday of someone who matters to them
+
+On or near the date, the Write view quietly acknowledges:
+> "Three years ago today you marked this as the day you left your hometown. You wrote about it then. Would you like to read it?"
+
+Or if no entry exists:
+> "Today is a date you marked as important — the anniversary of your father's passing. No pressure to write. This space is here if you need it."
+
+That's not a feature. That's a witness.
+
+**The People Layer**
+
+Every journal is full of other people. The app currently has no concept of people.
+
+User adds people who matter:
+- Name
+- Relationship type
+- Optional birthday
+- Optional notes
+
+The app can then:
+- Surface entries mentioning them
+- On their birthday: "It's [person]'s birthday today. You've written about them 23 times."
+- After absence: "You haven't mentioned [person] in your writing recently."
+
+Not surveillance — recognition. The person chose to add them. The app honours that.
+
+**User-Chosen Themes (feeling-based, not demographic)**
+
+5 options. Each has a personality. User chooses based on feeling, not identity.
+
+- **Morning Light** — warm cream, soft amber, gentle. For optimistic chapters.
+- **Midnight** — deep navy, soft white. For contemplative seasons.
+- **Forest** — muted green, earthy, grounded. For recovery and growth.
+- **Minimal** — pure white, black text, nothing in the way. For clarity.
+- **Warm** — terracotta, amber. For human, emotional periods.
+
+They change it when they feel like it. No demographic assumptions. No maintenance burden. The theme becomes a reflection of where they are in life right now.
+
+---
+
+### Tier 3 — Never Build (violates Witness philosophy)
+
+| Feature | Why never |
+|---|---|
+| AI that reads and interprets entries | The app must never read your journal — even an AI |
+| Streak counters | Gamification — manager not witness |
+| Age-based UI versions | Infinite maintenance, demographic assumption |
+| Gender-based themes | Reductive, assumes identity |
+| Social features — sharing entries | Private by design, always |
+| Notifications that create urgency | Calm technology — never urgent |
+| Recommendations based on content | Requires reading entries — never |
+| Any form of advertising | Violates trust completely |
+
+---
+
+### The Tier Test
+
+Before any new feature is considered:
+
+1. Does it pass the Witness test? (witness vs manager)
+2. Does it serve Day 1 through Day 10,000?
+3. Does it require reading the user's entries? (if yes → never)
+4. Does it assume who the user is? (if yes → reconsider)
+5. Does it add complexity that must be maintained forever? (if yes → scope creep warning)
 
 ---
 
