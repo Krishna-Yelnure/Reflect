@@ -91,16 +91,33 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [pendingReflectionType, setPendingReflectionType] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
 
   useEffect(() => { loadEntries(); }, []);
 
   const loadEntries = () => setEntries(storage.getEntries());
 
+  // ── Active intention — surfaces last weekly/monthly reflection's intention field
+  // Used by TimelineView BelowHeatmap (Feature B, A4d). Fully wired when A4c adds
+  // the intention field to JournalEntry; until then this returns undefined cleanly.
+  const activeIntention = (() => {
+    const reflections = entries
+      .filter(e => e.reflectionType === 'weekly' || e.reflectionType === 'monthly')
+      .filter(e => (e as any).intention)
+      .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+    return (reflections[0] as any)?.intention as string | undefined;
+  })();
+
   const handleSaveEntry = () => { loadEntries(); setCurrentView("timeline"); };
-  const handleEditEntry = (date: string) => { setSelectedDate(date); setCurrentView("write"); };
+  const handleEditEntry = (date: string) => { setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
   const handleDeleteEntry = (id: string) => { storage.deleteEntry(id); loadEntries(); };
-  const handleNewEntry = () => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setCurrentView("write"); };
-  const handleSelectDate = (date: string) => { setSelectedDate(date); setCurrentView("write"); };
+  const handleNewEntry = () => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setPendingReflectionType('daily'); setCurrentView("write"); };
+  const handleSelectDate = (date: string) => { setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
+  const handleReflectionEntry = (date: string, type: 'weekly' | 'monthly' | 'yearly') => {
+    setSelectedDate(date);
+    setPendingReflectionType(type);
+    setCurrentView("write");
+  };
 
   const navigate = (id: View) => {
     if (id === "write") handleNewEntry();
@@ -163,12 +180,12 @@ export default function App() {
     <AnimatePresence mode="wait">
       {currentView === "write" && (
         <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} allEntries={entries} onViewEntry={handleEditEntry} />
+          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} allEntries={entries} onViewEntry={handleEditEntry} initialReflectionType={pendingReflectionType} />
         </motion.div>
       )}
       {currentView === "timeline" && (
         <motion.div key="timeline" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <TimelineView entries={entries} onSelectDate={handleSelectDate} onEditEntry={handleEditEntry} />
+          <TimelineView entries={entries} onSelectDate={handleSelectDate} onEditEntry={handleEditEntry} onReflectionEntry={handleReflectionEntry} activeIntention={activeIntention} />
         </motion.div>
       )}
       {currentView === "mood" && (

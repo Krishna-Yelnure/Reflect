@@ -523,7 +523,10 @@ export function JournalEntry({
 
     // Show closing moment for new entries, not for quick edits
     if (!existing) {
-      setClosingLine(getClosingLine());
+      // Special first-entry closing moment — one time only
+      const isFirstEntry = allEntries.filter(e => !e.date.startsWith('reflection-')).length === 0;
+      const line = isFirstEntry ? 'Your first entry. The map has begun.' : getClosingLine();
+      setClosingLine(line);
       setShowClosingMoment(true);
     } else {
       toast.success('Entry updated');

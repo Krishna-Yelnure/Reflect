@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4d planned + below-heatmap space designed (2026-02-28)
+# Last updated: Session A4d complete (2026-03-01)
 
 ---
 
@@ -423,7 +423,7 @@ export const db = {
 
 ---
 
-#### SESSION A4c — Reflection Panels + Intentions Loop
+#### SESSION A4c — Reflection Panels + Intentions Loop ← START HERE NEXT
 **Status:** NOT STARTED
 
 **Goal:** Make reflections readable inline. Close the loop between past reflection and future intention.
@@ -439,91 +439,55 @@ export const db = {
 
 ---
 
-#### SESSION A4d — First-Run Empty State + Below-Heatmap Space ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A4d — First-Run Empty State + Below-Heatmap Space
+**Status:** ✅ COMPLETE (2026-03-01)
 
 **Goal:** Fix the void that new users land on. Fill the space below the heatmap with content that serves the Witness philosophy.
 
-**Part 1 — First-run empty state**
+**What was done:**
 
-Problem: Empty heatmap = 120 grey dots + "No entries yet." — a void, not an invitation. New user has no mental model, no CTA, no emotional hook.
+**Part 1 — First-run empty state (TimelineView.tsx + JournalEntry.tsx)**
 
-Solution — three layers:
+1. **`WelcomeCard`** — rendered above heatmap when `dailyEntries.length === 0` AND `journal_first_visit_dismissed` is not set. Amber-tinted card, warm copy, single CTA "Write today's entry →", soft "Got it" dismiss. Animates in/out via `AnimatePresence`. Disappears automatically once `hasEntries` becomes true.
 
-1. **`WelcomeCard`** — shown above heatmap when `entries.length === 0` AND not dismissed:
-   > *"This is your journal. Every day you write, a dot lights up in the colour of how you felt. Over time, this becomes a map of your emotional life. Start with today."*
-   - Single CTA: **Write today's entry →**
-   - Dismiss link: "Got it" — sets `journal_first_visit_dismissed` in localStorage
-   - Disappears automatically after first entry saved
+2. **Today's cell pulse** — when `hasEntries === false`, today's dot gets `ring-2 ring-amber-400 animate-pulse` instead of the regular subtle grey ring. Stops pulsing the moment any entry exists.
 
-2. **Today's cell pulse** — `animate-pulse` + amber ring on today's dot when `entries.length === 0`. Stops after first entry.
+3. **First-entry special closing moment** — `JournalEntry.tsx` now checks `allEntries.filter(non-reflection).length === 0` at save time. If true, closing moment shows *"Your first entry. The map has begun."* instead of the rotating `closingLines[]` pool. One-time only by nature.
 
-3. **First-entry special closing moment** — detect `isFirstEntry` (allEntries.length === 0 at save time):
-   > *"Your first entry. The map has begun."*
-   One-time only, never repeated.
+**Part 2 — Below-heatmap section (BelowHeatmap component in TimelineView.tsx)**
 
-**Part 2 — Below-heatmap space**
+- **Feature A** — Daily opening prompt from `prompts.ts` pool. Auto-fades after 6 seconds. Click to dismiss early. `last_prompt_shown_date` in localStorage ensures once-per-day only.
+- **Feature B** — Active intention surface. Reads `activeIntention` prop passed from `App.tsx`. Absent when no intention — section simply doesn't render. Ready for A4c to populate.
+- **Feature C** — Year-in-numbers. *"2026 · 28 entries · A mostly good year so far"*. Witness-compliant mood phrases (low/difficult → *"A tender year so far"*). Zero-entry state: *"Your story is just beginning."* Never surfaces negative tallies.
 
-Three features that use the space below the grid, layered in order of data availability:
+**summaryLine() fixed** — removed hard day count entirely. Witness-compliant language throughout. Zero-entry state returns `''` (WelcomeCard owns that space now).
 
-**Feature A — Daily opening prompt (Option 2)**
-- One thoughtful rotating question shown once per day on app open
-- Appears as a soft line above the stats, fades after a few seconds or on any interaction — no dismiss button needed
-- Mechanic: `last_prompt_shown_date` in localStorage. If not today → show prompt → mark as today on mount
-- Shows every day regardless of entry count
-- Example: *"What would you tell yourself a year from now about today?"*
-- Source: existing `prompts.ts` pool
+**App.tsx updated:**
+- `activeIntention` computed after `loadEntries()` — finds newest weekly/monthly reflection with an `intention` field, returns `undefined` cleanly until A4c is built
+- Passed to `<TimelineView activeIntention={activeIntention} />`
 
-**Feature B — Current intention surface (Option 4)**
-- When A4c is built, surfaces the active intention from the last reflection quietly below the prompt
-- No checkbox, no status, no completion tracking — just the user's own words reflected back
-- Example:
-  ```
-  This week you intended:
-  "Spend less time on my phone after 9pm"
-  ```
-- Empty when no intention set — section simply absent, no placeholder
+**localStorage keys added this session:**
+- `journal_first_visit_dismissed` — WelcomeCard dismiss state
+- `last_prompt_shown_date` — daily prompt once-per-day gate
 
-**Feature C — Year-in-numbers (Option 1)**
-- Appears once `entries.length > 0`
-- Human, warm, never punishing — language rules (see below):
-  ```
-  2026 · 28 entries · A mostly good year so far
-  ```
-- If dominant mood is difficult/low → *"A tender year so far"* — never tallies hard days
-- Only surfaces positive mood highlights: great days count, hard days do not
-- Empty state: *"Your story is just beginning."* (no stats, no zeroes)
+**Issues encountered:** None — all changes self-contained in three files.
 
-**Mood language rules for stats (non-negotiable):**
+**Session checklist:**
+- [x] WelcomeCard appears for new users, dismisses correctly, disappears after first entry
+- [x] Today's cell pulses amber when no entries, stops after first save
+- [x] First-entry closing moment shows special line, not from rotating pool
+- [x] Daily prompt fades after 6s, once per day only
+- [x] Intention surface renders when data exists, absent when not
+- [x] Year-in-numbers uses Witness-compliant language — no hard day counts, no negative tallies
+- [x] summaryLine() no longer shows "No entries yet." or hard day counts
+- [x] App.tsx passes activeIntention to TimelineView
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
 
-| What NOT to write | What to write instead |
-|---|---|
-| "3 hard days" | Never show hard day counts |
-| "14 difficult entries" | Never surface negative tallies |
-| "Low mood: 22%" | Never percentage-ise pain |
-| "Mostly difficult" | "A tender year so far" |
-| "No entries" | "Your story is just beginning" |
-| "0 great days" | Simply omit — show nothing |
-
-**Copy test for any mood stat:** *"Would this make someone feel observed or understood?"*
-- Observed → rewrite or remove
-- Understood → keep
-
-**Full below-heatmap layout (once data exists):**
-```
-[Daily opening prompt — fades after a few seconds]
-
-This week you intended:
-"Spend less time on my phone after 9pm"
-
-────────────────────────────────────
-2026 · 28 entries · A mostly good year so far
-```
-
-**Files needed:**
-- `BUILDLOG.md`
+**Files changed:**
 - `src/app/components/TimelineView.tsx`
 - `src/app/components/JournalEntry.tsx`
+- `src/app/App.tsx`
 
 ---
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   format,
@@ -21,6 +21,7 @@ import {
 import { ChevronLeft, Edit } from 'lucide-react';
 import type { JournalEntry } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
+import { getSmartPrompt } from '@/app/utils/prompts';
 
 type ReflectionEntryType = 'weekly' | 'monthly' | 'yearly';
 
@@ -29,6 +30,7 @@ interface TimelineViewProps {
   onSelectDate: (date: string) => void;                                         // opens Write (daily) with that date
   onEditEntry: (date: string) => void;                                          // opens Write pre-filled for edit
   onReflectionEntry: (date: string, type: ReflectionEntryType) => void;        // opens Write with reflection type pre-set
+  activeIntention?: string;                                                     // from last reflection entry — A4d Feature B
 }
 
 // ── Mood colour system ─────────────────────────────────────────────────────
@@ -107,22 +109,60 @@ function dominantMood(entries: JournalEntry[]): string | null {
 }
 
 function summaryLine(entries: JournalEntry[]): string {
-  const total = entries.length;
-  if (total === 0) return 'No entries yet.';
-  const mood = dominantMood(entries);
-  const moodStr = mood ? `, mostly ${MOOD_LABEL[mood].toLowerCase()}` : '';
-  const lows = entries.filter(e => e.mood === 'low' || e.mood === 'difficult').length;
-  const lowStr = lows > 0 ? `, ${lows} ${lows === 1 ? 'hard day' : 'hard days'}` : '';
-  return `${total} ${total === 1 ? 'entry' : 'entries'}${moodStr}${lowStr}`;
+  const dailyEntries = entries.filter(e => !e.date.startsWith('reflection-'));
+  const total = dailyEntries.length;
+  if (total === 0) return '';
+  const mood = dominantMood(dailyEntries);
+  // Witness-compliant: never surface negative tallies, tender language for hard periods
+  const MOOD_PHRASE: Record<string, string> = {
+    great:     'A mostly great year so far',
+    good:      'A mostly good year so far',
+    okay:      'A steady year so far',
+    low:       'A tender year so far',
+    difficult: 'A tender year so far',
+  };
+  const moodStr = mood ? ` · ${MOOD_PHRASE[mood]}` : '';
+  return `${total} ${total === 1 ? 'entry' : 'entries'}${moodStr}`;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
-export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionEntry }: TimelineViewProps) {
+export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionEntry, activeIntention }: TimelineViewProps) {
   const [year, setYear]         = useState(getYear(new Date()));
   const [level, setLevel]       = useState<DrillLevel>('year');
   const [focusMonth, setFocus]  = useState<number>(getMonth(new Date())); // 0-indexed
   const [focusWeek, setFocusW]  = useState<Date>(startOfWeek(new Date()));
   const [focusDay, setFocusDay] = useState<string | null>(null);
+
+  // ── First-run empty state ──────────────────────────────────────────────
+  const dailyEntries = useMemo(() => entries.filter(e => !e.date.startsWith('reflection-')), [entries]);
+  const hasEntries = dailyEntries.length > 0;
+  const [welcomeDismissed, setWelcomeDismissed] = useState(
+    () => localStorage.getItem('journal_first_visit_dismissed') === 'true'
+  );
+  const showWelcome = !hasEntries && !welcomeDismissed;
+
+  const handleDismissWelcome = () => {
+    localStorage.setItem('journal_first_visit_dismissed', 'true');
+    setWelcomeDismissed(true);
+  };
+
+  // ── Daily opening prompt ───────────────────────────────────────────────
+  const [showDailyPrompt, setShowDailyPrompt] = useState(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const lastShown = localStorage.getItem('last_prompt_shown_date');
+    if (lastShown !== today) {
+      localStorage.setItem('last_prompt_shown_date', today);
+      return true;
+    }
+    return false;
+  });
+  const [dailyPrompt] = useState(() => getSmartPrompt(entries));
+
+  useEffect(() => {
+    if (!showDailyPrompt) return;
+    const timer = setTimeout(() => setShowDailyPrompt(false), 6000);
+    return () => clearTimeout(timer);
+  }, [showDailyPrompt]);
 
   const entryMap = useMemo(() => buildEntryMap(entries), [entries]);
 
@@ -251,7 +291,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                       className={`
                         aspect-square rounded-sm transition-all
                         ${entry?.mood ? MOOD_CELL[entry.mood] : 'bg-slate-100 hover:bg-slate-200'}
-                        ${todayC ? 'ring-1 ring-slate-700 ring-offset-1' : ''}
+                        ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-slate-700 ring-offset-1' : ''}
                       `}
                     />
                   );
@@ -261,6 +301,92 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           ))}
         </div>
         <MoodLegend />
+      </div>
+    );
+  };
+
+  // ── WELCOME CARD — first-run empty state ──────────────────────────────
+  const WelcomeCard = () => (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.5 }}
+      className="mb-6 rounded-2xl bg-amber-50 border border-amber-100 px-6 py-5 max-w-xl"
+    >
+      <p className="text-slate-600 leading-relaxed mb-4">
+        This is your journal. Every day you write, a dot lights up in the colour of how you felt.
+        Over time, this becomes a map of your emotional life.
+      </p>
+      <div className="flex items-center gap-4">
+        <Button
+          size="sm"
+          className="bg-amber-400 hover:bg-amber-500 text-amber-900 border-0 font-medium"
+          onClick={() => onSelectDate(format(new Date(), 'yyyy-MM-dd'))}
+        >
+          Write today's entry →
+        </Button>
+        <button
+          onClick={handleDismissWelcome}
+          className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          Got it
+        </button>
+      </div>
+    </motion.div>
+  );
+
+  // ── BELOW HEATMAP — daily prompt + intention + year-in-numbers ────────
+  const BelowHeatmap = () => {
+    const currentYear = getYear(new Date());
+    const currentYearEntries = dailyEntries.filter(e => getYear(parseISO(e.date)) === currentYear);
+    const total = currentYearEntries.length;
+    const mood = dominantMood(currentYearEntries);
+
+    const MOOD_PHRASE: Record<string, string> = {
+      great:     'A mostly great year so far',
+      good:      'A mostly good year so far',
+      okay:      'A steady year so far',
+      low:       'A tender year so far',
+      difficult: 'A tender year so far',
+    };
+
+    return (
+      <div className="mt-8 space-y-4 max-w-xl">
+        {/* Feature A — Daily opening prompt */}
+        <AnimatePresence>
+          {showDailyPrompt && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="text-slate-400 text-sm italic leading-relaxed"
+              onClick={() => setShowDailyPrompt(false)}
+            >
+              {dailyPrompt}
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        {/* Feature B — Active intention (only shown when A4c is built and intention exists) */}
+        {activeIntention && (
+          <div className="text-sm text-slate-500 leading-relaxed">
+            <span className="text-slate-400">This week you intended:</span>
+            <br />
+            <span className="text-slate-600 italic">"{activeIntention}"</span>
+          </div>
+        )}
+
+        {/* Feature C — Year-in-numbers */}
+        {total > 0 && (
+          <p className="text-sm text-slate-400">
+            {currentYear} · {total} {total === 1 ? 'entry' : 'entries'}{mood ? ` · ${MOOD_PHRASE[mood]}` : ''}
+          </p>
+        )}
+        {total === 0 && (
+          <p className="text-sm text-slate-300 italic">Your story is just beginning.</p>
+        )}
       </div>
     );
   };
@@ -619,7 +745,11 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         <AnimatePresence mode="wait">
           {level === 'year' && (
             <motion.div key="year" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <AnimatePresence>
+                {showWelcome && <WelcomeCard />}
+              </AnimatePresence>
               <DailyHeatmap />
+              <BelowHeatmap />
             </motion.div>
           )}
           {level === 'month' && (
