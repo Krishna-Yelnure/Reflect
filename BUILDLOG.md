@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4d planned (2026-02-28) — First-run empty state designed
+# Last updated: Session A4d planned + below-heatmap space designed (2026-02-28)
 
 ---
 
@@ -421,115 +421,104 @@ export const db = {
 8. `App.tsx`: `pendingReflectionType` state + `handleReflectionEntry()` handler wired
 9. Bug fix: curly apostrophes in single-quoted strings (5 strings switched to double quotes)
 
-**Session checklist:**
-- [x] Synthetic keys — no collision with daily entries
-- [x] Month/Week/Year views show readable reflection banners
-- [x] Reflection dots at correct Timeline levels
-- [x] Custom field labels and prompts per reflection type
-- [x] Human-readable period name in header (not raw key)
-- [x] App.tsx fully wired, no type leakage
-- [x] Committed and pushed to GitHub
-- [x] BUILDLOG updated
-
 ---
 
-#### SESSION A4c — Reflection Panels + Intentions Loop ← PLANNED
+#### SESSION A4c — Reflection Panels + Intentions Loop
 **Status:** NOT STARTED
 
 **Goal:** Make reflections readable inline. Close the loop between past reflection and future intention.
 
-**Problem:**
-- Once written, reflections are invisible — only accessible via a tiny dot + edit link
-- Reflections look backward only — no forward motion between periods
-
 **What to build:**
-
 1. **`types.ts`** — add `intention?: string` to `JournalEntry` interface
+2. **`TimelineView.tsx`** — `ReflectionPanel` component replaces current banners — shows full text, mood, date written, Edit button. Empty state: invitation to write.
+3. **`JournalEntry.tsx`** — intention field at bottom of reflection forms. `getPreviousPeriodIntention()` helper surfaces last period's intention as opening prompt: *"Last week you intended: '[X]' — how did that unfold?"*
 
-2. **`TimelineView.tsx`** — `ReflectionPanel` component replaces current banners:
-   - Shows full reflection text (truncated ~4 lines + expand), mood, date written, Edit button
-   - Empty state: "Nothing written yet. + Write [weekly] reflection →"
-   - Used in WeekView, MonthView, year level
+**Witness test:** ✅ — intention surfaced as prompt, never tracked for completion
 
-3. **`JournalEntry.tsx`** — intention field:
-   - Appears only in reflection mode (weekly/monthly/yearly)
-   - After last writing field, before tags
-   - Label: "One intention for next [week/month/year]"
-   - Placeholder: "Something you want to be true by then…"
-   - `getPreviousPeriodIntention()` — finds last period's `intention` field
-   - Surfaces as contextual prompt: *"Last week you intended: '[X]' — how did that unfold?"*
-
-**The reflection loop:**
-```
-Weekly reflection (Week 4) → sets intention: "Less phone after 9pm"
-Weekly reflection (Week 5) opens → "Last week you intended: Less phone after 9pm — how did that unfold?"
-User reflects → sets new intention or carries forward
-```
-
-**Witness test:** ✅ — intention surfaced as prompt, never tracked for completion. Missed = not recorded. Pure witness.
-
-**Files needed:**
-- `BUILDLOG.md`
-- `src/app/types.ts`
-- `src/app/components/TimelineView.tsx`
-- `src/app/components/JournalEntry.tsx`
+**Files needed:** `BUILDLOG.md`, `src/app/types.ts`, `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
 
 ---
 
-#### SESSION A4d — First-Run Empty State ← START HERE NEXT
+#### SESSION A4d — First-Run Empty State + Below-Heatmap Space ← START HERE NEXT
 **Status:** NOT STARTED
 
-**Goal:** New user opens app, sees the heatmap, understands what it is and what to do — in under 10 seconds. No confusion. No void.
+**Goal:** Fix the void that new users land on. Fill the space below the heatmap with content that serves the Witness philosophy.
 
-**Problem identified (2026-02-28):**
-- Empty heatmap = 120 identical grey dots + "No entries yet." — a void, not an invitation
-- New user has no mental model for mood heatmap
-- No clear call to action
-- App's core promise (emotional landscape of your life) is invisible on first load
-- Violates Day 1 principle from BUILDLOG: "Empty heatmap invitation state — critical"
+**Part 1 — First-run empty state**
 
-**Design decision: Option 5 — Welcome card + today pulse**
+Problem: Empty heatmap = 120 grey dots + "No entries yet." — a void, not an invitation. New user has no mental model, no CTA, no emotional hook.
 
-Rejected options:
-- Multi-step onboarding wizard — violates calm technology principle
-- Overlay tour with backdrop — intrusive
-- Forced tutorial — wrong tone
-- Ghost/preview data — could confuse (is this real?)
-- Today pulse alone — doesn't explain what the grid *is*
+Solution — three layers:
 
-**What to build:**
-
-1. **`WelcomeCard` component** (or inline in TimelineView)
-   - Shown above heatmap when: `entries.length === 0` AND `journal_first_visit` flag not dismissed
-   - One paragraph, Witness tone:
-     > *"This is your journal. Every day you write, a dot lights up in the colour of how you felt. Over time, this becomes a map of your emotional life. Start with today."*
-   - Single CTA button: **Write today's entry →**
+1. **`WelcomeCard`** — shown above heatmap when `entries.length === 0` AND not dismissed:
+   > *"This is your journal. Every day you write, a dot lights up in the colour of how you felt. Over time, this becomes a map of your emotional life. Start with today."*
+   - Single CTA: **Write today's entry →**
    - Dismiss link: "Got it" — sets `journal_first_visit_dismissed` in localStorage
-   - Disappears automatically after first entry is saved (entries.length > 0)
+   - Disappears automatically after first entry saved
 
-2. **Today's cell pulse**
-   - When `entries.length === 0`, today's dot gets `animate-pulse` + slightly larger
-   - Gentle amber ring — "start here" without words
-   - Pulse stops after first entry written
+2. **Today's cell pulse** — `animate-pulse` + amber ring on today's dot when `entries.length === 0`. Stops after first entry.
 
-3. **First-entry special closing moment**
-   - In `JournalEntry.tsx`, detect `isFirstEntry`: was `allEntries.length === 0` before save
-   - Special closing line: *"Your first entry. The map has begun."*
-   - One-time only, never repeated
+3. **First-entry special closing moment** — detect `isFirstEntry` (allEntries.length === 0 at save time):
+   > *"Your first entry. The map has begun."*
+   One-time only, never repeated.
 
-**What NOT to build:**
-- No skip button that requires a decision
-- No backdrop overlay
-- No animation/video explainer
-- No multi-step flow
+**Part 2 — Below-heatmap space**
 
-**Witness test:** ✅ — explains without lecturing, invites without pressuring, disappears when no longer needed
+Three features that use the space below the grid, layered in order of data availability:
 
-**Technical notes:**
-- localStorage flag: `journal_first_visit_dismissed`
-- `isFirstEntry` detected by checking `allEntries.length === 0` at save time in JournalEntry
-- All self-contained — no new routes, no new views, ~60-80 lines total
-- WelcomeCard can live inline in TimelineView or as a small separate component
+**Feature A — Daily opening prompt (Option 2)**
+- One thoughtful rotating question shown once per day on app open
+- Appears as a soft line above the stats, fades after a few seconds or on any interaction — no dismiss button needed
+- Mechanic: `last_prompt_shown_date` in localStorage. If not today → show prompt → mark as today on mount
+- Shows every day regardless of entry count
+- Example: *"What would you tell yourself a year from now about today?"*
+- Source: existing `prompts.ts` pool
+
+**Feature B — Current intention surface (Option 4)**
+- When A4c is built, surfaces the active intention from the last reflection quietly below the prompt
+- No checkbox, no status, no completion tracking — just the user's own words reflected back
+- Example:
+  ```
+  This week you intended:
+  "Spend less time on my phone after 9pm"
+  ```
+- Empty when no intention set — section simply absent, no placeholder
+
+**Feature C — Year-in-numbers (Option 1)**
+- Appears once `entries.length > 0`
+- Human, warm, never punishing — language rules (see below):
+  ```
+  2026 · 28 entries · A mostly good year so far
+  ```
+- If dominant mood is difficult/low → *"A tender year so far"* — never tallies hard days
+- Only surfaces positive mood highlights: great days count, hard days do not
+- Empty state: *"Your story is just beginning."* (no stats, no zeroes)
+
+**Mood language rules for stats (non-negotiable):**
+
+| What NOT to write | What to write instead |
+|---|---|
+| "3 hard days" | Never show hard day counts |
+| "14 difficult entries" | Never surface negative tallies |
+| "Low mood: 22%" | Never percentage-ise pain |
+| "Mostly difficult" | "A tender year so far" |
+| "No entries" | "Your story is just beginning" |
+| "0 great days" | Simply omit — show nothing |
+
+**Copy test for any mood stat:** *"Would this make someone feel observed or understood?"*
+- Observed → rewrite or remove
+- Understood → keep
+
+**Full below-heatmap layout (once data exists):**
+```
+[Daily opening prompt — fades after a few seconds]
+
+This week you intended:
+"Spend less time on my phone after 9pm"
+
+────────────────────────────────────
+2026 · 28 entries · A mostly good year so far
+```
 
 **Files needed:**
 - `BUILDLOG.md`
@@ -538,7 +527,7 @@ Rejected options:
 
 ---
 
-
+#### SESSION A5 — Design Polish Pass
 **Status:** NOT STARTED
 
 **Goal:** Apply design principles, audit copy, elevate visual quality
@@ -547,11 +536,12 @@ Rejected options:
 - [ ] Typographic hierarchy — stronger heading font, lighter body
 - [ ] Purposeful accent colour — one warm colour applied consistently
 - [ ] Copy audit — every label, placeholder, empty state checked for emotional safety tone
+- [ ] **Mood language audit** — every place mood data is reflected back to user checked against mood language rules (see A4d spec). Hard day counts never shown. Negative tallies never shown. Tender language for difficult periods.
 - [ ] Empty states — turn bare empty views into invitations
 - [ ] Microinteractions — review key moments: save, delete, mood select
 - [ ] Consistent visual language — border radius, shadow, colour logic unified
-- [ ] Welcome/home state — "Good morning. You last wrote X days ago about..."
-- [ ] Closing moment after save — not just redirect to entries list
+- [ ] Welcome/home state — handled in A4d
+- [ ] Closing moment after save — handled in A4
 
 **Files needed:** Multiple — assess at session start
 
@@ -663,7 +653,7 @@ Rejected options:
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A4d — First-run empty state."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A4d — First-run empty state and below-heatmap space."
 
 Then attach:
 1. This `BUILDLOG.md`
@@ -682,11 +672,11 @@ Then attach:
 | Session A2b | 2026-02-28 | Brainstorming: Witness philosophy, heatmap architecture, sidebar redesign, Write section enhancements, human-centred feature audit | ✅ Complete (brainstorm only) |
 | Session A3 | 2026-02-28 | Mood + energy visual upgrade — emoji cards with colour wash, vertical signal bar meter | ✅ Complete |
 | Session A3b | 2026-02-28 | Timeline/Heatmap — year heatmap, drill-down nav, year selector sidebar, day/week/month/day views | ✅ Complete |
-| Session A4 | 2026-02-28 | Write section redesign — Quick/Guided/Deep modes, contextual prompt strip, continuity prompt, year-ago memory surface, closing moment, unsaved changes guard, ReflectionModeSelector removed | ✅ Complete |
+| Session A4 | 2026-02-28 | Write section redesign — Quick/Guided/Deep modes, contextual prompt, continuity, year-ago memory, closing moment, unsaved changes guard | ✅ Complete |
 | Session A4b | 2026-02-28 | Weekly/Monthly/Yearly reflection types via Timeline — synthetic date keys, reflection dots/banners, custom prompts/fields, App.tsx wired | ✅ Complete |
 | Session A4c | — | Reflection panels (inline readable) + Intentions loop | ⏳ Pending |
-| Session A4d | — | First-run empty state — WelcomeCard, today cell pulse, first-entry closing moment | ⏳ Next |
-| Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
+| Session A4d | — | First-run empty state + below-heatmap space (daily prompt, intention surface, year-in-numbers) | ⏳ Next |
+| Session A5 | — | Design polish — Witness design language, mood language audit, copy audit | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
 | Session B3 | — | Polish and final testing | ⏳ Pending |
@@ -732,14 +722,19 @@ Then attach:
 - **2026-02-28 (A4b):** formatEntryDate() renders synthetic keys as human-readable period names
 - **2026-02-28 (A4c brainstorm):** Reflections need to be readable inline at their Timeline level — not just editable via dot
 - **2026-02-28 (A4c brainstorm):** ReflectionPanel replaces banner — full text, mood, date, Edit button; invitation when empty
-- **2026-02-28 (A4c brainstorm):** Intentions = single optional line at end of reflection — not a task list, not tracked
+- **2026-02-28 (A4c brainstorm):** Intentions = single optional line at end of reflection — not a task list, not tracked for completion
 - **2026-02-28 (A4c brainstorm):** Intention surfaced as prompt in next period ("Last week you intended: X — how did that unfold?") — never a metric
 - **2026-02-28 (A4c brainstorm):** `intention?: string` to be added to JournalEntry type in types.ts
-- **2026-02-28 (A4d brainstorm):** Empty heatmap = void not invitation — Day 1 critical problem
-- **2026-02-28 (A4d brainstorm):** Solution = Option 5: WelcomeCard + today cell pulse + first-entry special closing moment
-- **2026-02-28 (A4d brainstorm):** WelcomeCard shown when entries.length === 0 AND not dismissed — disappears after first save
-- **2026-02-28 (A4d brainstorm):** isFirstEntry detected at save time (allEntries.length === 0 before save) — special closing line "Your first entry. The map has begun."
-- **2026-02-28 (A4d brainstorm):** No multi-step onboarding, no tour overlay, no forced tutorial — calm technology principle
+- **2026-02-28 (A4d brainstorm):** Empty heatmap = void not invitation — Day 1 critical problem confirmed
+- **2026-02-28 (A4d brainstorm):** First-run solution = WelcomeCard + today cell pulse + first-entry special closing moment
+- **2026-02-28 (A4d brainstorm):** To-do list REJECTED — violates Witness philosophy, makes app a manager not a witness
+- **2026-02-28 (A4d brainstorm):** Below-heatmap space = three layered features: daily prompt (Option 2) + intention surface (Option 4) + year-in-numbers (Option 1)
+- **2026-02-28 (A4d brainstorm):** Daily opening prompt shown once per app open, fades automatically — no dismiss button, no friction. Mechanic: last_prompt_shown_date in localStorage
+- **2026-02-28 (A4d brainstorm):** Hard day counts NEVER shown in stats — violates emotional safety. Negative tallies never surfaced.
+- **2026-02-28 (A4d brainstorm):** Mood language rule — difficult/low dominant mood → "A tender year so far" not "mostly difficult"
+- **2026-02-28 (A4d brainstorm):** Mood stat copy test: "Would this make someone feel observed or understood?" — observed = rewrite, understood = keep
+- **2026-02-28 (A4d brainstorm):** Year-in-numbers only surfaces positive highlights — great day count shown, hard day count never shown
+- **2026-02-28 (A4d brainstorm):** Mood language audit added to A5 checklist — every mood data surface must pass the copy test
 - **2026-02-28 (A4):** Write now has three modes — Quick Capture / Guided (default) / Deep Write — mode switcher in header
 - **2026-02-28 (A4):** ContextualPrompt uses strict priority: year-ago memory > continuity prompt > daily rotating prompt — one signal at a time, never stacked
 - **2026-02-28 (A4):** Year-ago search uses ±3 day window — accounts for irregular writing without surfacing irrelevant entries
@@ -767,9 +762,17 @@ This is the product. Every feature decision passes this test:
 | Emotional landscape heatmap | ✅ Witness |
 | Quick/Guided/Deep write modes | ✅ Witness |
 | Mood visual upgrade | ✅ Witness |
+| Reflection panels (inline readable) | ✅ Witness |
+| Intentions loop (prompt not metric) | ✅ Witness |
+| Daily opening prompt (fades, no friction) | ✅ Witness |
+| Intention surface below heatmap | ✅ Witness |
+| Year-in-numbers (positive highlights only) | ✅ Witness |
+| First-run WelcomeCard | ✅ Witness |
 | Word count | ❌ Manager — removed |
 | Streaks | ❌ Manager — never build |
 | Activity-based heatmap (green = wrote) | ❌ Manager — reframed to mood-based |
+| To-do list / top 3 tasks | ❌ Manager — creates obligation, completion anxiety |
+| Hard day counts in stats | ❌ Manager — tallies pain, never show |
 
 ---
 
