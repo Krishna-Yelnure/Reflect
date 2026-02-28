@@ -849,6 +849,267 @@ These must be decided before building the heatmap — they affect the data model
 4. **Week column boundary** — entries belong to week of their date, full stop
 5. **Empty state** — what does a new user see on their first open of Timeline?
 
+## SWOT ANALYSIS
+
+### Strengths
+
+**Privacy architecture is bulletproof**
+Local-first, zero telemetry, abstracted storage layer ready for Electron. Not just a feature — the foundation. No competitor can credibly claim this without rebuilding from scratch.
+
+**The Witness philosophy is differentiated**
+No other journaling app has articulated this clearly. Day One is a photo diary. Notion is a productivity tool. Reflectly is a mood tracker with AI. None say "we are a quiet witness to your life." That positioning is genuinely open.
+
+**Technical foundation is solid**
+React + TypeScript, storage abstraction, 14 views working, sidebar navigation, 21-day habit tracker. More built than most portfolio projects ever reach.
+
+**HabitBuilder philosophy**
+"Container for exploration, not a tracker for compliance" — a genuine philosophical stance against gamification of self-improvement. Worth documenting publicly.
+
+**You are the user**
+Building something you will actually use daily. Every decision grounded in real need, not assumption. The most underrated advantage in product development.
+
+**BA/PA thinking embedded in process**
+The BUILDLOG itself is a portfolio piece. Demonstrates requirements thinking, architecture decisions, risk management, and product vision — not just code.
+
+---
+
+### Weaknesses
+
+**No narrative continuity yet**
+The most important feature — entries knowing about each other — doesn't exist. Currently a collection of isolated moments, not a story.
+
+**Daily loop is broken**
+Open → blank form → write → save → list. No welcome, no memory, no closing moment. The most used flow feels clinical.
+
+**localStorage fragility**
+5-10MB limit, device-specific, no sync. Users with years of data are at risk. Electron fixes this but that's Phase B.
+
+**No search**
+For a memory app this is serious. Finding anything older than 2 weeks requires scrolling.
+
+**Heatmap not built**
+The centrepiece of the product vision doesn't exist yet. The app cannot deliver its core promise without it.
+
+**Write section is still a form**
+5 structured fields. Clinical. Doesn't feel like opening a journal.
+
+**Zero onboarding**
+WelcomeMessage.tsx exists but new user experience is undefined. No guided first entry, no philosophy introduction.
+
+---
+
+### Opportunities
+
+**Privacy is a growing concern**
+GDPR, data breaches, AI training on personal data — timing for a genuinely private journaling app has never been better.
+
+**AI journaling apps are invasive**
+Every competitor rushing to add AI that reads your entries. Clear counter-positioning available — "we will never read your journal, not even an AI."
+
+**Obsidian proved local-first can win**
+Zero to 1M+ users with local-first, privacy-respecting note-taking. Same model, same audience, different use case. The path is proven.
+
+**Desktop apps are underserved**
+Most journaling apps are mobile-first. A premium desktop experience targets writers, developers, thoughtful professionals — underserved and willing to pay.
+
+**The portfolio angle is immediate**
+App + BUILDLOG + demo video is already a stronger BA/PA portfolio piece than 95% of candidates have. Don't need to launch publicly to get value.
+
+**The Witness framing is publishable**
+A blog post — "why we built a journaling app that refuses to track you" — writes itself and would find an audience.
+
+---
+
+### Threats
+
+**Obsidian + community plugins**
+Already has journaling plugins. Power users who know Obsidian may never switch.
+
+**Day One is deeply entrenched**
+10+ years of brand trust, iOS integration, E2E encryption already in place. High switching cost for existing users.
+
+**localStorage data loss kills trust**
+One browser clear or Safari update and a user loses everything before Electron is built. One bad experience shared publicly ends the product.
+
+**Scope creep**
+The vision is ambitious. Risk of never shipping if each session reveals more to build.
+
+**AI will commoditise features**
+Memory surface, continuity prompts, pattern recognition — in 2 years every app will have AI doing this better. Moat must be privacy and philosophy, not features.
+
+---
+
+## GAP ANALYSIS
+
+### Gap 1 — The Witness Experience
+| Vision | Reality | Size |
+|---|---|---|
+| App feels like a quiet witness | App feels like a structured form | Large |
+| Opening is a ritual | Opening is a task | Large |
+| Closing an entry feels meaningful | Redirects to a list | Large |
+
+*Fix in: A4*
+
+---
+
+### Gap 2 — Narrative Continuity
+| Vision | Reality | Size |
+|---|---|---|
+| Entries know about each other | Completely isolated | Large |
+| Memory surface shows the past | MemorySurface.tsx exists, never integrated | Medium |
+| Heatmap shows emotional shape of years | Not built | Large |
+
+*Fix in: A3b, A4*
+
+---
+
+### Gap 3 — Navigation & Information Architecture
+| Vision | Reality | Size |
+|---|---|---|
+| Timeline is the centrepiece | Entries/Archive/Calendar are three separate views | Large |
+| Year → Month → Week → Day drill-down | No drill-down exists | Large |
+| Reflection types accessed via heatmap | Broken buttons in Write section | Medium |
+
+*Fix in: A3b*
+
+---
+
+### Gap 4 — Write Experience
+| Vision | Reality | Size |
+|---|---|---|
+| Three modes: Quick/Guided/Deep | One mode, 5 fixed fields | Large |
+| Daily rotating prompt surfaces naturally | prompts.ts exists, never shown | Medium |
+| Memory surface in Write | Not integrated | Medium |
+
+*Fix in: A4*
+
+---
+
+### Gap 5 — Visual & Emotional Quality
+| Vision | Reality | Size |
+|---|---|---|
+| Warm minimal design language | Inconsistent mix of MUI + Radix | Medium |
+| Mood/energy feel expressive | Flat text buttons, numbered circles | Medium |
+| Typography creates clear hierarchy | Uniform font weights | Medium |
+| One amber accent colour system | No accent colour system | Medium |
+
+*Fix in: A3, A5*
+
+---
+
+### Gap 6 — Data Safety
+| Vision | Reality | Size |
+|---|---|---|
+| Data is permanent and safe | localStorage — fragile, device-specific | Large |
+| Unsaved changes warning | No warning exists | Large |
+| Delete all requires confirmation | One click, irreversible | Critical |
+| Import merges intelligently | Import overwrites silently | Large |
+
+*Fix in: A3 (delete confirm), A4 (unsaved warning), B1 (Electron)*
+
+---
+
+### Gap 7 — Onboarding
+| Vision | Reality | Size |
+|---|---|---|
+| New user understands philosophy immediately | WelcomeMessage.tsx unclear | Medium |
+| First entry guided and warm | Blank form, no context | Large |
+| Empty heatmap feels like invitation | Not built | Medium |
+
+*Fix in: A5*
+
+---
+
+### Priority Order from SWOT + Gap Analysis
+
+**Fix immediately:**
+1. Delete all — add confirmation (30 min, critical risk)
+
+**Build to deliver core promise:**
+2. Heatmap emotional landscape — A3b
+3. Write section redesign — A4
+4. Memory surface integration — A4
+5. Closing moment after save — A4
+
+**Fix to be trustworthy:**
+6. Unsaved changes warning — A4
+7. Import merge strategy — A4b
+
+**Fix to feel premium:**
+8. Mood + energy visual upgrade — A3
+9. Design language applied consistently — A5
+
+**Strategic moat to protect always:**
+10. Privacy positioning — document in README and case study
+11. Witness philosophy — publish as essay, not just feature list
+
+---
+
+## THE PATH TO TRUE FORM
+
+### Phase 1 — Making it Real
+*Sessions A3 through A5*
+
+The sketch becomes a painting. The heatmap lands. The Write section stops feeling like a form and starts feeling like a journal. The closing moment exists. The mood colours mean something.
+
+At the end of A5 you will open the app and feel something for the first time. Not "this works" — but "this is mine." That's the moment it crosses from project to product.
+
+*What it feels like: Pieces clicking into place. Each session reveals the app underneath the scaffolding.*
+
+---
+
+### Phase 2 — Living With It
+*Between A5 and B1 — no building, just using*
+
+The most underrated phase. Use it daily for 4-6 weeks. Nothing new gets built. Just live with it.
+
+This is where the real gaps appear — not the ones you can think your way to, but the ones that reveal themselves at 11pm when you're tired and trying to write something true.
+
+You'll discover:
+- A prompt that always feels wrong on Mondays
+- A closing moment that's slightly too long
+- A heatmap colour that looks different in dark mode
+- Something you reach for that isn't there yet
+
+*What it feels like: Quiet frustration that becomes clarity. The app teaching you what it needs.*
+
+---
+
+### Phase 3 — Making it True
+*B1 through B3 — Electron*
+
+It stops being a web app and becomes a real object in your life. An application you install. A file that lives on your machine like a real journal on a shelf.
+
+The first time you launch it from your desktop — not a browser tab — something shifts. It feels permanent. It feels like it matters.
+
+*What it feels like: The difference between a note on your phone and a letter written by hand and sealed.*
+
+---
+
+### The True Form
+
+The app reaches its true form when a user opens it years from now, clicks a year in the heatmap, and sees the emotional shape of a chapter of their life rendered in colour.
+
+When they click into a week and read what they wrote during a hard time. When they see they were okay. That they got through it. That they were more thoughtful than they remembered being.
+
+When the app surfaces something they wrote two years ago that speaks directly to something they're going through today — and they didn't ask it to. It just knew.
+
+That's the true form. Not a feature. Not a design. A moment of recognition between a person and their own past self.
+
+**The app is a time machine that only goes backwards. And that's exactly what makes it powerful.**
+
+---
+
+### What the Path Requires
+
+**Patience over perfection.** Every session reveals something new to fix. That's not failure — that's the product maturing.
+
+**Usage over building.** The phase between A5 and B1 where you just use it — don't skip this. It's where the best decisions come from.
+
+**Trust the philosophy.** When a feature feels tempting but doesn't pass the Witness test — don't build it. The restraint is the product.
+
+**Ship before it's ready.** The app doesn't need to be perfect to show employers. It needs to be honest and considered. The BUILDLOG already proves that.
+
 ---
 
 *End of BUILDLOG.md*
