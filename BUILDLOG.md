@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A2 brainstorm complete (2026-02-28) — user journey + human layer added
+# Last updated: Session A3 complete (2026-02-28) — mood & energy visual upgrade done
 
 ---
 
@@ -291,8 +291,8 @@ export const db = {
 
 ---
 
-#### SESSION A3 — Mood & Energy Visual Upgrade ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A3 — Mood & Energy Visual Upgrade
+**Status:** ✅ COMPLETE (2026-02-28)
 
 **Goal:** Make mood and energy inputs feel premium, warm and expressive
 
@@ -305,18 +305,23 @@ export const db = {
 - `BUILDLOG.md`
 - `src/app/components/JournalEntry.tsx`
 
-**Steps:**
-1. Read JournalEntry.tsx to understand current mood/energy implementation
-2. Replace mood buttons with large emoji + colour wash design
-3. Replace energy circles with vertical bar meter
-4. Confirm all views still work
-5. Commit and push
+**What was done:**
+1. Replaced flat mood pill buttons with large emoji cards — colour-washed selected state per mood (amber/green/neutral/blue/stone), scale + glow + ring on select, toggle to deselect
+2. Replaced energy circles with vertical signal-bar meter — 5 bars grow in height left to right, amber/gold fill on selected, active level shown in amber below bar, ✕ to clear
+3. All changes self-contained in JournalEntry.tsx — no other files touched
 
-**Deliverable:** Mood and energy inputs feel polished and warm
+**Session checklist:**
+- [x] Mood buttons feel premium and expressive
+- [x] Each mood has a distinct colour wash (not just dark/light toggle)
+- [x] Energy meter reads like a signal strength bar
+- [x] Toggle behaviour on both mood and energy (click again to deselect)
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
 
 ---
 
-#### SESSION A4 — Weekly/Monthly/Yearly Reflection Types
+#### SESSION A3b — Timeline/Heatmap Emotional Landscape ← START HERE NEXT
+**Status:** NOT STARTED
 **Status:** NOT STARTED
 
 **Goal:** Different prompt sets per reflection type — not just a label change
@@ -492,8 +497,8 @@ Then attach:
 | Session A1 | 2026-02-27 | App running in browser, all 14 views confirmed, GitHub repo set up, .gitignore added | ✅ Complete |
 | Session A2 | 2026-02-28 | Storage abstraction layer, 21-day habit tracker, sidebar navigation, design principles + product vision brainstorm | ✅ Complete |
 | Session A2b | 2026-02-28 | Brainstorming: Witness philosophy, heatmap architecture, sidebar redesign, Write section enhancements, human-centred feature audit | ✅ Complete (brainstorm only) |
-| Session A3 | — | Mood + energy visual upgrade in JournalEntry.tsx | ⏳ Next |
-| Session A3b | — | Timeline/Heatmap — emotional landscape view replacing Entries + Archive + Calendar | ⏳ Pending |
+| Session A3 | 2026-02-28 | Mood + energy visual upgrade — emoji cards with colour wash, vertical signal bar meter | ✅ Complete |
+| Session A3b | — | Timeline/Heatmap — emotional landscape view replacing Entries + Archive + Calendar | ⏳ Next |
 | Session A4 | — | Write section redesign — Quick/Guided/Deep modes, memory surface, closing moment, daily prompt | ⏳ Pending |
 | Session A4b | — | Weekly/Monthly/Yearly reflection types accessed via heatmap | ⏳ Pending |
 | Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
