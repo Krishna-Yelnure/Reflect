@@ -5,6 +5,7 @@ import { Sparkles, Save, X, Zap, BookOpen, Edit3, ChevronLeft } from 'lucide-rea
 import type { JournalEntry as JournalEntryType } from '@/app/types';
 import { storage } from '@/app/utils/storage';
 import { getSmartPrompt } from '@/app/utils/prompts';
+import { getReflectionPrompt } from '@/app/utils/prompts-v2';
 import { findSimilarEntries, createMemorySurface } from '@/app/utils/memory-surface';
 import { preferences } from '@/app/utils/preferences';
 import { Button } from '@/app/components/ui/button';
@@ -17,6 +18,7 @@ import { toast } from 'sonner';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type WriteMode = 'quick' | 'guided' | 'deep';
+type ReflectionType = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 interface JournalEntryProps {
   selectedDate: string;
@@ -24,6 +26,7 @@ interface JournalEntryProps {
   onCancel: () => void;
   allEntries: JournalEntryType[];
   onViewEntry?: (date: string) => void;
+  initialReflectionType?: ReflectionType;   // set by Timeline for weekly/monthly/yearly
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -82,6 +85,51 @@ const moods = [
 ] as const;
 
 const energyLevels = [1, 2, 3, 4, 5] as const;
+
+// Reflection type metadata — used to customise Guided mode when opened from Timeline
+const REFLECTION_META: Record<string, {
+  label: string;
+  badge: string;
+  badgeCls: string;
+  fields: { key: string; label: string; placeholder: string }[];
+}> = {
+  weekly: {
+    label: 'Weekly reflection',
+    badge: 'This week',
+    badgeCls: 'bg-violet-100 text-violet-700',
+    fields: [
+      { key: 'whatHappened', label: 'What happened this week?',     placeholder: 'The events, moments, conversations…' },
+      { key: 'feelings',     label: 'How did the week feel?',       placeholder: 'The emotional texture of the week…' },
+      { key: 'whatMatters',  label: 'What mattered most?',          placeholder: "What you'd want to remember…" },
+      { key: 'insight',      label: 'What did you learn?',          placeholder: 'A pattern, a realisation, a shift…' },
+      { key: 'freeWrite',    label: 'Anything else',                placeholder: 'Whatever needs space…' },
+    ],
+  },
+  monthly: {
+    label: 'Monthly reflection',
+    badge: 'This month',
+    badgeCls: 'bg-sky-100 text-sky-700',
+    fields: [
+      { key: 'whatHappened', label: 'What defined this month?',     placeholder: 'The chapters, the turning points…' },
+      { key: 'feelings',     label: 'What shifted emotionally?',    placeholder: 'How you changed, what softened or hardened…' },
+      { key: 'whatMatters',  label: 'What mattered more than expected?', placeholder: 'Surprises in what moved you…' },
+      { key: 'insight',      label: 'What do you understand now?',  placeholder: 'What the month taught you…' },
+      { key: 'freeWrite',    label: 'What to carry forward',        placeholder: "What you're taking into next month…" },
+    ],
+  },
+  yearly: {
+    label: 'Yearly reflection',
+    badge: 'This year',
+    badgeCls: 'bg-rose-100 text-rose-700',
+    fields: [
+      { key: 'whatHappened', label: 'What defined this year?',      placeholder: 'The chapters that shaped it…' },
+      { key: 'feelings',     label: 'How did you change?',          placeholder: 'Who you were in January vs now…' },
+      { key: 'whatMatters',  label: 'What surprised you most?',     placeholder: "What you couldn't have anticipated…" },
+      { key: 'insight',      label: 'What belief did you outgrow?', placeholder: "What you understand now that you didn't before…" },
+      { key: 'freeWrite',    label: 'What to leave behind',         placeholder: "What you're not taking into next year…" },
+    ],
+  },
+};
 
 // Closing moment lines — quiet, human, not celebratory
 const closingLines = [
@@ -151,7 +199,31 @@ function getOneYearAgoEntry(allEntries: JournalEntryType[], today: string): Jour
   return null;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+/**
+ * Format a date string for display — handles both real dates (yyyy-MM-dd)
+ * and synthetic reflection keys (reflection-weekly-..., reflection-monthly-..., reflection-yearly-...)
+ */
+function formatEntryDate(dateKey: string): string {
+  if (dateKey.startsWith('reflection-weekly-')) {
+    const weekStart = dateKey.replace('reflection-weekly-', '');
+    try {
+      return `Week of ${format(new Date(weekStart + 'T12:00:00'), 'MMMM d, yyyy')}`;
+    } catch { return 'Weekly reflection'; }
+  }
+  if (dateKey.startsWith('reflection-monthly-')) {
+    const parts = dateKey.replace('reflection-monthly-', '').split('-'); // ['2026','02']
+    try {
+      return format(new Date(`${parts[0]}-${parts[1]}-01T12:00:00`), 'MMMM yyyy');
+    } catch { return 'Monthly reflection'; }
+  }
+  if (dateKey.startsWith('reflection-yearly-')) {
+    return dateKey.replace('reflection-yearly-', '');
+  }
+  // Regular date
+  try {
+    return format(new Date(dateKey + 'T12:00:00'), 'EEEE, MMMM d, yyyy');
+  } catch { return dateKey; }
+}
 
 /** Quiet mode toggle — three pill buttons */
 function ModeSwitcher({
@@ -292,7 +364,7 @@ function ClosingMoment({
         className="text-center space-y-4 px-8"
       >
         <p className="text-slate-400 text-sm tracking-widest uppercase font-medium">
-          {format(new Date(date + 'T12:00:00'), 'EEEE, MMMM d')}
+          {formatEntryDate(date)}
         </p>
         <p className="text-2xl text-slate-700 font-light">{line}</p>
         <motion.div
@@ -314,6 +386,7 @@ export function JournalEntry({
   onCancel,
   allEntries,
   onViewEntry,
+  initialReflectionType = 'daily',
 }: JournalEntryProps) {
   const [mode, setMode] = useState<WriteMode>('guided');
   const [entry, setEntry] = useState<Partial<JournalEntryType>>({
@@ -325,7 +398,7 @@ export function JournalEntry({
     mood: undefined,
     energy: undefined,
     tags: [],
-    reflectionType: 'daily',
+    reflectionType: initialReflectionType,
   });
   const [prompt, setPrompt] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -337,10 +410,14 @@ export function JournalEntry({
 
   const prefs = preferences.get();
 
-  // ── Contextual prompts ─────────────────────────────────────────────────────
+  // Derived — is this a reflection entry (not daily)?
+  const isReflection = initialReflectionType !== 'daily';
+  const reflectionMeta = isReflection ? REFLECTION_META[initialReflectionType] : null;
 
-  const continuityPrompt = getContinuityPrompt(allEntries, selectedDate);
-  const yearAgoEntry = getOneYearAgoEntry(allEntries, selectedDate);
+  // ── Contextual prompts ─────────────────────────────────────────────────────
+  // Reflection entries have no "yesterday" or "year ago" — suppress those prompts
+  const continuityPrompt = isReflection ? null : getContinuityPrompt(allEntries, selectedDate);
+  const yearAgoEntry = isReflection ? null : getOneYearAgoEntry(allEntries, selectedDate);
 
   // ── Load existing entry ────────────────────────────────────────────────────
 
@@ -348,7 +425,7 @@ export function JournalEntry({
     const existing = storage.getEntryByDate(selectedDate);
     if (existing) {
       setEntry(existing);
-      setMode('guided'); // always start in guided for edits
+      setMode('guided');
     } else {
       setEntry({
         whatHappened: '',
@@ -359,13 +436,18 @@ export function JournalEntry({
         mood: undefined,
         energy: undefined,
         tags: [],
-        reflectionType: 'daily',
+        reflectionType: initialReflectionType,
       });
-      setPrompt(getSmartPrompt());
+      // Set prompt based on reflection type
+      if (isReflection) {
+        setPrompt(getReflectionPrompt(initialReflectionType as 'weekly' | 'monthly' | 'yearly'));
+      } else {
+        setPrompt(getSmartPrompt());
+      }
       setMemoryDismissed(false);
       setHasUnsavedChanges(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, initialReflectionType]);
 
   // ── Memory surface (similar entries) ─────────────────────────────────────
 
@@ -492,7 +574,7 @@ export function JournalEntry({
               Back to Guided
             </button>
             <p className="text-sm text-slate-400">
-              {format(new Date(selectedDate + 'T12:00:00'), 'MMMM d, yyyy')}
+              {formatEntryDate(selectedDate)}
             </p>
             <Button onClick={handleSave} disabled={isSaving} size="sm" className="gap-1.5">
               <Save className="size-3.5" />
@@ -545,7 +627,7 @@ export function JournalEntry({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-light text-slate-700">
-                {format(new Date(selectedDate + 'T12:00:00'), 'EEEE, MMMM d')}
+                {formatEntryDate(selectedDate)}
               </h1>
               <p className="text-sm text-slate-400 mt-0.5">Quick capture</p>
             </div>
@@ -630,8 +712,13 @@ export function JournalEntry({
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-3xl font-light text-slate-800">
-              {format(new Date(selectedDate + 'T12:00:00'), 'EEEE, MMMM d, yyyy')}
+              {formatEntryDate(selectedDate)}
             </h1>
+            {reflectionMeta && (
+              <span className={`inline-block mt-2 px-2.5 py-1 rounded-full text-xs font-medium ${reflectionMeta.badgeCls}`}>
+                {reflectionMeta.label}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-1">
             <ModeSwitcher mode={mode} onChange={handleModeChange} />
@@ -766,73 +853,40 @@ export function JournalEntry({
           </div>
         </div>
 
-        {/* ── Writing fields ────────────────────────────────────────────────── */}
-        <div className="space-y-6">
-          <div>
-            <Label htmlFor="whatHappened" className="text-sm text-slate-500 mb-2 block">
-              What happened today?
-            </Label>
-            <Textarea
-              id="whatHappened"
-              value={entry.whatHappened || ''}
-              onChange={e => updateField('whatHappened', e.target.value)}
-              placeholder="No pressure. Just what comes to mind…"
-              className="min-h-[100px] resize-none border-slate-200 focus:border-slate-400"
-            />
-          </div>
+        {/* ── Writing fields — reflection-aware ────────────────────────────── */}
+        {(() => {
+          // Use custom field definitions for reflection types, default for daily
+          const fields = reflectionMeta?.fields ?? [
+            { key: 'whatHappened', label: 'What happened today?',       placeholder: 'No pressure. Just what comes to mind…' },
+            { key: 'feelings',     label: 'How did it make you feel?',  placeholder: 'All feelings are welcome here…' },
+            { key: 'whatMatters',  label: 'What mattered most?',        placeholder: 'What stood out or resonated…' },
+            { key: 'insight',      label: 'One insight or lesson',      placeholder: 'Something you learned or noticed…' },
+            { key: 'freeWrite',    label: 'Free write',                 placeholder: 'Anything else on your mind…' },
+          ];
+          const minHeights: Record<string, string> = {
+            freeWrite: 'min-h-[120px]',
+            insight:   'min-h-[80px]',
+          };
 
-          <div>
-            <Label htmlFor="feelings" className="text-sm text-slate-500 mb-2 block">
-              How did it make you feel?
-            </Label>
-            <Textarea
-              id="feelings"
-              value={entry.feelings || ''}
-              onChange={e => updateField('feelings', e.target.value)}
-              placeholder="All feelings are welcome here…"
-              className="min-h-[100px] resize-none border-slate-200 focus:border-slate-400"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="whatMatters" className="text-sm text-slate-500 mb-2 block">
-              What mattered most?
-            </Label>
-            <Textarea
-              id="whatMatters"
-              value={entry.whatMatters || ''}
-              onChange={e => updateField('whatMatters', e.target.value)}
-              placeholder="What stood out or resonated…"
-              className="min-h-[100px] resize-none border-slate-200 focus:border-slate-400"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="insight" className="text-sm text-slate-500 mb-2 block">
-              One insight or lesson
-            </Label>
-            <Textarea
-              id="insight"
-              value={entry.insight || ''}
-              onChange={e => updateField('insight', e.target.value)}
-              placeholder="Something you learned or noticed…"
-              className="min-h-[80px] resize-none border-slate-200 focus:border-slate-400"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="freeWrite" className="text-sm text-slate-500 mb-2 block">
-              Free write
-            </Label>
-            <Textarea
-              id="freeWrite"
-              value={entry.freeWrite || ''}
-              onChange={e => updateField('freeWrite', e.target.value)}
-              placeholder="Anything else on your mind…"
-              className="min-h-[120px] resize-none border-slate-200 focus:border-slate-400"
-            />
-          </div>
-        </div>
+          return (
+            <div className="space-y-6">
+              {fields.map(({ key, label, placeholder }) => (
+                <div key={key}>
+                  <Label htmlFor={key} className="text-sm text-slate-500 mb-2 block">
+                    {label}
+                  </Label>
+                  <Textarea
+                    id={key}
+                    value={(entry[key as keyof JournalEntryType] as string) || ''}
+                    onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
+                    placeholder={placeholder}
+                    className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none border-slate-200 focus:border-slate-400`}
+                  />
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* ── Memory Surface (similar past entries) ────────────────────────── */}
         <AnimatePresence>

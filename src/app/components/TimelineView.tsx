@@ -22,10 +22,13 @@ import { ChevronLeft, Edit } from 'lucide-react';
 import type { JournalEntry } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 
+type ReflectionEntryType = 'weekly' | 'monthly' | 'yearly';
+
 interface TimelineViewProps {
   entries: JournalEntry[];
-  onSelectDate: (date: string) => void;   // opens Write with that date
-  onEditEntry: (date: string) => void;    // opens Write pre-filled
+  onSelectDate: (date: string) => void;                                         // opens Write (daily) with that date
+  onEditEntry: (date: string) => void;                                          // opens Write pre-filled for edit
+  onReflectionEntry: (date: string, type: ReflectionEntryType) => void;        // opens Write with reflection type pre-set
 }
 
 // ── Mood colour system ─────────────────────────────────────────────────────
@@ -66,6 +69,36 @@ function buildEntryMap(entries: JournalEntry[]): Map<string, JournalEntry> {
   return map;
 }
 
+/** Returns the reflection entry for a given period, if one exists */
+function findReflectionEntry(
+  entries: JournalEntry[],
+  type: ReflectionEntryType,
+  periodKey: string   // 'YYYY-MM' for monthly, 'YYYY-MM-DD' (week start) for weekly, 'YYYY' for yearly
+): JournalEntry | undefined {
+  return entries.find(e => {
+    if (e.reflectionType !== type) return false;
+    if (type === 'monthly') return e.date === `reflection-monthly-${periodKey}`;
+    if (type === 'yearly')  return e.date === `reflection-yearly-${periodKey}`;
+    if (type === 'weekly')  return e.date === `reflection-weekly-${periodKey}`;
+    return false;
+  });
+}
+
+/** Small badge shown on month label / week number when a reflection entry exists */
+function ReflectionDot({ type }: { type: ReflectionEntryType }) {
+  const colours: Record<ReflectionEntryType, string> = {
+    weekly:  'bg-violet-400',
+    monthly: 'bg-sky-400',
+    yearly:  'bg-rose-400',
+  };
+  return (
+    <span
+      className={`inline-block w-1.5 h-1.5 rounded-full ml-1 ${colours[type]} shrink-0 align-middle`}
+      title={`${type} reflection written`}
+    />
+  );
+}
+
 function dominantMood(entries: JournalEntry[]): string | null {
   const counts: Record<string, number> = {};
   entries.forEach(e => { if (e.mood) counts[e.mood] = (counts[e.mood] || 0) + 1; });
@@ -84,7 +117,7 @@ function summaryLine(entries: JournalEntry[]): string {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
-export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineViewProps) {
+export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionEntry }: TimelineViewProps) {
   const [year, setYear]         = useState(getYear(new Date()));
   const [level, setLevel]       = useState<DrillLevel>('year');
   const [focusMonth, setFocus]  = useState<number>(getMonth(new Date())); // 0-indexed
@@ -181,9 +214,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineVie
             <div key={mi} className="min-w-0">
               <button
                 onClick={() => { setFocus(mi); setLevel('month'); }}
-                className="text-xs font-medium text-slate-500 hover:text-slate-800 mb-2 block transition-colors"
+                className="text-xs font-medium text-slate-500 hover:text-slate-800 mb-2 flex items-center transition-colors"
               >
                 {name}
+                {(() => {
+                  const periodKey = `${year}-${String(mi + 1).padStart(2, '0')}`;
+                  const hasMonthlyReflection = entries.some(
+                    e => e.reflectionType === 'monthly' && e.date === `reflection-monthly-${periodKey}`
+                  );
+                  return hasMonthlyReflection ? <ReflectionDot type="monthly" /> : null;
+                })()}
               </button>
               <div className="grid grid-cols-7 gap-0.5">
                 {DAY_LABELS.map((d, i) => (
@@ -247,9 +287,34 @@ export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineVie
     const mStart = startOfMonth(new Date(year, focusMonth, 1));
     const mEnd   = endOfMonth(mStart);
     const weeks  = eachWeekOfInterval({ start: mStart, end: mEnd });
+    const periodKey = format(mStart, 'yyyy-MM');
+    const monthlyReflection = findReflectionEntry(entries, 'monthly', periodKey);
+    const monthlyReflectionDate = monthlyReflection?.date;
 
     return (
       <div className="space-y-3">
+        {/* Monthly reflection banner */}
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <span className="text-xs text-slate-400 uppercase tracking-wide">
+            {MONTH_NAMES[focusMonth]} {year}
+          </span>
+          {monthlyReflection ? (
+            <button
+              onClick={() => onEditEntry(monthlyReflection.date)}
+              className="flex items-center gap-1.5 text-xs text-sky-600 hover:text-sky-800 transition-colors"
+            >
+              <ReflectionDot type="monthly" />
+              Monthly reflection written — edit
+            </button>
+          ) : (
+            <button
+              onClick={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
+              className="text-xs text-slate-400 hover:text-sky-600 transition-colors"
+            >
+              + Write monthly reflection
+            </button>
+          )}
+        </div>
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-2 mb-1">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
@@ -266,14 +331,23 @@ export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineVie
 
           return (
             <div key={wi} className="relative">
-              {/* Week row header — click → drill into week */}
-              <button
-                onClick={() => { setFocusW(weekStart); setLevel('week'); }}
-                className="absolute -left-6 top-1/2 -translate-y-1/2 text-[10px] text-slate-300 hover:text-slate-500 transition-colors"
-                title="View this week"
-              >
-                W{getWeek(weekStart)}
-              </button>
+              {/* Week row header — click → drill into week, hold title for reflection */}
+              {(() => {
+                const weekKey = format(weekStart, 'yyyy-MM-dd');
+                const hasWeeklyReflection = entries.some(
+                  e => e.reflectionType === 'weekly' && e.date === `reflection-weekly-${weekKey}`
+                );
+                return (
+                  <button
+                    onClick={() => { setFocusW(weekStart); setLevel('week'); }}
+                    className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-slate-300 hover:text-slate-500 transition-colors"
+                    title="View this week"
+                  >
+                    W{getWeek(weekStart)}
+                    {hasWeeklyReflection && <ReflectionDot type="weekly" />}
+                  </button>
+                );
+              })()}
 
               <div className="grid grid-cols-7 gap-2">
                 {weekDays.map(day => {
@@ -322,9 +396,34 @@ export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineVie
   const WeekView = () => {
     const wEnd   = endOfWeek(focusWeek);
     const wDays  = eachDayOfInterval({ start: focusWeek, end: wEnd });
+    const weekKey = format(focusWeek, 'yyyy-MM-dd');
+    const weeklyReflection = findReflectionEntry(entries, 'weekly', weekKey);
 
     return (
       <div className="max-w-lg">
+        {/* Weekly reflection banner */}
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <span className="text-xs text-slate-400 uppercase tracking-wide">
+            Week of {format(focusWeek, 'MMM d')}
+          </span>
+          {weeklyReflection ? (
+            <button
+              onClick={() => onEditEntry(weeklyReflection.date)}
+              className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 transition-colors"
+            >
+              <ReflectionDot type="weekly" />
+              Weekly reflection written — edit
+            </button>
+          ) : (
+            <button
+              onClick={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
+              className="text-xs text-slate-400 hover:text-violet-600 transition-colors"
+            >
+              + Write weekly reflection
+            </button>
+          )}
+        </div>
+
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-[22px] top-4 bottom-4 w-px bg-slate-200" />
@@ -416,12 +515,28 @@ export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineVie
     const moodStyle = entry.mood ? MOOD_BG[entry.mood] : 'bg-slate-50 border-slate-200';
     const moodText  = entry.mood ? MOOD_TEXT[entry.mood] : 'text-slate-600';
 
+    const REFLECTION_BADGE: Record<string, { label: string; cls: string }> = {
+      weekly:  { label: 'Weekly reflection', cls: 'bg-violet-100 text-violet-700' },
+      monthly: { label: 'Monthly reflection', cls: 'bg-sky-100 text-sky-700' },
+      yearly:  { label: 'Yearly reflection', cls: 'bg-rose-100 text-rose-700' },
+    };
+    const badge = entry.reflectionType && entry.reflectionType !== 'daily'
+      ? REFLECTION_BADGE[entry.reflectionType]
+      : null;
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl space-y-5"
       >
+        {/* Reflection type badge */}
+        {badge && (
+          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${badge.cls}`}>
+            {badge.label}
+          </span>
+        )}
+
         {/* Mood + energy bar */}
         {(entry.mood || entry.energy) && (
           <div className={`flex items-center gap-4 px-4 py-3 rounded-xl border ${moodStyle}`}>
@@ -531,26 +646,47 @@ export function TimelineView({ entries, onSelectDate, onEditEntry }: TimelineVie
           const yEntries = entries.filter(e => getYear(parseISO(e.date)) === y);
           const mood     = dominantMood(yEntries);
           const isActive = y === year;
+          const yearlyReflection = findReflectionEntry(entries, 'yearly', String(y));
           return (
-            <button
-              key={y}
-              onClick={() => { setYear(y); setLevel('year'); }}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
-                ${isActive
-                  ? 'bg-slate-900 text-white font-medium'
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                }
-              `}
-            >
-              <span>{y}</span>
-              {mood && !isActive && (
-                <span
-                  className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`}
-                  title={MOOD_LABEL[mood]}
-                />
-              )}
-            </button>
+            <div key={y} className="group relative">
+              <button
+                onClick={() => { setYear(y); setLevel('year'); }}
+                className={`
+                  flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left w-full
+                  ${isActive
+                    ? 'bg-slate-900 text-white font-medium'
+                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                  }
+                `}
+              >
+                <span>{y}</span>
+                {yearlyReflection && !isActive && <ReflectionDot type="yearly" />}
+                {mood && !isActive && !yearlyReflection && (
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`}
+                    title={MOOD_LABEL[mood]}
+                  />
+                )}
+              </button>
+              {/* Yearly reflection quick-action — visible on hover */}
+              <button
+                onClick={() => onReflectionEntry(
+                  yearlyReflection ? yearlyReflection.date : `reflection-yearly-${y}`,
+                  'yearly'
+                )}
+                title={yearlyReflection ? 'Edit yearly reflection' : 'Write yearly reflection'}
+                className={`
+                  absolute right-1 top-1/2 -translate-y-1/2 text-[10px] opacity-0 group-hover:opacity-100
+                  transition-opacity px-1.5 py-0.5 rounded
+                  ${yearlyReflection
+                    ? 'text-rose-500 hover:text-rose-700'
+                    : 'text-slate-400 hover:text-slate-600'
+                  }
+                `}
+              >
+                {yearlyReflection ? '✎' : '+'}
+              </button>
+            </div>
           );
         })}
       </div>

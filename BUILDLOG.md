@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4 complete (2026-02-28) — Write section redesign built
+# Last updated: Session A4b complete (2026-02-28) — Weekly/Monthly/Yearly reflection types via Timeline
 
 ---
 
@@ -385,24 +385,73 @@ export const db = {
 ---
 
 #### SESSION A4b — Weekly/Monthly/Yearly Reflection Types via Timeline
-**Status:** NOT STARTED
+**Status:** ✅ COMPLETE (2026-02-28)
 
-**Goal:** Clicking month label in Timeline → Monthly reflection form. Week → Weekly. Year → Yearly.
+**What was done:**
 
-**What to build:**
-- Monthly prompt set: biggest shift, what you'd tell past self, growth area, what to carry forward
-- Weekly prompt set: wins, challenges, patterns, next week intention, one word summary
-- Yearly prompt set: major chapters, who you became, what to leave behind, word for the year
-- Wire Timeline month label click → Write with reflectionType pre-set to 'monthly'
-- Wire Timeline week click → Write with reflectionType pre-set to 'weekly'
-- Wire Timeline year selector → Write with reflectionType pre-set to 'yearly'
-- Timeline then shows those entry types with appropriate colour/indicator
+1. **`TimelineView.tsx` — new prop `onReflectionEntry(date, type)`**
+   - New `ReflectionEntryType = 'weekly' | 'monthly' | 'yearly'` type
+   - New `findReflectionEntry()` helper — checks if a reflection entry already exists for a period key
+   - New `ReflectionDot` component — small coloured dot (violet/sky/rose per type) used throughout
 
-**Files to upload:**
-- `BUILDLOG.md`
-- `src/app/components/TimelineView.tsx`
-- `src/app/components/JournalEntry.tsx`
-- `src/app/utils/prompts-v2.ts`
+2. **Timeline visual indicators:**
+   - Heatmap month labels — show sky dot when a monthly reflection exists for that month
+   - Month view week numbers (W1, W2...) — show violet dot when a weekly reflection exists for that week
+   - Year sidebar — hover over any year row reveals `+` / `✎` button for yearly reflections; rose dot on existing
+
+3. **Timeline reflection banners:**
+   - Month view header — "Write monthly reflection" button; if one exists shows "Monthly reflection written — edit"
+   - Week view header — same pattern for weekly, violet colour
+   - Year sidebar — hover action for yearly, rose colour
+
+4. **DayView** — shows coloured badge ("Weekly reflection", "Monthly reflection", "Yearly reflection") when reading a non-daily entry
+
+5. **`JournalEntry.tsx` — new prop `initialReflectionType` (default `'daily'`)**
+   - `getReflectionPrompt` imported from `prompts-v2.ts` — fires correct prompt set for each reflection type
+   - `REFLECTION_META` constant — custom field labels and placeholders per type (e.g. "What defined this month?" instead of "What happened today?")
+   - Reflection badge shown in Guided mode header (violet/sky/rose per type)
+   - `reflectionType` field saved correctly on every entry — Timeline dot indicators work immediately on save
+   - Writing fields rendered dynamically from `reflectionMeta.fields` — daily mode unchanged
+
+6. **`App.tsx` — fully wired:**
+   - `pendingReflectionType` state — defaults to `'daily'`, always reset on regular date selects and edits
+   - `handleReflectionEntry(date, type)` — sets date + type, routes to write
+   - `JournalEntry` receives `initialReflectionType={pendingReflectionType}`
+   - `TimelineView` receives `onReflectionEntry={handleReflectionEntry}`
+
+**Complete data flow:**
+```
+Timeline "Write monthly reflection" button
+  → handleReflectionEntry('2026-02-01', 'monthly')
+    → pendingReflectionType = 'monthly', view = 'write'
+      → JournalEntry: badge "Monthly reflection", custom field labels, prompts from reflectionPrompts.monthly
+        → saves entry with reflectionType: 'monthly'
+          → Timeline shows sky dot on Feb label ✓
+```
+
+**Decisions made during session:**
+- `pendingReflectionType` always reset to `'daily'` on `handleSelectDate`, `handleEditEntry`, `handleNewEntry` — prevents type leaking between navigations
+- Weekly reflection date key = week start date (`yyyy-MM-dd`) — simplest unambiguous key, no week-number edge cases
+- Monthly reflection date key = first day of month — entry lands on that date in heatmap, correctly colour-coded
+- Yearly reflection date key = `YYYY-01-01` — same principle
+- `±3 day` year-ago search from A4 means yearly reflections from Jan 1 won't accidentally surface as "year-ago" memories — they have `reflectionType: 'yearly'` and will be filtered in A5 if needed
+- `prompts-v2.ts` unchanged — existing prompt sets used as-is, no new prompts added
+
+**Issues encountered:** None — clean three-file change, no ripple effects
+
+**Session checklist:**
+- [x] Month view shows "Write monthly reflection" / "edit" banner
+- [x] Week view shows "Write weekly reflection" / "edit" banner
+- [x] Year sidebar shows yearly reflection action on hover
+- [x] Reflection dots appear on month labels, week numbers, year sidebar
+- [x] DayView shows reflection type badge for non-daily entries
+- [x] JournalEntry renders custom field labels for each reflection type
+- [x] JournalEntry renders correct reflection prompt from prompts-v2.ts
+- [x] JournalEntry shows badge in header for non-daily types
+- [x] App.tsx wired — pendingReflectionType flows correctly, no type leakage
+- [x] reflectionType saved correctly on every entry
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
 
 ---
 
@@ -527,17 +576,18 @@ export const db = {
 
 ---
 
-## HOW TO START SESSION A4b
+## HOW TO START SESSION A5
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A4b — Weekly/Monthly/Yearly reflection types via Timeline."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A5 — design polish pass."
 
 Then attach:
 1. This `BUILDLOG.md`
-2. `src/app/components/TimelineView.tsx`
+2. `src/app/App.tsx`
 3. `src/app/components/JournalEntry.tsx`
-4. `src/app/utils/prompts-v2.ts`
+4. `src/app/components/TimelineView.tsx`
+5. Any other component files flagged during the session
 
 ---
 
@@ -552,8 +602,8 @@ Then attach:
 | Session A3 | 2026-02-28 | Mood + energy visual upgrade — emoji cards with colour wash, vertical signal bar meter | ✅ Complete |
 | Session A3b | 2026-02-28 | Timeline/Heatmap — year heatmap, drill-down nav, year selector sidebar, day/week/month/day views | ✅ Complete |
 | Session A4 | 2026-02-28 | Write section redesign — Quick/Guided/Deep modes, contextual prompt strip, continuity prompt, year-ago memory surface, closing moment, unsaved changes guard, ReflectionModeSelector removed | ✅ Complete |
-| Session A4b | — | Weekly/Monthly/Yearly reflection types accessed via heatmap | ⏳ Next |
-| Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Pending |
+| Session A4b | 2026-02-28 | Weekly/Monthly/Yearly reflection types wired from Timeline → Write — reflection dots, banners, custom prompts/fields, App.tsx fully wired | ✅ Complete |
+| Session A5 | — | Design polish — apply Witness design language consistently | ⏳ Next |
 | Session B1 | — | Electron wrapper | ⏳ Pending |
 | Session B2 | — | GitHub Actions CI | ⏳ Pending |
 | Session B3 | — | Polish and final testing | ⏳ Pending |
@@ -601,6 +651,11 @@ Then attach:
 - **2026-02-28 (A4):** ReflectionModeSelector removed from Write entirely — reflection types accessed via Timeline drill-down in A4b
 - **2026-02-28 (A4):** prompts-v2.ts (reflection prompts) not used in Write — reserved for A4b when weekly/monthly/yearly entry types are wired
 - **2026-02-28 (A4):** isLongForm field already existed in types.ts — Deep Write mode sets it without schema change
+- **2026-02-28 (A4b):** pendingReflectionType always reset to 'daily' on regular navigation — prevents type leaking between navigations
+- **2026-02-28 (A4b):** Weekly reflection date key = week start date (yyyy-MM-dd) — simplest unambiguous key, no week-number edge cases
+- **2026-02-28 (A4b):** Monthly/Yearly reflection date keys = first day of period (YYYY-MM-01, YYYY-01-01) — lands correctly in heatmap
+- **2026-02-28 (A4b):** prompts-v2.ts used as-is for reflection prompts — no changes needed to existing prompt sets
+- **2026-02-28 (A4b):** Reflection dot colours: weekly = violet, monthly = sky, yearly = rose — distinct, non-mood colours to avoid confusion with mood system
 
 ---
 
