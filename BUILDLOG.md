@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4c-fix complete (2026-03-01)
+# Last updated: Session A4c-fix2 complete (2026-03-01)
 
 ---
 
@@ -423,23 +423,87 @@ export const db = {
 
 ---
 
-#### SESSION A4c — Reflection Panels + Intentions Loop ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A4c — Reflection Panels + Intentions Loop
+**Status:** ✅ COMPLETE (2026-03-01)
 
 **Goal:** Make reflections readable inline. Close the loop between past reflection and future intention.
 
-**What to build:**
-1. **`types.ts`** — add `intention?: string` to `JournalEntry` interface
-2. **`TimelineView.tsx`** — `ReflectionPanel` component replaces current banners — shows full text, mood, date written, Edit button. Empty state: invitation to write.
-3. **`JournalEntry.tsx`** — intention field at bottom of reflection forms. `getPreviousPeriodIntention()` helper surfaces last period's intention as opening prompt: *"Last week you intended: '[X]' — how did that unfold?"*
+**What was done:**
 
-**Witness test:** ✅ — intention surfaced as prompt, never tracked for completion
+**`types.ts`**
+- Added `intention?: string` to `JournalEntry` interface. Optional, additive — no migration needed.
 
-**Files needed:** `BUILDLOG.md`, `src/app/types.ts`, `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
+**`JournalEntry.tsx`**
+1. **`getPreviousPeriodIntention()` helper** — filters entries by reflection type prefix, finds most recent with a non-empty intention, returns *"Last week you intended: '[X]' — how did that unfold?"* Truncates at 80 chars. Returns null cleanly when nothing exists.
+2. **`previousIntention` computed** — joins `continuityPrompt` and `yearAgoEntry` in contextual prompts block. Reflection entries only, never daily.
+3. **`ContextualPrompt` updated** — new `previousIntention` prop. Priority order: year-ago → continuity → **previous intention** → daily prompt. Renders in violet card with 🔁 icon.
+4. **Intention textarea** — bottom of guided mode for reflection entries only, after writing fields, before Tags. Label/placeholder vary by type. Subtext: *"Not a goal. Not a commitment. Just a direction."*
+
+**`TimelineView.tsx`**
+1. **`ReflectionPanel` component** — replaces all flat banners. Empty state: accent card with quiet prompt + "Write →". Written state: all non-empty fields with period-appropriate labels, mood emoji, Edit button, intention in italic accent text at bottom. Colour-coded: violet/weekly, sky/monthly, amber/yearly.
+2. **MonthView** — banner → `ReflectionPanel type="monthly"`
+3. **WeekView** — banner → `ReflectionPanel type="weekly"`
+4. **Year view** — `ReflectionPanel type="yearly"` added inline below heatmap, above BelowHeatmap.
+
+**Files changed:** `src/app/types.ts`, `src/app/components/JournalEntry.tsx`, `src/app/components/TimelineView.tsx`
 
 ---
 
-#### SESSION A4d — First-Run Empty State + Below-Heatmap Space
+#### SESSION A4c-fix — Reflection UX Corrections
+**Status:** ✅ COMPLETE (2026-03-01)
+
+**Problems fixed:**
+1. Empty yearly reflection panel showing on Day 1 — pressure before any writing done
+2. Yearly reflection colour (rose/red) — felt anxious, violated colour philosophy
+3. Mood/energy pickers + mode switcher on reflection forms — wrong questions for a period review
+
+**`TimelineView.tsx`**
+- All rose → amber (ReflectionDot, REFLECTION_PANEL_META, DayView badge, year sidebar button)
+- Empty yearly panel hidden from year view — `if (!yearlyReflection) return null`. Only the written panel appears. Entry point: sidebar `+` hover button exclusively.
+
+**`JournalEntry.tsx`**
+- Mode switcher hidden for reflections: `{!isReflection && <ModeSwitcher />}`
+- Mood + energy block hidden for reflections: `{!isReflection && (...)}`
+- Reflection form: date → badge → previous intention prompt → writing fields → intention → tags → save
+
+**Decisions locked:** Yearly gate = written only. Yearly colour = amber. Mood/energy on reflections = never.
+
+**Files changed:** `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
+
+---
+
+#### SESSION A4c-fix2 — Timeline Stats, Intentions, Blank Screen Bug
+**Status:** ✅ COMPLETE (2026-03-01)
+
+**Problems fixed (surfaced by visual review):**
+1. "10 entries · A mostly great year so far" duplicated in breadcrumb AND BelowHeatmap
+2. "This week you intended" showing monthly intention — label wrong, source ambiguous
+3. Month view showing year stats instead of month stats
+4. Week view showing year stats instead of week stats
+5. **Critical bug:** clicking "Weekly reflection written — edit" → blank screen. Root cause: `handleEditEntry` always set `pendingReflectionType('daily')`, stripping the reflection type from synthetic date keys.
+
+**`App.tsx`**
+- `handleEditEntry` now infers reflection type from date key prefix — `reflection-weekly-*` → `'weekly'` etc. Fixes blank screen on all reflection edits.
+- `activeIntention` now returns `{ text: string, type: 'weekly' | 'monthly' }` instead of bare string — enables correct label in TimelineView.
+
+**`TimelineView.tsx`**
+- `activeIntention` prop type updated to `{ text, type } | undefined`
+- Breadcrumb stat is now level-aware:
+  - Year: `"28 entries · A mostly good year so far"`
+  - Month: `"7 entries · A mostly good month"`
+  - Week: `"4 of 7 days · Mostly good"`
+  - Day: hidden
+- `BelowHeatmap`: removed duplicate year stat. Fixed intention label to use `activeIntention.type`. Added witness observation: *"You write most on Sundays."* (min 4 entries, never shown on Day 1).
+- `mostActiveDay()` helper added — counts entries by day-of-week, returns most frequent. Pure observation, no judgement.
+- Month view: monthly intention shown above calendar grid — only when written, sky-blue italic, nothing if absent.
+- Week view: weekly intention shown above day timeline — only when written, violet italic, nothing if absent.
+
+**Files changed:** `src/app/App.tsx`, `src/app/components/TimelineView.tsx`
+
+---
+
+#### SESSION A5 — Design Polish Pass ← START HERE NEXT
+**Status:** NOT STARTED
 **Status:** ✅ COMPLETE (2026-03-01)
 
 **Goal:** Fix the void that new users land on. Fill the space below the heatmap with content that serves the Witness philosophy.
@@ -491,40 +555,7 @@ export const db = {
 
 ---
 
-#### SESSION A4c-fix — Reflection UX Corrections
-**Status:** ✅ COMPLETE (2026-03-01)
-
-**Goal:** Fix three UX problems surfaced by visual review after A4c shipped.
-
-**Problems identified:**
-1. Empty yearly reflection panel showing on Day 1 — wrong signal at wrong time, adds pressure before the user has written anything
-2. Yearly reflection colour (rose/red) felt anxious and alarming — violated colour philosophy
-3. Mood/energy pickers and Quick/Guided/Deep mode switcher on reflection forms — wrong questions for a period review
-
-**What was done:**
-
-**`TimelineView.tsx`**
-- Yearly panel colour: all rose → amber throughout (ReflectionDot, REFLECTION_PANEL_META, DayView badge, year sidebar button). Amber reads as warmth, maps to the heatmap's emotional language.
-- Empty yearly panel hidden from year view entirely. `if (!yearlyReflection) return null` guard added — panel only appears once a reflection has been written. Entry point is exclusively the sidebar `+` hover button. No uninvited pressure on Day 1 or any other day.
-- Weekly/monthly empty panels unchanged — they live inside drill-down views the user navigated into intentionally.
-
-**`JournalEntry.tsx`**
-- Mode switcher (Quick/Guided/Deep) hidden for all reflection types: `{!isReflection && <ModeSwitcher />}`
-- Mood pickers and energy bars hidden for all reflection types: entire block wrapped in `{!isReflection && (...)}`
-- Reflection form now: date header → badge → previous intention prompt → writing fields → intention → tags → save. Clean, no noise.
-
-**Decisions locked in BUILDLOG:**
-- Yearly reflection gate: hidden until user explicitly clicks sidebar `+` — never shown uninvited
-- Yearly colour: amber (matches heatmap emotional language, never alarming)
-- Mood/energy on reflections: removed — "how do you feel right now" is the wrong question for a period review
-
-**Files changed:**
-- `src/app/components/TimelineView.tsx`
-- `src/app/components/JournalEntry.tsx`
-
----
-
-#### SESSION A5 — Design Polish Pass ← START HERE NEXT
+#### SESSION A5 — Design Polish Pass
 **Status:** NOT STARTED
 
 **Goal:** Apply design principles, audit copy, elevate visual quality
