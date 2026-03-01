@@ -616,24 +616,6 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     return (
       <div className="space-y-3">
-        {/* Monthly reflection panel */}
-        <ReflectionPanel
-          type="monthly"
-          reflection={monthlyReflection}
-          onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
-          onEdit={() => onEditEntry(monthlyReflection!.date)}
-        />
-        {/* Monthly intention — shown above calendar only when written */}
-        {(() => {
-          const intention = (monthlyReflection as any)?.intention as string | undefined;
-          if (!intention) return null;
-          return (
-            <div className="mb-3 px-1">
-              <p className="text-xs text-slate-400 mb-0.5">This month you intended:</p>
-              <p className="text-sm text-sky-700 italic">"{intention}"</p>
-            </div>
-          );
-        })()}
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-2 mb-1">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
@@ -691,7 +673,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                         ${!inMonth ? 'opacity-25' : ''}
                         ${entry?.mood
                           ? `${MOOD_CELL[entry.mood]} border-transparent text-white font-medium`
-                          : 'bg-white border-slate-100 hover:border-slate-300 text-slate-700'
+                          : entry
+                            ? 'bg-slate-200 border-slate-300 text-slate-600 ring-1 ring-slate-400 ring-dashed'
+                            : 'bg-white border-slate-100 hover:border-slate-300 text-slate-700'
                         }
                         ${todayC ? 'ring-2 ring-slate-800 ring-offset-1' : ''}
                       `}
@@ -707,6 +691,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             </div>
           );
         })}
+
+        {/* Monthly reflection panel — below the calendar, after seeing the month's data */}
+        <div className="mt-6">
+          <ReflectionPanel
+            type="monthly"
+            reflection={monthlyReflection}
+            onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
+            onEdit={() => onEditEntry(monthlyReflection!.date)}
+          />
+        </div>
       </div>
     );
   };
@@ -720,25 +714,6 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     return (
       <div className="max-w-lg">
-        {/* Weekly reflection panel */}
-        <ReflectionPanel
-          type="weekly"
-          reflection={weeklyReflection}
-          onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
-          onEdit={() => onEditEntry(weeklyReflection!.date)}
-        />
-        {/* Weekly intention — shown above timeline only when written */}
-        {(() => {
-          const intention = (weeklyReflection as any)?.intention as string | undefined;
-          if (!intention) return null;
-          return (
-            <div className="mb-4 px-1">
-              <p className="text-xs text-slate-400 mb-0.5">This week you intended:</p>
-              <p className="text-sm text-violet-700 italic">"{intention}"</p>
-            </div>
-          );
-        })()}
-
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-[22px] top-4 bottom-4 w-px bg-slate-200" />
@@ -806,6 +781,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               );
             })}
           </div>
+        </div>
+
+        {/* Weekly reflection panel — below the timeline, after seeing the week's data */}
+        <div className="mt-6">
+          <ReflectionPanel
+            type="weekly"
+            reflection={weeklyReflection}
+            onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
+            onEdit={() => onEditEntry(weeklyReflection!.date)}
+          />
         </div>
       </div>
     );
