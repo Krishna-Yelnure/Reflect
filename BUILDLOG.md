@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4c-fix3 complete (2026-03-01)
+# Last updated: Session A4c-fix4 complete (2026-03-01)
 
 ---
 
@@ -430,15 +430,9 @@ export const db = {
 
 **`types.ts`** — Added `intention?: string` to `JournalEntry` interface. Optional, additive — no migration needed.
 
-**`JournalEntry.tsx`**
-1. `getPreviousPeriodIntention()` helper — filters entries by reflection type prefix, finds most recent with a non-empty intention, returns *"Last week you intended: '[X]' — how did that unfold?"* Truncates at 80 chars. Returns null cleanly when nothing exists.
-2. `previousIntention` computed — joins `continuityPrompt` and `yearAgoEntry` in contextual prompts block. Reflection entries only, never daily.
-3. `ContextualPrompt` updated — new `previousIntention` prop. Priority: year-ago → continuity → previous intention → daily prompt. Renders in violet card with 🔁 icon.
-4. Intention textarea — bottom of guided mode for reflection entries only, after writing fields, before Tags. Label/placeholder vary by type. Subtext: *"Not a goal. Not a commitment. Just a direction."*
+**`JournalEntry.tsx`** — `getPreviousPeriodIntention()` helper surfaces last period's intention as opening prompt. Intention textarea added at bottom of reflection forms only. Subtext: *"Not a goal. Not a commitment. Just a direction."*
 
-**`TimelineView.tsx`**
-1. `ReflectionPanel` component — replaces all flat banners. Empty state: accent card + "Write →". Written state: all non-empty fields with period-appropriate labels, mood emoji, Edit button, intention in italic at bottom. Colour-coded: violet/weekly, sky/monthly, amber/yearly.
-2. MonthView, WeekView, Year view all use ReflectionPanel.
+**`TimelineView.tsx`** — `ReflectionPanel` component replaces all flat banners. Empty state: accent card + "Write →". Written state: all non-empty fields, mood emoji, Edit button, intention in italic. Colour-coded: violet/weekly, sky/monthly, amber/yearly. MonthView, WeekView, and year view all use ReflectionPanel.
 
 **Files changed:** `src/app/types.ts`, `src/app/components/JournalEntry.tsx`, `src/app/components/TimelineView.tsx`
 
@@ -447,16 +441,11 @@ export const db = {
 #### SESSION A4c-fix — Reflection UX Corrections
 **Status:** ✅ COMPLETE (2026-03-01)
 
-**Problems fixed (visual review):**
-1. Empty yearly panel appearing on Day 1 — pressure before any writing done
-2. Yearly colour rose/red — felt anxious, violated colour philosophy
-3. Mood/energy + mode switcher on reflection forms — wrong questions for a period review
+**Problems fixed:** Empty yearly panel on Day 1. Yearly colour rose→amber. Mood/energy + mode switcher removed from reflection forms.
 
-**`TimelineView.tsx`** — All rose → amber. Empty yearly panel hidden: `if (!yearlyReflection) return null`. Entry point: sidebar `+` only.
+**`TimelineView.tsx`** — All rose→amber. Empty yearly panel: `if (!yearlyReflection) return null`. Entry point: sidebar `+` only.
 
-**`JournalEntry.tsx`** — Mode switcher: `{!isReflection && <ModeSwitcher />}`. Mood+energy: `{!isReflection && (...)}`. Reflection form now: date → badge → previous intention prompt → writing fields → intention → tags → save.
-
-**Decisions locked:** Yearly gate = written only. Yearly colour = amber. Mood/energy on reflections = never.
+**`JournalEntry.tsx`** — Mode switcher and mood+energy block hidden for all reflection types via `{!isReflection && ...}`.
 
 **Files changed:** `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
 
@@ -465,15 +454,11 @@ export const db = {
 #### SESSION A4c-fix2 — Timeline Stats, Intentions, Blank Screen Bug
 **Status:** ✅ COMPLETE (2026-03-01)
 
-**Problems fixed:**
-1. Year stat duplicated in breadcrumb AND BelowHeatmap
-2. "This week you intended" showing monthly intention — label wrong
-3. Month/week views showing year stats instead of period-scoped stats
-4. **Critical bug:** editing any reflection → blank screen. Root cause: `handleEditEntry` always set `pendingReflectionType('daily')`.
+**Problems fixed:** Year stat duplicated in breadcrumb and BelowHeatmap. Intention label wrong ("This week" for monthly). Month/week showing year stats. **Critical:** editing any reflection → blank screen (root cause: `handleEditEntry` always set `pendingReflectionType('daily')`).
 
-**`App.tsx`** — `handleEditEntry` infers type from date key prefix. `activeIntention` returns `{ text, type }` instead of bare string.
+**`App.tsx`** — `handleEditEntry` infers type from date key prefix. `activeIntention` returns `{ text, type }` object.
 
-**`TimelineView.tsx`** — Breadcrumb stat level-aware (year/month/week scoped). BelowHeatmap: removed duplicate stat, fixed intention label. `mostActiveDay()` helper added — *"You write most on Sundays."* Monthly intention above calendar grid. Weekly intention above day timeline. Both only when written.
+**`TimelineView.tsx`** — Breadcrumb stat level-aware (year/month/week scoped, hidden at day). BelowHeatmap: removed duplicate stat, fixed intention label. `mostActiveDay()` helper — *"You write most on Sundays."* Monthly intention above calendar, weekly above timeline (both only when written).
 
 **Files changed:** `src/app/App.tsx`, `src/app/components/TimelineView.tsx`
 
@@ -482,56 +467,65 @@ export const db = {
 #### SESSION A4c-fix3 — Dynamic Sidebar, Dot States, ReflectionPanel Polish
 **Status:** ✅ COMPLETE (2026-03-01)
 
-**Problems fixed (visual review + user feedback):**
-1. Right sidebar always showed years regardless of drill level — disorienting in month/week/day views
-2. Entries written in Deep/Quick mode (no mood set) looked identical to empty days on the heatmap
-3. ReflectionPanel showed intention at the bottom — wrong narrative order, intention should lead
-4. "You write most on Sundays" appeared after an intention in month view — wrong context, year-only observation
-5. Day view showed year stat in breadcrumb — noise when reading a single entry
-6. Day view had no useful sidebar navigation
+**Problems fixed:** Sidebar always showed years at all drill levels. No-mood entries (Deep/Quick) looked identical to empty days. Intention at bottom of ReflectionPanel (wrong narrative order). "You write most on Sundays" in wrong context. Year stat on day view.
 
-**`TimelineView.tsx` — 6 changes:**
+**`TimelineView.tsx`** — Dynamic right sidebar: year view shows years, month view shows Jan–Dec, week/day views show 7 days of the week with mood dots and day names. Click written day → day view, click empty → write form. "Written, no mood" dot: `bg-slate-200` with dashed ring border. ReflectionPanel: intention moved to top with divider, content fields below. BelowHeatmap reordered: prompt → observation → intention. Day view breadcrumb stat hidden.
 
-**Dynamic right sidebar** — four distinct states:
-- Year view: year list with mood dots and yearly reflection dots (unchanged)
-- Month view: Jan–Dec for the active year, active month highlighted, mood dot or reflection badge per month
-- Week view: 7 days of the focused week with day names + mood/dashed-ring dots. Click written → day view. Click empty → write form.
-- Day view: same 7-day week sidebar, current day highlighted. Navigate between days without going up levels.
-
-**"Written, no mood" dot** — entries without a mood now render as `bg-slate-200` with dashed ring border (`ring-1 ring-slate-400 ring-dashed`). Clearly different from empty `bg-slate-100`. Appears in heatmap and sidebar navigation dots. Covers Deep/Quick writes that don't capture mood.
-
-**ReflectionPanel layout inverted** — intention moved to top, separated by divider, before content fields. Thread from last period is the first thing seen — contextualises everything below. No intention = section absent, no layout shift.
-
-**BelowHeatmap reordered** — prompt → witness observation → intention. Thematically: reflective content first, active content last. "You write most on…" no longer appears mid-intention.
-
-**Day view breadcrumb stat hidden** — `{level !== 'day' && <span>...stat...</span>}`. Reading a single entry, the year aggregate is noise.
-
-**Brainstorm decisions locked for next session (A5):**
-- One-word closing field at end of all reflection forms (weekly/monthly/yearly) — *"A word for how this period felt"* — past-facing, observational, Witness-compliant
-- Staggered entrance animations on panels/cards (Framer Motion already available)
-- HTML reference inspiration: card-label trailing line dividers and inline prompt chips deferred to A5 design polish pass
-- HTML habits tracker, streak labels, celebratory saves — explicitly rejected (anti-Witness)
+**Decisions locked for next session:** One-word closing field on all reflection forms. Staggered entrance animations. HTML reference items (prompt chips, card-label dividers) deferred to A5.
 
 **Files changed:** `src/app/components/TimelineView.tsx`
+
+---
+
+#### SESSION A4c-fix4 — ReflectionPanel Placement + Duplicate Intention
+**Status:** ✅ COMPLETE (2026-03-01)
+
+**Problems fixed (visual review):**
+1. ReflectionPanel sitting above the calendar/timeline — panel is a reflection *on* the period, so it belongs *after* seeing the data, not before it
+2. "This month you intended:" appearing twice — once inside ReflectionPanel (correct, on top) and again as a standalone block below the panel (duplicate, from a previous session's intermediate state)
+
+**`TimelineView.tsx`**
+- **MonthView:** Removed `ReflectionPanel` from top of view. Removed standalone `"This month you intended:"` block. Added `ReflectionPanel` with `mt-6` after the weeks grid. Calendar grid → reflection panel is now the correct reading order.
+- **WeekView:** Same treatment. Removed `ReflectionPanel` from top and standalone intention block. Added `ReflectionPanel` with `mt-6` after the day timeline.
+- Also applied dashed ring to month grid cells for no-mood entries (missed in fix3).
+
+**Result:** Both month and week views now read: data first → reflection below. Intention shows once, on top inside the panel, as the through-line from last period.
+
+**Files changed:** `src/app/components/TimelineView.tsx`
+
+---
+
+#### SESSION A4d — First-Run Empty State + Below-Heatmap Space
+**Status:** ✅ COMPLETE (2026-03-01)
+
+**Goal:** Fix the void that new users land on. Fill the space below the heatmap with content that serves the Witness philosophy.
+
+**Part 1 — First-run empty state:** `WelcomeCard` above heatmap when no entries. Today's cell pulses amber. First-entry special closing moment: *"Your first entry. The map has begun."*
+
+**Part 2 — BelowHeatmap:** Daily prompt (auto-fades 6s, once/day). Active intention surface. Year-in-numbers with Witness-compliant mood phrases.
+
+**localStorage keys:** `journal_first_visit_dismissed`, `last_prompt_shown_date`
+
+**Files changed:** `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`, `src/app/App.tsx`
 
 ---
 
 #### SESSION A5 — Design Polish Pass ← START HERE NEXT
 **Status:** NOT STARTED
 
-**Goal:** Apply design principles, audit copy, elevate visual quality. Also carry in deferred items from A4c-fix3.
+**Goal:** Apply design principles, audit copy, elevate visual quality. Carry in deferred items from A4c-fix3.
 
-**Carry-in from A4c-fix3:**
-- [ ] One-word closing field on all reflection forms (weekly/monthly/yearly) — *"A word for how this period felt"*
-- [ ] Staggered entrance animations on ReflectionPanel fields and cards
+**Carry-in (decided, not yet built):**
+- [ ] One-word closing field on all reflection forms (weekly/monthly/yearly) — *"A word for how this period felt"* — past-facing, observational, Witness-compliant
+- [ ] Staggered entrance animations on ReflectionPanel fields and cards (Framer Motion already available)
 
 **Design polish checklist:**
 - [ ] Typographic hierarchy — stronger heading font, lighter body
 - [ ] Purposeful accent colour — one warm colour applied consistently
 - [ ] Copy audit — every label, placeholder, empty state checked for emotional safety tone
-- [ ] **Mood language audit** — hard day counts never shown, negative tallies never shown, tender language for difficult periods
+- [ ] Mood language audit — hard day counts never shown, negative tallies never shown, tender language for difficult periods
 - [ ] Empty states — turn bare empty views into invitations
-- [ ] Microinteractions — review key moments: save, delete, mood select
+- [ ] Microinteractions — save, delete, mood select key moments
 - [ ] Consistent visual language — border radius, shadow, colour logic unified
 - [ ] Inline prompt chips above textarea fields (from HTML reference)
 - [ ] Card-label trailing line dividers (from HTML reference — evaluate fit)
