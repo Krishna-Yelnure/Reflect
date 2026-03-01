@@ -131,21 +131,22 @@ const REFLECTION_META: Record<string, {
   },
 };
 
-// Closing moment lines — quiet, human, not celebratory
+// Closing moment lines — quiet, human, not celebratory. All pass Witness test.
 const closingLines = [
   'Another day, held.',
-  'The witness remembers.',
+  'The page holds it now.',
   'This moment, kept.',
   'Something true, written.',
   'You showed up.',
-  'The page holds it now.',
   'A thread in the story.',
   'Quietly remembered.',
   'Written. Kept. Yours.',
   'Today is part of the record.',
+  'The story continues.',
+  'Here. Now. Remembered.',
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 
 function getClosingLine(): string {
   return closingLines[Math.floor(Math.random() * closingLines.length)];
@@ -252,6 +253,8 @@ function formatEntryDate(dateKey: string): string {
     return format(new Date(dateKey + 'T12:00:00'), 'EEEE, MMMM d, yyyy');
   } catch { return dateKey; }
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Quiet mode toggle — three pill buttons */
 function ModeSwitcher({
@@ -442,6 +445,7 @@ export function JournalEntry({
     energy: undefined,
     tags: [],
     reflectionType: initialReflectionType,
+    oneWord: '',
   });
   const [prompt, setPrompt] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -484,6 +488,7 @@ export function JournalEntry({
         energy: undefined,
         tags: [],
         reflectionType: initialReflectionType,
+        oneWord: '',
       });
       // Set prompt based on reflection type
       if (isReflection) {
@@ -753,13 +758,19 @@ export function JournalEntry({
       </AnimatePresence>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
+        exit={{ opacity: 0, y: -16 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
         className="max-w-3xl mx-auto px-6 py-8"
       >
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="flex items-start justify-between mb-6"
+        >
           <div>
             <h1 className="text-3xl font-light text-slate-800">
               {formatEntryDate(selectedDate)}
@@ -780,10 +791,15 @@ export function JournalEntry({
               <X className="size-5" />
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Contextual prompt (year ago > continuity > daily prompt) ────── */}
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.12 }}
+          className="mb-8"
+        >
           <ContextualPrompt
             prompt={prompt}
             continuityPrompt={continuityPrompt}
@@ -791,11 +807,16 @@ export function JournalEntry({
             previousIntention={previousIntention}
             onViewYearAgo={() => yearAgoEntry && onViewEntry?.(yearAgoEntry.date)}
           />
-        </div>
+        </motion.div>
 
         {/* ── Mood & Energy — daily entries only ──────────────────────────── */}
         {!isReflection && (
-        <div className="mb-8 space-y-8">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.18 }}
+          className="mb-8 space-y-8"
+        >
           {/* Mood */}
           <div>
             <Label className="text-xs text-slate-400 mb-4 block tracking-widest uppercase font-medium">
@@ -903,12 +924,11 @@ export function JournalEntry({
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
         )} {/* end !isReflection mood+energy */}
 
         {/* ── Writing fields — reflection-aware ────────────────────────────── */}
         {(() => {
-          // Use custom field definitions for reflection types, default for daily
           const fields = reflectionMeta?.fields ?? [
             { key: 'whatHappened', label: 'What happened today?',       placeholder: 'No pressure. Just what comes to mind…' },
             { key: 'feelings',     label: 'How did it make you feel?',  placeholder: 'All feelings are welcome here…' },
@@ -921,33 +941,46 @@ export function JournalEntry({
             insight:   'min-h-[80px]',
           };
 
+          // Use custom field definitions for reflection types, default for daily
           return (
             <div className="space-y-6">
-              {fields.map(({ key, label, placeholder }) => (
-                <div key={key}>
-                  <Label htmlFor={key} className="text-sm text-slate-500 mb-2 block">
-                    {label}
-                  </Label>
-                  <Textarea
-                    id={key}
-                    value={(entry[key as keyof JournalEntryType] as string) || ''}
-                    onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
-                    placeholder={placeholder}
-                    className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none border-slate-200 focus:border-slate-400`}
-                  />
-                </div>
-              ))}
+              {fields.map(({ key, label, placeholder }, index) => {
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.05 * index }}
+                  >
+                    <Label htmlFor={key} className="text-sm text-slate-500 mb-2 block">
+                      {label}
+                    </Label>
+                    <Textarea
+                      id={key}
+                      value={(entry[key as keyof JournalEntryType] as string) || ''}
+                      onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
+                      placeholder={placeholder}
+                      className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none border-slate-200 focus:border-slate-400 transition-colors`}
+                    />
+                  </motion.div>
+                );
+              })}
             </div>
           );
         })()}
 
         {/* ── Intention field — reflection entries only ─────────────────────── */}
         {isReflection && (
-          <div className="mt-8 pt-6 border-t border-slate-100">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            className="mt-8 pt-6 border-t border-slate-100"
+          >
             {(() => {
               const intentionMeta: Record<string, { label: string; placeholder: string }> = {
-                weekly:  { label: 'An intention for next week',  placeholder: 'One thing you want to carry forward or try…' },
-                monthly: { label: 'An intention for next month', placeholder: 'Something you want to explore or lean into…' },
+                weekly:  { label: 'An intention for next week',      placeholder: 'One thing you want to carry forward or try…' },
+                monthly: { label: 'An intention for next month',     placeholder: 'Something you want to explore or lean into…' },
                 yearly:  { label: 'An intention for the year ahead', placeholder: 'A direction, a word, a quiet promise to yourself…' },
               };
               const meta = intentionMeta[initialReflectionType] ?? intentionMeta.weekly;
@@ -969,7 +1002,49 @@ export function JournalEntry({
                 </>
               );
             })()}
-          </div>
+          </motion.div>
+        )}
+
+        {/* ── One word — reflection entries only ────────────────────────────── */}
+        {isReflection && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+            className="mt-6 pt-6 border-t border-slate-100"
+          >
+            {(() => {
+              const oneWordMeta: Record<string, { label: string; placeholder: string }> = {
+                weekly:  { label: 'A word for how this week felt', placeholder: 'Unsettled. Warm. Alive. Yours.' },
+                monthly: { label: 'A word for how this month felt', placeholder: 'Heavy. Hopeful. Shifting. Yours.' },
+                yearly:  { label: 'A word for this year',           placeholder: 'Becoming. Surviving. Opening. Yours.' },
+              };
+              const meta = oneWordMeta[initialReflectionType] ?? oneWordMeta.weekly;
+              return (
+                <>
+                  <Label htmlFor="oneWord" className="text-sm text-slate-500 mb-1 block">
+                    {meta.label}
+                  </Label>
+                  <p className="text-xs text-slate-400 mb-3">
+                    Past-facing. Observational. No right answer.
+                  </p>
+                  <input
+                    id="oneWord"
+                    type="text"
+                    value={(entry.oneWord as string) || ''}
+                    onChange={e => {
+                      // Only allow a single word — strip spaces after first word
+                      const val = e.target.value.replace(/\s+.*/, '');
+                      updateField('oneWord', val);
+                    }}
+                    placeholder={meta.placeholder}
+                    maxLength={32}
+                    className="w-full text-lg font-light text-slate-700 placeholder:text-slate-300 border-b border-slate-200 focus:border-slate-400 outline-none bg-transparent pb-2 transition-colors"
+                  />
+                </>
+              );
+            })()}
+          </motion.div>
         )}
 
         {/* ── Memory Surface (similar past entries) ────────────────────────── */}
@@ -985,19 +1060,27 @@ export function JournalEntry({
         </AnimatePresence>
 
         {/* ── Tags ─────────────────────────────────────────────────────────── */}
-        {/* NOTE: ReflectionModeSelector removed per A4 spec — reflection types
-            are accessed via Timeline drill-down in A4b, not from Write. */}
-        <div className="pt-6 border-t border-slate-100 mb-8">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.35 }}
+          className="pt-6 border-t border-slate-100 mb-8"
+        >
           <Label className="text-sm text-slate-500 mb-3 block">Tags (optional)</Label>
           <TagManager
             selectedTags={entry.tags || []}
             onChange={(tags) => updateField('tags', tags)}
             allEntries={allEntries}
           />
-        </div>
+        </motion.div>
 
         {/* ── Actions ──────────────────────────────────────────────────────── */}
-        <div className="flex gap-3 justify-end">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+          className="flex gap-3 justify-end"
+        >
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
@@ -1005,7 +1088,7 @@ export function JournalEntry({
             <Save className="size-4" />
             {isSaving ? 'Saving…' : 'Save Entry'}
           </Button>
-        </div>
+        </motion.div>
       </motion.div>
     </>
   );
