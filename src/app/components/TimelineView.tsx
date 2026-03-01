@@ -244,41 +244,43 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         </>
       )}
 
-      <span className="ml-auto text-sm text-slate-400">{(() => {
-        if (level === 'year')  return summaryLine(yearEntries);
-        if (level === 'month') {
-          const mEntries = dailyEntries.filter(e => {
-            try { return getMonth(parseISO(e.date)) === focusMonth && getYear(parseISO(e.date)) === year; }
-            catch { return false; }
-          });
-          const total = mEntries.length;
-          if (total === 0) return '';
-          const mood = dominantMood(mEntries);
-          const MOOD_PHRASE: Record<string, string> = {
-            great: 'A mostly great month', good: 'A mostly good month',
-            okay: 'A steady month', low: 'A tender month', difficult: 'A tender month',
-          };
-          return `${total} ${total === 1 ? 'entry' : 'entries'}${mood ? ` · ${MOOD_PHRASE[mood]}` : ''}`;
-        }
-        if (level === 'week') {
-          const wEnd = endOfWeek(focusWeek);
-          const wEntries = dailyEntries.filter(e => {
-            try {
-              const d = parseISO(e.date);
-              return d >= focusWeek && d <= wEnd;
-            } catch { return false; }
-          });
-          const total = wEntries.length;
-          if (total === 0) return '';
-          const mood = dominantMood(wEntries);
-          const MOOD_PHRASE: Record<string, string> = {
-            great: 'Mostly great', good: 'Mostly good',
-            okay: 'Steady', low: 'Tender', difficult: 'Tender',
-          };
-          return `${total} of 7 days · ${mood ? MOOD_PHRASE[mood] : 'Mixed'}`;
-        }
-        return '';
-      })()}</span>
+      {level !== 'day' && (
+        <span className="ml-auto text-sm text-slate-400">{(() => {
+          if (level === 'year')  return summaryLine(yearEntries);
+          if (level === 'month') {
+            const mEntries = dailyEntries.filter(e => {
+              try { return getMonth(parseISO(e.date)) === focusMonth && getYear(parseISO(e.date)) === year; }
+              catch { return false; }
+            });
+            const total = mEntries.length;
+            if (total === 0) return '';
+            const mood = dominantMood(mEntries);
+            const MOOD_PHRASE: Record<string, string> = {
+              great: 'A mostly great month', good: 'A mostly good month',
+              okay: 'A steady month', low: 'A tender month', difficult: 'A tender month',
+            };
+            return `${total} ${total === 1 ? 'entry' : 'entries'}${mood ? ` · ${MOOD_PHRASE[mood]}` : ''}`;
+          }
+          if (level === 'week') {
+            const wEnd = endOfWeek(focusWeek);
+            const wEntries = dailyEntries.filter(e => {
+              try {
+                const d = parseISO(e.date);
+                return d >= focusWeek && d <= wEnd;
+              } catch { return false; }
+            });
+            const total = wEntries.length;
+            if (total === 0) return '';
+            const mood = dominantMood(wEntries);
+            const MOOD_PHRASE: Record<string, string> = {
+              great: 'Mostly great', good: 'Mostly good',
+              okay: 'Steady', low: 'Tender', difficult: 'Tender',
+            };
+            return `${total} of 7 days · ${mood ? MOOD_PHRASE[mood] : 'Mixed'}`;
+          }
+          return '';
+        })()}</span>
+      )}
     </div>
   );
 
@@ -339,7 +341,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                       title={ds}
                       className={`
                         aspect-square rounded-sm transition-all
-                        ${entry?.mood ? MOOD_CELL[entry.mood] : 'bg-slate-100 hover:bg-slate-200'}
+                        ${entry?.mood
+                          ? MOOD_CELL[entry.mood]
+                          : entry
+                            ? 'bg-slate-200 ring-1 ring-slate-400 ring-offset-[1px] ring-dashed'
+                            : 'bg-slate-100 hover:bg-slate-200'
+                        }
                         ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-slate-700 ring-offset-1' : ''}
                       `}
                     />
@@ -385,14 +392,14 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     </motion.div>
   );
 
-  // ── BELOW HEATMAP — daily prompt + intention + most-active-day ────────
+  // ── BELOW HEATMAP — daily prompt + most-active-day + intention ────────
   const BelowHeatmap = () => {
     const activeDayStr = mostActiveDay(dailyEntries.filter(e => getYear(parseISO(e.date)) === year));
     const intentionLabel = activeIntention?.type === 'monthly' ? 'This month you intended:' : 'This week you intended:';
 
     return (
-      <div className="mt-8 space-y-4 max-w-xl">
-        {/* Feature A — Daily opening prompt */}
+      <div className="mt-8 space-y-5 max-w-xl">
+        {/* Daily opening prompt — fades after 6s, once per day */}
         <AnimatePresence>
           {showDailyPrompt && (
             <motion.p
@@ -408,18 +415,18 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           )}
         </AnimatePresence>
 
-        {/* Feature B — Active intention with correct label */}
+        {/* Witness observation — year-scoped, shown after prompt */}
+        {activeDayStr && (
+          <p className="text-sm text-slate-400">You write most on {activeDayStr}.</p>
+        )}
+
+        {/* Active intention — labelled correctly by type */}
         {activeIntention && (
           <div className="text-sm text-slate-500 leading-relaxed">
             <span className="text-slate-400">{intentionLabel}</span>
             <br />
             <span className="text-slate-600 italic">"{activeIntention.text}"</span>
           </div>
-        )}
-
-        {/* Witness observation — most active writing day */}
-        {activeDayStr && (
-          <p className="text-sm text-slate-400">You write most on {activeDayStr}.</p>
         )}
       </div>
     );
@@ -570,7 +577,17 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           </button>
         </div>
 
-        {/* Content fields */}
+        {/* Intention — prominent at top, shown before content */}
+        {(reflection as JournalEntry & { intention?: string }).intention && (
+          <div className={`mb-4 pb-3 border-b ${meta.accentBorder}`}>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">Intention</p>
+            <p className={`text-sm italic font-medium ${meta.accentText} leading-relaxed`}>
+              "{(reflection as JournalEntry & { intention?: string }).intention}"
+            </p>
+          </div>
+        )}
+
+        {/* Content fields — below intention */}
         <div className="space-y-3">
           {fields.map(({ key, label }) => {
             const val = reflection[key] as string | undefined;
@@ -585,16 +602,6 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             );
           })}
         </div>
-
-        {/* Intention */}
-        {(reflection as JournalEntry & { intention?: string }).intention && (
-          <div className={`mt-3 pt-3 border-t ${meta.accentBorder}`}>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">Intention</p>
-            <p className={`text-sm italic ${meta.accentText} leading-relaxed`}>
-              "{(reflection as JournalEntry & { intention?: string }).intention}"
-            </p>
-          </div>
-        )}
       </motion.div>
     );
   };
@@ -968,11 +975,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         </AnimatePresence>
       </div>
 
-      {/* ── Year selector sidebar (right) ── */}
-      <div className="flex flex-col gap-1 pt-1 shrink-0">
-        {yearsToShow.map(y => {
-          const yEntries = entries.filter(e => getYear(parseISO(e.date)) === y);
-          const mood     = dominantMood(yEntries);
+      {/* ── Dynamic right sidebar — content changes per drill level ── */}
+      <div className="flex flex-col gap-1 pt-1 shrink-0 min-w-[72px]">
+
+        {/* YEAR level — show year list */}
+        {level === 'year' && yearsToShow.map(y => {
+          const yEntries = entries.filter(e => {
+            try { return getYear(parseISO(e.date)) === y; } catch { return false; }
+          });
+          const mood = dominantMood(yEntries);
           const isActive = y === year;
           const yearlyReflection = findReflectionEntry(entries, 'yearly', String(y));
           return (
@@ -981,35 +992,24 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 onClick={() => { setYear(y); setLevel('year'); }}
                 className={`
                   flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left w-full
-                  ${isActive
-                    ? 'bg-slate-900 text-white font-medium'
-                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                  }
+                  ${isActive ? 'bg-slate-900 text-white font-medium' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
                 `}
               >
                 <span>{y}</span>
                 {yearlyReflection && !isActive && <ReflectionDot type="yearly" />}
                 {mood && !isActive && !yearlyReflection && (
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`}
-                    title={MOOD_LABEL[mood]}
-                  />
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`} title={MOOD_LABEL[mood]} />
                 )}
               </button>
-              {/* Yearly reflection quick-action — visible on hover */}
               <button
                 onClick={() => onReflectionEntry(
-                  yearlyReflection ? yearlyReflection.date : `reflection-yearly-${y}`,
-                  'yearly'
+                  yearlyReflection ? yearlyReflection.date : `reflection-yearly-${y}`, 'yearly'
                 )}
                 title={yearlyReflection ? 'Edit yearly reflection' : 'Write yearly reflection'}
                 className={`
                   absolute right-1 top-1/2 -translate-y-1/2 text-[10px] opacity-0 group-hover:opacity-100
                   transition-opacity px-1.5 py-0.5 rounded
-                  ${yearlyReflection
-                    ? 'text-amber-500 hover:text-amber-700'
-                    : 'text-slate-400 hover:text-slate-600'
-                  }
+                  ${yearlyReflection ? 'text-amber-500 hover:text-amber-700' : 'text-slate-400 hover:text-slate-600'}
                 `}
               >
                 {yearlyReflection ? '✎' : '+'}
@@ -1017,6 +1017,102 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             </div>
           );
         })}
+
+        {/* MONTH level — show Jan–Dec for the active year */}
+        {level === 'month' && MONTH_NAMES.map((name, mi) => {
+          const mEntries = dailyEntries.filter(e => {
+            try { return getMonth(parseISO(e.date)) === mi && getYear(parseISO(e.date)) === year; }
+            catch { return false; }
+          });
+          const mood = dominantMood(mEntries);
+          const isActive = mi === focusMonth;
+          const hasReflection = entries.some(
+            e => e.reflectionType === 'monthly' && e.date === `reflection-monthly-${year}-${String(mi + 1).padStart(2, '0')}`
+          );
+          return (
+            <button
+              key={mi}
+              onClick={() => { setFocus(mi); setLevel('month'); }}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
+                ${isActive ? 'bg-slate-900 text-white font-medium' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+              `}
+            >
+              <span>{name}</span>
+              {hasReflection && !isActive && <ReflectionDot type="monthly" />}
+              {mood && !isActive && !hasReflection && (
+                <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`} title={MOOD_LABEL[mood]} />
+              )}
+            </button>
+          );
+        })}
+
+        {/* WEEK level — show 7 days of the focused week */}
+        {level === 'week' && (() => {
+          const wEnd  = endOfWeek(focusWeek);
+          const wDays = eachDayOfInterval({ start: focusWeek, end: wEnd });
+          return wDays.map(day => {
+            const ds    = format(day, 'yyyy-MM-dd');
+            const entry = entryMap.get(ds);
+            const today = isToday(day);
+            const isActive = focusDay === ds && level === 'week'; // highlight focused day
+            return (
+              <button
+                key={ds}
+                onClick={() => {
+                  if (entry) { setFocusDay(ds); setLevel('day'); }
+                  else onSelectDate(ds);
+                }}
+                className={`
+                  flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
+                  ${today ? 'bg-slate-900 text-white font-medium' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+                `}
+              >
+                <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
+                {entry?.mood
+                  ? <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[entry.mood]}`} />
+                  : entry
+                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-slate-400 ring-1 ring-slate-500 ring-dashed" />
+                    : null
+                }
+              </button>
+            );
+          });
+        })()}
+
+        {/* DAY level — show the 7 days of that week for navigation */}
+        {level === 'day' && (() => {
+          const wEnd  = endOfWeek(focusWeek);
+          const wDays = eachDayOfInterval({ start: focusWeek, end: wEnd });
+          return wDays.map(day => {
+            const ds    = format(day, 'yyyy-MM-dd');
+            const entry = entryMap.get(ds);
+            const today = isToday(day);
+            const isCurrentDay = focusDay === ds;
+            return (
+              <button
+                key={ds}
+                onClick={() => {
+                  if (entry) { setFocusDay(ds); setLevel('day'); }
+                  else onSelectDate(ds);
+                }}
+                className={`
+                  flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
+                  ${isCurrentDay ? 'bg-slate-900 text-white font-medium' : today ? 'text-slate-700 bg-slate-100' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+                `}
+              >
+                <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
+                {entry?.mood
+                  ? <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[entry.mood]}`} />
+                  : entry
+                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-slate-400 ring-1 ring-slate-500 ring-dashed" />
+                    : null
+                }
+              </button>
+            );
+          });
+        })()}
+
       </div>
 
     </div>
