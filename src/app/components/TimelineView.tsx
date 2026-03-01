@@ -27,10 +27,10 @@ type ReflectionEntryType = 'weekly' | 'monthly' | 'yearly';
 
 interface TimelineViewProps {
   entries: JournalEntry[];
-  onSelectDate: (date: string) => void;                                         // opens Write (daily) with that date
-  onEditEntry: (date: string) => void;                                          // opens Write pre-filled for edit
-  onReflectionEntry: (date: string, type: ReflectionEntryType) => void;        // opens Write with reflection type pre-set
-  activeIntention?: string;                                                     // from last reflection entry — A4d Feature B
+  onSelectDate: (date: string) => void;
+  onEditEntry: (date: string) => void;
+  onReflectionEntry: (date: string, type: ReflectionEntryType) => void;
+  activeIntention?: { text: string; type: 'weekly' | 'monthly' };
 }
 
 // ── Mood colour system ─────────────────────────────────────────────────────
@@ -125,7 +125,22 @@ function summaryLine(entries: JournalEntry[]): string {
   return `${total} ${total === 1 ? 'entry' : 'entries'}${moodStr}`;
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
+/** Returns the day-of-week name the user writes most often — a pure witness observation */
+function mostActiveDay(entries: JournalEntry[]): string | null {
+  const daily = entries.filter(e => !e.date.startsWith('reflection-'));
+  if (daily.length < 4) return null; // not enough data to be meaningful
+  const counts: Record<number, number> = {};
+  daily.forEach(e => {
+    try {
+      const dow = getDay(parseISO(e.date)); // 0 = Sun
+      counts[dow] = (counts[dow] || 0) + 1;
+    } catch { /* skip malformed dates */ }
+  });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (!sorted[0]) return null;
+  const DAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+  return DAY_NAMES[Number(sorted[0][0])];
+}
 export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionEntry, activeIntention }: TimelineViewProps) {
   const [year, setYear]         = useState(getYear(new Date()));
   const [level, setLevel]       = useState<DrillLevel>('year');
@@ -229,7 +244,41 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         </>
       )}
 
-      <span className="ml-auto text-sm text-slate-400">{summaryLine(yearEntries)}</span>
+      <span className="ml-auto text-sm text-slate-400">{(() => {
+        if (level === 'year')  return summaryLine(yearEntries);
+        if (level === 'month') {
+          const mEntries = dailyEntries.filter(e => {
+            try { return getMonth(parseISO(e.date)) === focusMonth && getYear(parseISO(e.date)) === year; }
+            catch { return false; }
+          });
+          const total = mEntries.length;
+          if (total === 0) return '';
+          const mood = dominantMood(mEntries);
+          const MOOD_PHRASE: Record<string, string> = {
+            great: 'A mostly great month', good: 'A mostly good month',
+            okay: 'A steady month', low: 'A tender month', difficult: 'A tender month',
+          };
+          return `${total} ${total === 1 ? 'entry' : 'entries'}${mood ? ` · ${MOOD_PHRASE[mood]}` : ''}`;
+        }
+        if (level === 'week') {
+          const wEnd = endOfWeek(focusWeek);
+          const wEntries = dailyEntries.filter(e => {
+            try {
+              const d = parseISO(e.date);
+              return d >= focusWeek && d <= wEnd;
+            } catch { return false; }
+          });
+          const total = wEntries.length;
+          if (total === 0) return '';
+          const mood = dominantMood(wEntries);
+          const MOOD_PHRASE: Record<string, string> = {
+            great: 'Mostly great', good: 'Mostly good',
+            okay: 'Steady', low: 'Tender', difficult: 'Tender',
+          };
+          return `${total} of 7 days · ${mood ? MOOD_PHRASE[mood] : 'Mixed'}`;
+        }
+        return '';
+      })()}</span>
     </div>
   );
 
@@ -336,20 +385,10 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     </motion.div>
   );
 
-  // ── BELOW HEATMAP — daily prompt + intention + year-in-numbers ────────
+  // ── BELOW HEATMAP — daily prompt + intention + most-active-day ────────
   const BelowHeatmap = () => {
-    const currentYear = getYear(new Date());
-    const currentYearEntries = dailyEntries.filter(e => getYear(parseISO(e.date)) === currentYear);
-    const total = currentYearEntries.length;
-    const mood = dominantMood(currentYearEntries);
-
-    const MOOD_PHRASE: Record<string, string> = {
-      great:     'A mostly great year so far',
-      good:      'A mostly good year so far',
-      okay:      'A steady year so far',
-      low:       'A tender year so far',
-      difficult: 'A tender year so far',
-    };
+    const activeDayStr = mostActiveDay(dailyEntries.filter(e => getYear(parseISO(e.date)) === year));
+    const intentionLabel = activeIntention?.type === 'monthly' ? 'This month you intended:' : 'This week you intended:';
 
     return (
       <div className="mt-8 space-y-4 max-w-xl">
@@ -369,23 +408,18 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           )}
         </AnimatePresence>
 
-        {/* Feature B — Active intention (only shown when A4c is built and intention exists) */}
+        {/* Feature B — Active intention with correct label */}
         {activeIntention && (
           <div className="text-sm text-slate-500 leading-relaxed">
-            <span className="text-slate-400">This week you intended:</span>
+            <span className="text-slate-400">{intentionLabel}</span>
             <br />
-            <span className="text-slate-600 italic">"{activeIntention}"</span>
+            <span className="text-slate-600 italic">"{activeIntention.text}"</span>
           </div>
         )}
 
-        {/* Feature C — Year-in-numbers */}
-        {total > 0 && (
-          <p className="text-sm text-slate-400">
-            {currentYear} · {total} {total === 1 ? 'entry' : 'entries'}{mood ? ` · ${MOOD_PHRASE[mood]}` : ''}
-          </p>
-        )}
-        {total === 0 && (
-          <p className="text-sm text-slate-300 italic">Your story is just beginning.</p>
+        {/* Witness observation — most active writing day */}
+        {activeDayStr && (
+          <p className="text-sm text-slate-400">You write most on {activeDayStr}.</p>
         )}
       </div>
     );
@@ -582,6 +616,17 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
           onEdit={() => onEditEntry(monthlyReflection!.date)}
         />
+        {/* Monthly intention — shown above calendar only when written */}
+        {(() => {
+          const intention = (monthlyReflection as any)?.intention as string | undefined;
+          if (!intention) return null;
+          return (
+            <div className="mb-3 px-1">
+              <p className="text-xs text-slate-400 mb-0.5">This month you intended:</p>
+              <p className="text-sm text-sky-700 italic">"{intention}"</p>
+            </div>
+          );
+        })()}
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-2 mb-1">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
@@ -675,6 +720,17 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
           onEdit={() => onEditEntry(weeklyReflection!.date)}
         />
+        {/* Weekly intention — shown above timeline only when written */}
+        {(() => {
+          const intention = (weeklyReflection as any)?.intention as string | undefined;
+          if (!intention) return null;
+          return (
+            <div className="mb-4 px-1">
+              <p className="text-xs text-slate-400 mb-0.5">This week you intended:</p>
+              <p className="text-sm text-violet-700 italic">"{intention}"</p>
+            </div>
+          );
+        })()}
 
         <div className="relative">
           {/* Vertical line */}

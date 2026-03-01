@@ -98,18 +98,32 @@ export default function App() {
   const loadEntries = () => setEntries(storage.getEntries());
 
   // ── Active intention — surfaces last weekly/monthly reflection's intention field
-  // Used by TimelineView BelowHeatmap (Feature B, A4d). Fully wired when A4c adds
-  // the intention field to JournalEntry; until then this returns undefined cleanly.
+  // Returns both the text and the reflection type so TimelineView can label it correctly.
   const activeIntention = (() => {
     const reflections = entries
       .filter(e => e.reflectionType === 'weekly' || e.reflectionType === 'monthly')
       .filter(e => (e as any).intention)
       .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
-    return (reflections[0] as any)?.intention as string | undefined;
+    const latest = reflections[0];
+    if (!latest) return undefined;
+    return {
+      text: (latest as any).intention as string,
+      type: latest.reflectionType as 'weekly' | 'monthly',
+    };
   })();
 
   const handleSaveEntry = () => { loadEntries(); setCurrentView("timeline"); };
-  const handleEditEntry = (date: string) => { setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
+  const handleEditEntry = (date: string) => {
+    // Infer reflection type from synthetic date key — prevents blank screen bug
+    // when editing weekly/monthly/yearly reflections from Timeline
+    let type: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily';
+    if (date.startsWith('reflection-weekly-'))  type = 'weekly';
+    if (date.startsWith('reflection-monthly-')) type = 'monthly';
+    if (date.startsWith('reflection-yearly-'))  type = 'yearly';
+    setSelectedDate(date);
+    setPendingReflectionType(type);
+    setCurrentView("write");
+  };
   const handleDeleteEntry = (id: string) => { storage.deleteEntry(id); loadEntries(); };
   const handleNewEntry = () => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setPendingReflectionType('daily'); setCurrentView("write"); };
   const handleSelectDate = (date: string) => { setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
