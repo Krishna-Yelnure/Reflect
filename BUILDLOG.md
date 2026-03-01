@@ -385,28 +385,6 @@ export const db = {
 ---
 
 #### SESSION A4b — Weekly/Monthly/Yearly Reflection Types via Timeline
-**Status:** NOT STARTED
-
-**Goal:** Clicking month label in Timeline → Monthly reflection form. Week → Weekly. Year → Yearly.
-
-**What to build:**
-- Monthly prompt set: biggest shift, what you'd tell past self, growth area, what to carry forward
-- Weekly prompt set: wins, challenges, patterns, next week intention, one word summary
-- Yearly prompt set: major chapters, who you became, what to leave behind, word for the year
-- Wire Timeline month label click → Write with reflectionType pre-set to 'monthly'
-- Wire Timeline week click → Write with reflectionType pre-set to 'weekly'
-- Wire Timeline year selector → Write with reflectionType pre-set to 'yearly'
-- Timeline then shows those entry types with appropriate colour/indicator
-
-**Files to upload:**
-- `BUILDLOG.md`
-- `src/app/components/TimelineView.tsx`
-- `src/app/components/JournalEntry.tsx`
-- `src/app/utils/prompts-v2.ts`
-
----
-
-#### SESSION A4b — Weekly/Monthly/Yearly Reflection Types via Timeline
 **Status:** ✅ COMPLETE (2026-02-28)
 
 **What was done:**
@@ -426,36 +404,16 @@ export const db = {
 #### SESSION A4c — Reflection Panels + Intentions Loop
 **Status:** ✅ COMPLETE (2026-03-01) — including fix sessions A4c-fix through A4c-fix4
 
-**Goal:** Make reflections readable inline. Close the loop between past reflection and future intention.
-
 **What was done:**
-1. `types.ts` — added `intention?: string` to `JournalEntry` interface
-2. `TimelineView.tsx` — `ReflectionPanel` component replaces banners — shows full text, mood, date written, Edit button. Intention shown at top as through-line. Empty state: invitation to write.
+1. `types.ts` — added `intention?: string` to `JournalEntry`
+2. `TimelineView.tsx` — `ReflectionPanel` replaces banners — full text, mood, date, Edit button. Intention shown at top as through-line. Empty state: invitation to write.
 3. `JournalEntry.tsx` — intention field at bottom of reflection forms. `getPreviousPeriodIntention()` surfaces last period's intention as opening prompt.
 
-**Fix sessions applied after A4c:**
-
-**A4c-fix** — Yearly colour + empty panel gate + mood/energy removed from reflections
-- Yearly reflection dot colour corrected
-- ReflectionPanel only renders when entry exists (empty state is invitation banner, not broken panel)
-- Mood and energy selectors removed from reflection entries — they belong to daily entries only
-
-**A4c-fix2** — Stats scoping + blank screen bug + intention labels
-- Stats in breadcrumb scoped to correct level (year stat hidden in day view)
-- Blank screen bug fixed
-- Intention field labels refined per reflection type
-
-**A4c-fix3** — Dynamic sidebar + dot states + ReflectionPanel polish
-- Right sidebar is now level-aware — year view shows years, month view shows months with mood dots, week/day view shows 7-day week
-- "Written, no mood" dot state — dashed ring on slate background, distinct from empty
-- ReflectionPanel layout inverted — intention at top as through-line, content fields below
-- BelowHeatmap reordered — prompt → witness observation → intention
-- Day view breadcrumb stat hidden (reading single entry doesn't need year aggregate)
-
-**A4c-fix4** — ReflectionPanel placement + duplicate intention
-- ReflectionPanel moved below calendar/timeline grid — reads data first, reflection below
-- Duplicate intention block removed from MonthView and WeekView
-- Dashed ring applied to month grid cells for no-mood entries (missed in fix3)
+**Fix sessions:**
+- **A4c-fix** — Yearly dot colour corrected. ReflectionPanel only renders when entry exists. Mood/energy removed from reflection entries.
+- **A4c-fix2** — Stats scoped to correct level. Blank screen bug fixed. Intention labels refined per type.
+- **A4c-fix3** — Dynamic level-aware sidebar (year=years, month=months+dots, week/day=7-day strip). "Written, no mood" dashed ring dot state. ReflectionPanel layout inverted — intention at top, content below. BelowHeatmap reordered.
+- **A4c-fix4** — ReflectionPanel moved below calendar grid. Duplicate intention block removed. Dashed ring applied to month grid cells for no-mood entries.
 
 **Files changed:** `src/app/components/TimelineView.tsx`, `src/app/types.ts`, `src/app/components/JournalEntry.tsx`
 
@@ -463,6 +421,8 @@ export const db = {
 
 #### SESSION A4d — First-Run Empty State + Below-Heatmap Space
 **Status:** ✅ COMPLETE (2026-03-01)
+
+**Goal:** Fix the void that new users land on. Fill the space below the heatmap with content that serves the Witness philosophy.
 
 **What was done:**
 
@@ -511,47 +471,35 @@ export const db = {
 
 ---
 
-#### SESSION A5a — Write + Form Polish ← COMPLETE
+#### SESSION A5a — Write + Form Polish
 **Status:** ✅ COMPLETE (2026-03-01)
 **Files changed:** `src/app/components/JournalEntry.tsx`, `src/app/types.ts`
 
 **What was done:**
 
-1. **`types.ts`** — added `oneWord?: string` to `JournalEntry` interface. Past-facing closing word for reflection entries.
+1. **`types.ts`** — added `oneWord?: string` to `JournalEntry`. Past-facing closing word for reflection entries.
 
-2. **Closing lines copy audit** — all 11 lines pass Witness test. Removed `"The witness remembers."` (too self-referential). Added `"The story continues."` and `"Here. Now. Remembered."`. All others kept.
+2. **Closing lines copy audit** — all lines pass Witness test. Removed `"The witness remembers."` (self-referential — the app shouldn't name itself). Added `"The story continues."` and `"Here. Now. Remembered."`.
 
-3. **Prompt chips** — `PromptChips` component added. Soft pill buttons above each textarea. Tap to set as field placeholder. Tap again to clear. Never mandatory, always dismissable by typing.
-   - `DAILY_CHIPS` — 3 chips per field for daily entries
-   - `REFLECTION_CHIPS` — 3 chips per field for weekly/monthly/yearly, tone-matched per type
-   - All chips pass Witness test — observations and invitations, never instructions
+3. **Staggered entrance animations** — all guided form sections animate in sequence:
+   - Header → 0.05s, contextual prompt → 0.12s, mood & energy → 0.18s
+   - Each writing field → 0.05s × index (cascades 0 → 0.20s)
+   - Intention → 0.3s, one-word field → 0.4s, tags → 0.35s, actions → 0.4s
 
-4. **Staggered entrance animations** — all sections of guided form now animate in sequence:
-   - Header → 0.05s delay
-   - Contextual prompt → 0.12s delay
-   - Mood & energy → 0.18s delay
-   - Each writing field → 0.05s × field index (cascades 0 → 0.20s)
-   - Intention field → 0.3s delay
-   - One word field → 0.4s delay
-   - Tags → 0.35s delay
-   - Actions → 0.4s delay
-
-5. **One-word closing field** — appears on all reflection entries (weekly/monthly/yearly), never on daily. Sits after intention — past-facing after the forward-looking field.
-   - Renders as borderless input with bottom border only — visually distinct from textareas, feels like a signature
-   - Single-word enforced — strips everything after first space
-   - Labels and placeholders specific per reflection type:
-     - Weekly: *"A word for how this week felt"* — `"Unsettled. Warm. Alive. Yours."`
-     - Monthly: *"A word for how this month felt"* — `"Heavy. Hopeful. Shifting. Yours."`
-     - Yearly: *"A word for this year"* — `"Becoming. Surviving. Opening. Yours."`
+4. **One-word closing field** — reflection entries only (weekly/monthly/yearly), never daily. Sits after the intention field — past-facing after the forward-looking field. Renders as borderless input with bottom border only (feels like a signature). Single-word enforced (strips after first space).
+   - Weekly: *"A word for how this week felt"* — placeholder: *"Unsettled. Warm. Alive. Yours."*
+   - Monthly: *"A word for how this month felt"* — placeholder: *"Heavy. Hopeful. Shifting. Yours."*
+   - Yearly: *"A word for this year"* — placeholder: *"Becoming. Surviving. Opening. Yours."*
    - Helper text: *"Past-facing. Observational. No right answer."*
 
+5. **Prompt chips — built and removed.** Chips were added (soft pill buttons above each textarea as optional nudges) then removed after visual review. They created clutter and cognitive weight before writing had started — a manager move. Placeholders already do the job quietly. Chips are not the right pattern for this product.
+
 **Session checklist:**
-- [x] `oneWord` field in types.ts
+- [x] `oneWord` in types.ts
 - [x] Closing lines audited — all pass Witness test
-- [x] PromptChips component built and wired to all five fields
 - [x] Staggered animations on all guided form sections
 - [x] One-word field on weekly/monthly/yearly, absent on daily
-- [x] oneWord saves correctly via updateField → entry spread → storage
+- [x] Prompt chips built, reviewed, and removed — decision locked: placeholders are sufficient
 - [x] Committed and pushed to GitHub
 - [x] BUILDLOG updated
 
@@ -559,7 +507,7 @@ export const db = {
 
 #### SESSION A5b — Timeline + Global Polish ← START HERE NEXT
 **Status:** NOT STARTED
-**Depends on:** A5a
+**Depends on:** A5a ✅
 **Scope creep risk:** Low
 
 **Goal:** Polish the Timeline experience and unify the global design language.
@@ -569,7 +517,6 @@ export const db = {
 - [ ] Mood language audit across ALL stat surfaces — every mood data reflection passes the copy test
 - [ ] Hard day counts NEVER shown anywhere — audit every instance in TimelineView.tsx
 - [ ] Empty states review across all views — open door copy, not a void
-- [ ] Card-label trailing line dividers — evaluate fit with current design language
 - [ ] Consistent visual language — border radius, shadow, colour logic unified across all components
 - [ ] Microinteractions: save, delete, mood select — intentional, warm, satisfying
 - [ ] Purposeful accent colour — amber/gold applied consistently as the one accent
@@ -586,11 +533,11 @@ export const db = {
 **Goal:** Make tags clean, consistent, and queryable. The foundation every other feature depends on.
 
 **What to build:**
-- Tag normalisation on save — lowercase, trim, deduplicate on every save
-- Tag normalisation on import — historical tags cleaned when importing JSON backup
-- Tag autocomplete in Write — as user types, existing tags surface as suggestions
+- Tag normalisation on save — lowercase, trim, deduplicate
+- Tag normalisation on import — historical tags cleaned when importing JSON
+- Tag autocomplete in Write — existing tags surface as suggestions while typing
 - Computed unique-tags list — derived from all entries, used by autocomplete and future surfaces
-- TagManager.tsx audit — decide whether absorbed into Write autocomplete or kept as management screen
+- TagManager.tsx audit — absorbed into autocomplete or kept as management screen?
 
 **Files:** `src/app/components/JournalEntry.tsx`, `src/app/utils/storage.ts`, `src/app/db/index.ts`, `TagManager.tsx`
 
@@ -605,11 +552,11 @@ export const db = {
 
 **What to build:**
 - Clickable tags in Day View → triggers tag filter in Timeline
-- Tag filter state in TimelineView.tsx — new `activeTagFilter` state
-- Filtered heatmap rendering — untagged cells fade to low opacity, tagged entries full colour
-- "Filtered by: [tag]" indicator in breadcrumb — visible at all drill levels
-- Clear filter button — exits filter mode, returns to full Timeline
-- Tag filter persists as user drills year → month → week → day
+- `activeTagFilter` state in TimelineView.tsx
+- Filtered heatmap — untagged cells fade, tagged entries full colour
+- "Filtered by: [tag]" breadcrumb indicator at all drill levels
+- Clear filter exits to full Timeline
+- Filter persists as user drills year → month → week → day
 
 **Files:** `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
 
@@ -623,17 +570,14 @@ export const db = {
 **Goal:** Full-text search across all entries. Critical feature — existential at Day 365.
 
 **What to build:**
-- Search input — location TBD (sidebar header or dedicated search view)
-- Full-text search across: whatHappened, feelings, whatMatters, insight, freeWrite, tags
-- Tag filter as a search dimension
-- Search result view — list of matching entries, snippet showing match context, date
-- Click result → Day View for that entry
-- Empty state — warm, no "no results found" harshness
-- Search is local only — no server, no external index
+- Search input — sidebar header or dedicated view (decide at session start)
+- Full-text search: whatHappened, feelings, whatMatters, insight, freeWrite, tags
+- Tag as a search filter dimension
+- Result view — matching entries, snippet with match context, date. Click → Day View
+- Warm empty state — no "no results found" harshness
+- Local only — no server, no external index
 
-**Witness test:** Search never surfaces entry counts as pressure. Results are invitations to revisit, not tallies.
-
-**Files:** New `src/app/components/SearchView.tsx` or inline, `src/app/App.tsx`
+**Files:** New `src/app/components/SearchView.tsx`, `src/app/App.tsx`
 
 ---
 
@@ -645,11 +589,10 @@ export const db = {
 **Goal:** Redesign ErasManager to current design language. Data model solid before surfaces are built.
 
 **What to build:**
-- ErasManager.tsx redesign — matches current warm minimal design language
-- Era creation: name, date range (start + optional end), colour (small warm palette — 6 options)
-- Era editing and deletion — deleting un-tags entries (they don't disappear)
-- `eras.ts` audit — ensure full db abstraction layer integration
-- Era assigned to entries via `eraId` — verify working in JournalEntry.tsx
+- ErasManager.tsx redesign to warm minimal design language
+- Era creation: name, date range (start + optional end), colour (6-option warm palette)
+- Era editing and deletion — deleting un-tags entries, never deletes them
+- `eras.ts` audit — full db abstraction layer integration
 - Edge cases: overlapping eras (warn, don't prevent), open-ended eras (no end date = ongoing)
 
 **Files:** `src/app/components/ErasManager.tsx`, `src/app/utils/eras.ts`, `src/app/components/JournalEntry.tsx`
@@ -664,14 +607,12 @@ export const db = {
 **Goal:** Eras become visible across the Timeline. Life chapters rendered in colour on the emotional landscape.
 
 **What to build:**
-- Era overlay on heatmap year view — background band approach (behind dots, doesn't conflict with mood colours)
-- Era legend below heatmap — era name + colour key
-- Era label in month/week/day views — quiet "Chapter: [Era name]" label
-- Era transition surfacing — week an era changes is quietly noted
-- Era filter in Timeline — shares filter state infrastructure from A6b
+- Era overlay on heatmap — background band behind dots, doesn't conflict with mood colours
+- Era legend below heatmap
+- Era label in month/week/day views — quiet "Chapter: [name]"
+- Era transition — week an era changes is quietly noted
+- Era filter — shares filter state infrastructure from A6b
 - Multi-year eras — band spans correctly across year boundaries
-
-**Edge cases:** Era band with no active era (nothing shown). Era shorter than one week. Era spanning multiple years.
 
 **Files:** `src/app/components/TimelineView.tsx`, `src/app/components/ErasManager.tsx`
 
@@ -685,16 +626,15 @@ export const db = {
 **Goal:** Merge Anchors + Questions into one coherent screen. Values tab built and surfaced in Write.
 
 **What to build:**
-- Rename sidebar item: `anchors` → `inner-compass`, update App.tsx routing
-- Merge `ReflectionAnchors.tsx` and `PersistentQuestions.tsx` into new `InnerCompass.tsx`
+- Rename sidebar: `anchors` → `inner-compass`
+- Merge `ReflectionAnchors.tsx` + `PersistentQuestions.tsx` into new `InnerCompass.tsx`
 - Two-tab layout: **Values** and **Questions**
-- Values tab: add/edit/delete values, drag-to-reorder
-- Values surfaced in Write — quiet context line: *"Your values: Clarity · Family · Craft"*
-- Deprecate old routing cleanly
+- Values tab: add/edit/delete, drag-to-reorder
+- Values in Write — quiet context line: *"Your values: Clarity · Family · Craft"*
 
-**Witness test:** Values are never scored, checked off, or tracked. Held present, not evaluated.
+**Witness test:** Values never scored, checked off, or tracked. Held present, not evaluated.
 
-**Files:** New `src/app/components/InnerCompass.tsx`, `src/app/App.tsx`, `src/app/components/JournalEntry.tsx`, `src/app/utils/preferences.ts`
+**Files:** New `InnerCompass.tsx`, `App.tsx`, `JournalEntry.tsx`, `preferences.ts`
 
 ---
 
@@ -703,17 +643,14 @@ export const db = {
 **Depends on:** A8a
 **Scope creep risk:** Medium
 
-**Goal:** Questions tab built. Open questions accumulate entries. Thread view makes them readable.
-
 **What to build:**
 - Questions tab: add, open/closed state, entry count, created date
 - Question surfaced in Write — opt-in: *"Open question: [X] — does today's entry relate?"*
-- `questionId` on entries — wire UI to set it
-- Question thread view — chronological read of all entries tagged to question
-- `questions.ts` audit — db abstraction layer integration
-- Empty state — warm invitation
+- `questionId` wired in JournalEntry.tsx
+- Question thread view — chronological read of all tagged entries
+- `questions.ts` db abstraction audit
 
-**Files:** `src/app/components/InnerCompass.tsx`, `src/app/components/JournalEntry.tsx`, `src/app/utils/questions.ts`
+**Files:** `InnerCompass.tsx`, `JournalEntry.tsx`, `questions.ts`
 
 ---
 
@@ -723,13 +660,6 @@ export const db = {
 **Scope creep risk:** Medium
 
 **Goal:** Questions can resolve. Resolution can become a value. The arc from inquiry to belief is complete.
-
-**What to build:**
-- Question resolution flow — closing reflection → save
-- "This became a value" prompt on resolution → creates new value
-- Closed question archive within Questions tab
-- *"You've been asking this for X months"* quiet observation
-- Resolved questions surfaceable in year-ago mechanic
 
 **The lifecycle:**
 ```
@@ -742,7 +672,14 @@ Question marked resolved + closing entry written
 New value created from resolution
 ```
 
-**Files:** `src/app/components/InnerCompass.tsx`, `src/app/components/JournalEntry.tsx`
+**What to build:**
+- Resolution flow — closing reflection → save
+- "This became a value" prompt on resolution
+- Closed question archive within Questions tab
+- *"You've been asking this for X months"* quiet observation
+- Resolved questions surfaceable in year-ago mechanic
+
+**Files:** `InnerCompass.tsx`, `JournalEntry.tsx`
 
 ---
 
@@ -751,14 +688,11 @@ New value created from resolution
 **Depends on:** A5 done
 **Scope creep risk:** Medium
 
-**Goal:** Understand what Insights currently is. Rebuild so every stat passes the Witness test.
-
 **What to build:**
 - Full audit of `Insights.tsx`, `insights.ts`, `LanguageInsights.tsx`, `language-analysis.ts`
-- Decision: is word frequency analysis Witness-compliant?
-- Rebuild `Insights.tsx` with Witness philosophy
-- *"Not enough data yet"* warm empty state for Day 1–30 users
-- MoodChart.tsx — integrate into Insights or keep separate (decision at session start)
+- Rebuild with Witness philosophy — every stat passes copy test
+- Warm empty state for Day 1–30: *"Your patterns are still forming. Come back after a few more weeks."*
+- MoodChart.tsx — integrate into Insights or keep separate (decide at session start)
 - `LanguageInsights.tsx` — absorb into Insights, remove as separate sidebar item
 
 **Files:** `Insights.tsx`, `MoodChart.tsx`, `LanguageInsights.tsx`, `insights.ts`, `language-analysis.ts`, `App.tsx`
@@ -770,16 +704,14 @@ New value created from resolution
 **Depends on:** A6 + A7 + A8 + A9a all done
 **Scope creep risk:** High
 
-**Goal:** Insights synthesise Tags, Eras, Questions, Habits into observations the user couldn't see from inside their life.
-
 **What to build:**
-- Tag frequency insight — *"You write about [career] most in Q1. It quietens in summer."*
+- Tag frequency — *"You write about [career] most in Q1. It quietens in summer."*
 - Era-labelled patterns — *"During your [era] chapter, you wrote more on weekends."*
 - Question insights — *"You've been asking '[question]' for 4 months across 12 entries."*
-- Habit + journal co-occurrence — *"Your [habit] weeks and good-mood weeks appear together often."* (co-occurrence only, never causation)
-- All observations pass Witness test: never prescriptive, never negative, always dismissable
+- Habit + journal co-occurrence — *"Your [habit] weeks and good-mood weeks appear together often."* (co-occurrence only — never causation)
+- All dismissable permanently. Max 5 total.
 
-**Scope creep guard:** Max one insight per category. Never more than 5 total. All dismissable permanently.
+**Scope creep guard:** One insight per category. Never more than 5. All dismissable.
 
 **Files:** `Insights.tsx`, `insights.ts`
 
@@ -790,15 +722,13 @@ New value created from resolution
 **Depends on:** A5 done
 **Scope creep risk:** Low
 
-**Goal:** Threads become a genuinely beautiful reading experience. Manual curation still works, just looks and feels right.
-
 **What to build:**
-- `MemoryThreads.tsx` redesign — matches current warm minimal design language
+- `MemoryThreads.tsx` redesign to warm minimal design language
 - Thread reading mode — distraction-free, chronological, clean typography
-- Thread cover — title, date range (auto-computed), optional user note
-- Entry cards in thread — compact, mood colour, snippet, date. Click → Day View
+- Thread cover — title, date range (auto-computed), optional note
+- Entry cards — compact, mood colour, snippet, date. Click → Day View
 
-**Files:** `src/app/components/MemoryThreads.tsx`, `src/app/utils/threads.ts`
+**Files:** `MemoryThreads.tsx`, `threads.ts`
 
 ---
 
@@ -807,17 +737,15 @@ New value created from resolution
 **Depends on:** A6 + A8 done
 **Scope creep risk:** Medium
 
-**Goal:** Tags and Questions assist thread curation. The app suggests, never decides.
-
 **What to build:**
 - Tag-assisted entry suggestion when building a thread
 - Question-to-thread bridge — resolved question can become a thread
-- Era-filtered thread — *"Build a thread from your [era] chapter"*
-- Thread suggestion — quiet, shown once, dismissable
+- Era-filtered thread building
+- Thread suggestion — quiet, once, dismissable
 
 **Witness test:** Suggestions are offers, never assignments.
 
-**Files:** `src/app/components/MemoryThreads.tsx`, `src/app/components/InnerCompass.tsx`
+**Files:** `MemoryThreads.tsx`, `InnerCompass.tsx`
 
 ---
 
@@ -826,14 +754,12 @@ New value created from resolution
 **Depends on:** All A5–A10 sessions done
 **Scope creep risk:** High
 
-**Goal:** Everything the user has built — tags, eras, questions, values — starts to appear in the right places without being asked.
-
 **What to build:**
 - Year-ago surfaces era context — *"A year ago you were in your [era] chapter"*
 - Continuity prompt era-aware
-- Tag co-occurrence — entries sharing multiple tags surface together
-- Question-to-heatmap — open questions show subtle indicator on tagged entries (opt-in)
-- Values in Write contextualise intentions
+- Tag co-occurrence surfaces together in Thread suggestions and Insights
+- Question-to-heatmap indicator on tagged entries (opt-in)
+- Values contextualise intentions in Write
 
 **Files:** `JournalEntry.tsx`, `TimelineView.tsx`, `insights.ts`
 
@@ -844,23 +770,23 @@ New value created from resolution
 **Depends on:** A11a
 **Scope creep risk:** High
 
-**Goal:** The north star session. The app notices strong patterns and surfaces one quiet observation at the right moment.
+**Goal:** The north star session. The app surfaces one quiet observation at the right moment.
 
 **What to build:**
-- Pattern observation surface — one quiet observation when pattern is strong. Never more than once a week. Always dismissable.
-- Anniversary acknowledgement — *"A year of writing. That's something."* — quiet, once, nothing more.
+- Pattern observation — one quiet observation when pattern is strong. Max once per week. Always dismissable.
+- Anniversary acknowledgement — *"A year of writing. That's something."*
 - Era transition acknowledgement — *"You've started a new chapter."*
 - Annual pattern card — once a year, one gentle observation
-- Question resolution acknowledgement — when entry count accelerates near resolution
+- Question resolution acknowledgement — when entries accelerate near resolution
 
 **Scope creep guard (non-negotiable):**
 - One observation at a time, never stacked
 - Never more than once per week
 - Every observation permanently dismissable
-- Never prescriptive — observation only, never instruction
-- Never surfaces negative patterns
+- Observation only — never instruction
+- Never negative patterns
 
-**The true form moment:** The app surfaces something the user wrote two years ago that speaks directly to what they're going through today — and they didn't ask it to. It just knew.
+**The true form moment:** The app surfaces something the user wrote two years ago that speaks to what they're going through today — without being asked.
 
 **Files:** `TimelineView.tsx`, `insights.ts`, new pattern detection module
 
@@ -1001,8 +927,8 @@ Then attach:
 | Session A4c-fix3 | 2026-03-01 | Dynamic sidebar + dot states (written/no-mood dashed ring) + ReflectionPanel polish | ✅ Complete |
 | Session A4c-fix4 | 2026-03-01 | ReflectionPanel below calendar grid + duplicate intention removed | ✅ Complete |
 | Session A4d | 2026-03-01 | First-run WelcomeCard + today cell pulse + daily prompt + intention surface + year-in-numbers | ✅ Complete |
-| Session Brainstorm-1 | 2026-03-01 | IS-AS + gap analysis + SWOT — Tags, Eras, Questions, Anchors, Threads, Insights. Full session map A5a–A11b locked. Philosophy expanded and audited. | ✅ Complete (brainstorm only) |
-| Session A5a | 2026-03-01 | Write + form polish — oneWord field, prompt chips, staggered animations, closing lines copy audit | ✅ Complete |
+| Session Brainstorm-1 | 2026-03-01 | IS-AS + gap analysis + SWOT — Tags, Eras, Questions, Anchors, Threads, Insights. Session map A5a–A11b locked. Philosophy expanded and audited. | ✅ Complete (brainstorm only) |
+| Session A5a | 2026-03-01 | oneWord field, staggered animations, closing lines audit. Prompt chips built and removed. | ✅ Complete |
 | Session A5b | — | Timeline + global polish — typography, mood language audit, empty states, visual language | ⏳ Next |
 | Session A6a | — | Tag infrastructure — autocomplete, normalise, import clean | ⏳ Pending |
 | Session A6b | — | Tag navigation — clickable in Timeline, filter state, heatmap filter | ⏳ Pending |
@@ -1088,31 +1014,32 @@ Then attach:
 - **2026-03-01 (A4c):** `intention?: string` added to JournalEntry in types.ts
 - **2026-03-01 (A4c):** ReflectionPanel replaces banners — full entry text readable inline, intention at top as through-line
 - **2026-03-01 (A4c-fix3):** Dynamic sidebar locked — level-aware: year=years list, month=months+dots, week/day=7-day strip
-- **2026-03-01 (A4c-fix3):** "Written, no mood" dot state — dashed ring on slate, distinct from empty grey and mood-coloured
-- **2026-03-01 (A4c-fix4):** ReflectionPanel placement locked — always below data (calendar/timeline), never above
+- **2026-03-01 (A4c-fix3):** "Written, no mood" dot state — dashed ring on slate, distinct from empty and mood-coloured
+- **2026-03-01 (A4c-fix4):** ReflectionPanel placement locked — always below data grid, never above
 - **2026-03-01 (A4d):** WelcomeCard appears when dailyEntries.length === 0 and journal_first_visit_dismissed not set
-- **2026-03-01 (A4d):** Today's cell pulses amber when no entries — stops after first save. localStorage: journal_first_visit_dismissed
+- **2026-03-01 (A4d):** Today's cell pulses amber when no entries — stops after first save
 - **2026-03-01 (A4d):** Daily prompt once-per-day gate — last_prompt_shown_date in localStorage
-- **2026-03-01 (Philosophy audit):** Philosophy expanded to three layers — Witness (foundation), Mirror (reflective), Patterns Surface (connective). All three audited against Witness test.
-- **2026-03-01 (Philosophy audit):** Mirror guard — mirror shows emotional *texture*, never *quality*. "Shape" safe, "quality" not.
-- **2026-03-01 (Philosophy audit):** Language rule — "patterns surface" always, never "app connects the dots." Passive construction correct.
-- **2026-03-01 (Philosophy audit):** Presence guard — observations describe what's present, never what's absent. Absence-pointing is a manager move.
-- **2026-03-01 (Philosophy audit):** Causation guard — habit + journal shows co-occurrence only. "These appear together" safe. "When you do X you feel better" is not.
-- **2026-03-01 (Philosophy audit):** "System" retired — replaced with "companion." "Life OS" rejected as label.
+- **2026-03-01 (A4d):** Hard day counts never shown in any stat surface — confirmed and enforced
+- **2026-03-01 (Philosophy audit):** Philosophy expanded to three layers — Witness, Mirror, Patterns Surface. All audited.
+- **2026-03-01 (Philosophy audit):** Mirror guard — texture not quality. "Shape" safe, "quality" not.
+- **2026-03-01 (Philosophy audit):** Language rule — "patterns surface" always. Never "app connects the dots."
+- **2026-03-01 (Philosophy audit):** Presence guard — observations describe what's present, never what's absent.
+- **2026-03-01 (Philosophy audit):** Causation guard — co-occurrence only. "These appear together" safe. "When you do X you feel better" is not.
+- **2026-03-01 (Philosophy audit):** "System" retired, replaced with "companion." "Life OS" rejected as label.
 - **2026-03-01 (Philosophy audit):** "Your life, made legible" confirmed as one-sentence product description.
-- **2026-03-01 (Brainstorm-1):** IS-AS audit — all six features (Tags, Eras, Questions, Anchors, Threads, Insights) are storage without surfaces. Data goes in, nothing comes back out.
+- **2026-03-01 (Brainstorm-1):** IS-AS audit — all six features are storage without surfaces. Data goes in, nothing comes back out.
 - **2026-03-01 (Brainstorm-1):** Three underlying systems — (1) Tagging System, (2) Context Layer, (3) Surfaces Layer. Tags are the foundation.
-- **2026-03-01 (Brainstorm-1):** Tag quality problem — free-text fragments connections. Solution: autocomplete + normalisation (both together).
-- **2026-03-01 (Brainstorm-1):** Anchors + Questions merged into "Inner Compass" — one sidebar item, two tabs (Values + Questions). Lifecycle: question → resolution → value.
-- **2026-03-01 (Brainstorm-1):** Session priority ranking — Tags (1), Eras (2), Questions (3), Insights (4), Anchors (5), Threads (6).
-- **2026-03-01 (Brainstorm-1):** A7b has hard dependency on A6b — era filter shares filter state infrastructure with tag filter.
-- **2026-03-01 (Brainstorm-1):** Living With It phase starts after A11b — not after A5. Full product first, then sustained daily use before Phase B.
-- **2026-03-01 (Brainstorm-1):** A9b and A11b are highest scope creep risk. Guards: A9b max 5 insights all dismissable. A11b max one observation per week, never negative.
-- **2026-03-01 (A5a):** `oneWord?: string` added to JournalEntry in types.ts — past-facing, observational, one word only
-- **2026-03-01 (A5a):** Closing lines copy-audited — "The witness remembers." removed (self-referential). 11 lines total, all pass Witness test.
-- **2026-03-01 (A5a):** PromptChips component — soft pill buttons above each textarea. Tap to set as placeholder. Never mandatory. DAILY_CHIPS and REFLECTION_CHIPS (tone-matched per type).
-- **2026-03-01 (A5a):** Staggered entrance animations — all guided form sections animate in sequence with staggered delays. Header→prompt→mood→fields→intention→oneWord→tags→actions.
-- **2026-03-01 (A5a):** oneWord field renders as borderless input with bottom border only — feels like a signature, not a form field. Single-word enforced (strips after first space).
+- **2026-03-01 (Brainstorm-1):** Tag quality solution — autocomplete + normalisation together. Both required.
+- **2026-03-01 (Brainstorm-1):** Anchors + Questions merged into "Inner Compass" — Values tab + Questions tab. Lifecycle: question → resolution → value.
+- **2026-03-01 (Brainstorm-1):** Session priority — Tags (1), Eras (2), Questions (3), Insights (4), Anchors (5), Threads (6).
+- **2026-03-01 (Brainstorm-1):** A7b hard dependency on A6b — era filter shares filter state infrastructure with tag filter.
+- **2026-03-01 (Brainstorm-1):** Living With It after A11b, not after A5. Full product first.
+- **2026-03-01 (Brainstorm-1):** A9b and A11b highest scope creep risk. Guards: A9b max 5 insights all dismissable. A11b max once per week, never negative.
+- **2026-03-01 (A5a):** `oneWord?: string` added to JournalEntry — past-facing, observational, single word only
+- **2026-03-01 (A5a):** Closing lines audited — "The witness remembers." removed (self-referential). 11 lines total.
+- **2026-03-01 (A5a):** Staggered entrance animations on all guided form sections — header through actions in sequence.
+- **2026-03-01 (A5a):** oneWord renders as borderless bottom-border input — feels like a signature, not a form field.
+- **2026-03-01 (A5a):** Prompt chips — built (soft pill buttons above each textarea) then removed after visual review. Verdict: clutter before writing starts, manager not witness. Placeholders are sufficient. Pattern rejected permanently.
 - **2026-03-01 (Philosophy audit):** Philosophy expanded to three layers — Witness (foundation), Mirror (reflective), Patterns Surface (connective). All three audited against the Witness test before locking.
 - **2026-03-01 (Philosophy audit):** Mirror guard locked — mirror shows emotional *texture* of a period, never its *quality*. "Shape" is safe language. "Quality" is not. Never becomes a report card.
 - **2026-03-01 (Philosophy audit):** Language rule locked — always "patterns surface", never "app connects the dots." Passive construction is correct. The patterns were always there.
@@ -1199,7 +1126,6 @@ This is not a Life OS. It is not a self-improvement system. It is a quiet compan
 | Intention surface below heatmap | ✅ Witness | |
 | Year-in-numbers (positive highlights only) | ✅ Witness | |
 | First-run WelcomeCard | ✅ Witness | |
-| Prompt chips — optional field nudges | ✅ Witness | Observations and invitations, never instructions |
 | One-word closing field on reflections | ✅ Witness | Past-facing, observational, no right answer |
 | Tags — clickable, filterable, normalised | ✅ Witness | User labels, app honours |
 | Era overlay — life chapters on heatmap | ✅ Witness | Shows shape of time, no judgement |
@@ -1215,6 +1141,7 @@ This is not a Life OS. It is not a self-improvement system. It is a quiet compan
 | Activity-based heatmap (green = wrote) | ❌ Manager — reframed to mood-based | |
 | To-do list / top 3 tasks | ❌ Manager — creates obligation | |
 | Hard day counts in stats | ❌ Manager — tallies pain | |
+| Prompt chips above writing fields | ❌ Manager — clutter before writing starts | Built and removed in A5a |
 | Absence-pointing observations | ❌ Manager — never show | "You haven't written about X lately" |
 | Causation observations | ❌ Manager — never imply | "When you do X you feel better" |
 | AI that reads and interprets entries | ❌ Never — privacy violation | |
