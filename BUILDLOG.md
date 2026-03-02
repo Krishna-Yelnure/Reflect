@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A6b-polish complete (2026-03-02)
+# Last updated: A6c deferred, A7a marked next (2026-03-02)
 
 ---
 
@@ -625,18 +625,26 @@ export const db = {
 **What was done:**
 
 1. **`activeTagFilter: string | null` state** — added to `TimelineView`. Entirely internal — no `App.tsx` changes, no prop drilling.
-2. **`TagFilterStrip` component** — renders just below `YearNav` at all drill levels when a filter is active. Active tag shown as a dark pill with × to dismiss. Plain "clear" text link as secondary dismiss target. `AnimatePresence` enter/exit animation.
-3. **Heatmap fading (year view)** — cells whose entry doesn't include the active tag fade to `opacity-20`. Tagged entries stay at full colour. Shape of the full year stays visible.
-4. **MonthView fading** — in-month cells without the tag fade to `opacity-20`.
-5. **WeekView fading** — entire day rows (dot + card) fade to `opacity-25` when unmatched.
-6. **DayView tag pills → clickable** — changed from `<span>` to `<button>`. Clicking a tag sets the filter and navigates back to year view. Clicking the active tag again clears it (toggle). Active tag gets `bg-slate-900 text-white`. Tooltip indicates intent.
 
-**Decision confirmed:** Filter entry point is DayView only — the natural discovery moment. Witness-led, not search-led.
+2. **`TagFilterStrip` component** — renders just below `YearNav` at all drill levels when a filter is active. Active tag shown as a dark pill with × to dismiss. Plain "clear" text link as secondary dismiss target. `AnimatePresence` enter/exit animation.
+
+3. **Heatmap fading (year view)** — cells whose entry doesn't include the active tag fade to `opacity-20`. Tagged entries stay at full colour. Shape of the full year stays visible. Days with no entry unaffected.
+
+4. **MonthView fading** — in-month cells without the tag fade to `opacity-20`. Out-of-month cells already at `opacity-20` — unchanged.
+
+5. **WeekView fading** — entire day rows (dot + card) fade to `opacity-25` when unmatched.
+
+6. **DayView tag pills → clickable** — changed from `<span>` to `<button>`. Clicking a tag sets the filter and navigates back to year view so the filtered heatmap is immediately visible. Clicking the active tag again clears it (toggle). Active tag gets `bg-slate-900 text-white` so it's clear which filter is live. Tooltip says "Filter by X" or "Clear filter".
+
+**Decision confirmed:** Filter entry point is DayView only — the natural discovery moment. User reads an entry, sees a tag, wonders "when else did I write about this?" — that question has an immediate answer. No other entry points built. Witness-led, not search-led.
 
 **Session checklist:**
 - [x] `activeTagFilter` state in TimelineView
 - [x] TagFilterStrip visible at all drill levels when filter active
-- [x] Heatmap, MonthView, WeekView cells/rows fade when unmatched
+- [x] TagFilterStrip absent when no filter
+- [x] Heatmap cells fade when unmatched
+- [x] MonthView cells fade when unmatched
+- [x] WeekView rows fade when unmatched
 - [x] DayView tag pills clickable — sets filter + returns to year view
 - [x] Toggle: clicking active tag clears filter
 - [x] App.tsx untouched
@@ -655,19 +663,19 @@ export const db = {
 **What prompted this:** Screenshot review showed mood cards + energy bars consuming ~220px of vertical space before writing begins. Two full labelled sections pushing writing fields off-screen. Design critique: mood is metadata, not the point — the writing is the point.
 
 **Decision process:**
-- Bottom placement rejected — risks mood data going uncaptured, heatmap starves of colour
+- Bottom placement rejected — risks mood data going uncaptured, heatmap starves of colour. The heatmap is the emotional backbone of the entire product. Moving mood to the bottom means users finish writing, feel done, hit Save, and never set it.
 - Expandable/collapsed rejected — extra interaction step, inconsistent capture
-- Compact single row chosen — same position, ~40px total height, nothing removed
+- Compact single row chosen — same position, ~40px total height, nothing removed, data still captured reliably
 
 **What was done:**
 
-1. **Mood — 5 compact emoji buttons** — removed cards (`px-4 pt-4 pb-3`, `text-3xl`, border, shadow, scale). Now tight pill row: unselected = emoji only (`text-lg`, minimal padding, `hover:bg-slate-100`). Selected = emoji grows to `text-xl` + label animates in with `width: auto` slide. Colour-wash background pill on selected. All expressiveness preserved at a fraction of the height.
+1. **Mood — 5 compact emoji buttons** — removed large cards (`px-4 pt-4 pb-3`, `text-3xl`, border, shadow, scale). Now tight pill row: unselected = emoji only (`text-lg`, minimal padding, `hover:bg-slate-100`). Selected = emoji grows to `text-xl` + label animates in with `width: auto` slide. Colour-wash background pill on selected. All expressiveness preserved at a fraction of the height.
 
-2. **Energy — bars only** — removed all number labels (always-visible, hover, active). Bars slightly smaller (`w-3.5`, max 28px height vs old 42px). `✕` clear still appears when set. No section label above. Bars read themselves.
+2. **Energy — bars only, zero labels** — removed all number labels (always-visible, hover, and active states). Bars slightly smaller (`w-3.5`, max 28px height vs old 42px). `✕` clear still appears when set. No section label above. Bars read themselves after day one.
 
-3. **Single row layout** — mood buttons + thin vertical divider + energy bars all on one `flex items-center` row. `~36–40px` total height. Writing fields begin immediately below. No `space-y-8`, no separate `<div>` per control.
+3. **Single row layout** — mood buttons + thin vertical divider + energy bars all on one `flex items-center` row. `~36–40px` total height. Writing fields begin immediately below. No `space-y-8`, no separate section per control.
 
-**Principle confirmed:** Mood + energy are closing punctuation on an entry, not a gate before writing. Making them small honours that.
+**Principle confirmed:** Mood + energy are closing punctuation on an entry, not a gate before writing. Making them small honours that without sacrificing data capture.
 
 **Session checklist:**
 - [x] Mood fits in one compact row, no cards
@@ -684,26 +692,81 @@ export const db = {
 
 ---
 
-#### SESSION A6c — Search ← START HERE NEXT
-**Status:** NOT STARTED
+#### SESSION A6c — Search
+**Status:** NOT STARTED — BRAINSTORM COMPLETE, DEFERRED (build when 30+ real entries exist)
 **Depends on:** A6a
-**Scope creep risk:** Medium
+**Scope creep risk:** Medium → High if not carefully scoped
 
-**Goal:** Full-text search across all entries. Critical feature — existential at Day 365.
-
-**What to build:**
-- Search input — sidebar header or dedicated view (decide at session start)
-- Full-text search: whatHappened, feelings, whatMatters, insight, freeWrite, tags
-- Tag as a search filter dimension
-- Result view — matching entries, snippet with match context, date. Click → Day View
-- Warm empty state — no "no results found" harshness
-- Local only — no server, no external index
-
-**Files:** New `src/app/components/SearchView.tsx`, `src/app/App.tsx`
+**Goal:** Full-text search across all entries. Important feature — existential at Day 365.
 
 ---
 
-#### SESSION A7a — Era Management
+**Brainstorm completed (2026-03-02) — do not skip this section before building**
+
+**The core insight:** A journal is not a database. People rarely remember the exact word they used. They remember the feeling, the person, the rough time period. Search in a journal is fundamentally different from search in a document or a codebase.
+
+**Search is actually three separate problems:**
+
+1. **Keyword lookup** — find entries containing this exact word or phrase. Simple, buildable, limited. This is what the original spec described.
+
+2. **Filtered browse** — show me entries from a date range where mood was low and tag was "work." More useful than keyword alone. Needs UI for combined filters.
+
+3. **Associative recall** — help me find something I only vaguely remember. Hard. Requires either semantic/AI search (violates privacy principle — the app must never read entries) or a well-designed browse experience that makes 1+2 good enough together.
+
+**The Witness constraint:** AI reading entries is permanently off the table. Option 3 must be solved through excellent browse (options 1+2 combined), not through intelligence.
+
+---
+
+**Every edge case that must be handled:**
+
+**Word mismatch** — user searches "happy", entry says "content" or "at peace." Exact match returns nothing. User concludes they never wrote about happiness. This is a false negative and misrepresents their own history back to them. Decision needed: accept this limitation and be honest about it in the UI, or implement basic fuzzy/stem matching.
+
+**Too many results** — user searches "work", 200 entries match. Result list is useless. Needs narrowing by date range, mood, tag, or reflection type. Without filters, keyword search on a large journal is nearly worthless for common words.
+
+**Nothing found** — two different situations:
+- Word not found anywhere → they may never have written about this
+- Word not found but topic exists under different language → false negative
+The UI cannot know the difference. Response must leave the door open, never feel like failure.
+
+**Partial memory** — user remembers "it was around summer, I felt low, something about a decision" but has no specific word. Pure text search cannot help. This is a browse problem, not a search problem. Filters solve this better than a search box.
+
+**Private language** — journals use personal shorthand, nicknames, abbreviations. Search must work with the user's actual language, not normalised language.
+
+**Recency bias** — results must always show date. Temporal context is never optional in a journal.
+
+---
+
+**Empty state and copy decisions:**
+
+**Search input blank (opening state):**
+Not a failure — an invitation. Avoid "Search your journal" (generic). Consider: *"What are you looking for?"* — simple, human. Or quieter: *"Every word you've written is here."*
+
+**No results found:**
+Never say "No results found." Options:
+- *"Nothing here for that. The words might live under a different name."*
+- *"You haven't written about this yet."* — honest, not harsh
+- Best version turns dead end into invitation: *"Nothing found. Want to write about it now?"* — the app stays a witness, not a search engine
+
+**Snippet highlighting:**
+Showing the matched word in context (one sentence, matched word bold or amber) so the user can see *why* an entry matched without opening it. Reduces cognitive load at scale (50+ results). Risk: fragments of private writing displayed in a clinical list can feel cold — tone of the snippet display matters as much as the highlighting itself. Decision: include it but keep the snippet short (one sentence max), no aggressive highlighting — subtle amber underline rather than bold.
+
+---
+
+**Build decision:**
+
+Do not build A6c until you have 30+ real entries and feel the absence of search yourself. The right time to build it is when you open the app, want to find something specific, and can't. That moment will tell you exactly what to build. Building it now means building for a hypothetical user, not a real one.
+
+**When ready to build, build in this order:**
+1. Keyword search across all 6 text fields + tags — results list with date + snippet
+2. Add mood filter + date range filter alongside the search input
+3. Add tag filter (integrates with A6b tag infrastructure)
+4. Empty states and no-results copy — last, because you'll know what feels right after using it
+
+**Files when ready:** New `src/app/components/SearchView.tsx`, `src/app/App.tsx`
+
+---
+
+#### SESSION A7a — Era Management ← START HERE NEXT
 **Status:** NOT STARTED
 **Depends on:** A6a
 **Scope creep risk:** Low
