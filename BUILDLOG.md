@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A5b complete (2026-03-02)
+# Last updated: Session A4e complete (2026-03-02)
 
 ---
 
@@ -505,59 +505,73 @@ export const db = {
 
 ---
 
-#### SESSION A5b — Timeline + Global Polish
+#### SESSION A4e — Deep Write Enhancements
 **Status:** ✅ COMPLETE (2026-03-02)
+**Depends on:** A4 ✅
+**Scope creep risk:** Low
+
+**Goal:** Enhance Deep Write with features that serve the writer without adding UI clutter.
+
+**Features considered and decisions made:**
+| Feature | Decision | Reason |
+|---|---|---|
+| Silent markdown support | ✅ Added (renders in DayView) | Writer writes naturally, reads back beautifully — zero UI change |
+| Word count | ✅ Added | Quiet, passive, fades in once writing starts — no target, no pressure |
+| Typewriter scroll | ✅ Added | Active line stays centred — reduces fatigue in long sessions, zero UI |
+| Auto-save indicator | ❌ Not added | Already auto-saves silently — indicator would introduce anxiety not remove it |
+| Time in session | ❌ Not added | No purpose in Witness-philosophy app — would feel like a manager clocking you |
+| Focus mode (dim surrounding text) | ❌ Not added | Competing visual element — blank page is already the focus mode |
+
+**What was built:**
+
+1. **Word count** — `countWords()` helper counts whitespace-split tokens. Renders bottom-right as `{n} words` in `var(--font-mono)` at `text-slate-300`. Fades in via `AnimatePresence` once word count > 0. Fixed position, `pointer-events-none` — never interferes with writing. No target, no colouring, no celebration at any threshold.
+
+2. **Typewriter scroll** — Container uses `scroll-padding-top: 40vh` + `overflow-y-auto`. Canvas has `padding-top: 20vh` and `padding-bottom: 50vh` so the writing area always sits in the upper-middle of the viewport. On `Enter` keydown, `scrollIntoView({ block: 'center' })` fires on the next animation frame to keep the caret centred. Smooth, invisible, no UI.
+
+3. **Amber caret** — `caretColor: #f59e0b` on the Deep Write textarea. The one moment amber earns its place in the writing experience — a quiet signal that this space is yours.
+
+4. **Display font in Deep Write title** — Title input uses `var(--font-display)` (Cormorant Garamond). The chapter heading feels like it belongs in a book.
+
+5. **Display font consistency** — Applied `var(--font-display)` to:
+   - Deep Write title input
+   - Guided mode date heading (h1)
+   - Quick mode date heading (h1)
+   - ClosingMoment line — the one place it matters most
+
+**Session checklist:**
+- [x] Word count renders quietly, fades in, never shows 0
+- [x] Typewriter scroll keeps caret in upper-centre of viewport
+- [x] Amber caret in Deep Write textarea
+- [x] Display font on all date headings and closing moment
+- [x] No new UI elements visible until writing starts
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/app/components/JournalEntry.tsx`
+
+---
+
+
 **Depends on:** A5a ✅
 **Scope creep risk:** Low
 
 **Goal:** Polish the Timeline experience and unify the global design language.
 
-**What was done:**
+**Checklist:**
+- [ ] Typographic hierarchy — stronger heading font, lighter body. Audit `fonts.css` and `theme.css`
+- [ ] Mood language audit across ALL stat surfaces — every mood data reflection passes the copy test
+- [ ] Hard day counts NEVER shown anywhere — audit every instance in TimelineView.tsx
+- [ ] Empty states review across all views — open door copy, not a void
+- [ ] Consistent visual language — border radius, shadow, colour logic unified across all components
+- [ ] Microinteractions: save, delete, mood select — intentional, warm, satisfying
+- [ ] Purposeful accent colour — amber/gold applied consistently as the one accent
 
-1. **`fonts.css`** — Added premium type pairing via Google Fonts:
-   - Display: Cormorant Garamond (300, 400, 500, italic) — editorial, warm, human
-   - Body: DM Sans (300, 400, 500, optical sizing) — clean without being cold
-   - Mono: DM Mono (300, 400) — for dates, labels, stats
-
-2. **`theme.css`** — Wired font families as CSS variables:
-   - `--font-display`, `--font-body`, `--font-mono`
-   - Added `--amber-accent`, `--amber-accent-light`, `--amber-accent-muted` tokens
-   - Updated `@layer base` typography: h1/h2 use display font at weight 300, body/button/input use DM Sans
-   - Added `-webkit-font-smoothing: antialiased` to html element
-   - h1/h2 letter-spacing tightened to `-0.01em`
-
-3. **`TimelineView.tsx`** — Seven targeted changes:
-   - **Breadcrumb** — Uses `var(--font-display)` at font-light. Year/month reads as a chapter heading
-   - **Mood language** — "Difficult" → "Hard" (more human, less clinical). `bg-slate-500` → `bg-slate-400` (less visually heavy). Mood emojis replaced with typographic symbols (`✨ 🌿 ○ ◌ ·`) — less cartoonish
-   - **Heatmap month labels** — `tracking-wider uppercase` at 11px — wayfinding labels, not buttons
-   - **MoodLegend** — Tightened: smaller dots (2.5 vs 3), smaller text, removed "Mood:" prefix
-   - **Month calendar cells** — Fixed contrast bug: removed `text-white` on mood-coloured cells. Mood colours are mid-saturation pastels — white text fails contrast. Dark slate text used instead. Today ring changed from `ring-slate-800` → `ring-amber-400` (consistent amber accent)
-   - **DayView** — Added display-font date heading (`Wednesday, March 4`) at top of every entry. Field labels use `tracking-widest`. Edit affordance reverted to original outline Button after review
-   - **BelowHeatmap** — Daily prompt uses display font at opacity 0.7 (more ghostly, less present). Active day observation copy: "You tend to write on…" (softer than "You write most on…"). Intention block gets a top border separator
-
-**Decisions made during session:**
-- Active sidebar states (year/month/week/day) — amber box tried and reverted. `bg-slate-900 text-white` was correct: it's a position indicator, not a highlight
-- Edit button in DayView — amber text link tried and reverted. Quiet outline Button is right for a persistent affordance
-- Amber reserved for: today's cell pulse, today's ring in month view, WelcomeCard CTA only
-
-**Session checklist:**
-- [x] Typographic hierarchy — Cormorant Garamond display + DM Sans body wired and working
-- [x] Mood language audit — "Difficult" → "Hard", copy passes Witness test throughout
-- [x] Hard day counts — confirmed absent from all stat surfaces
-- [x] Consistent visual language — border radius, amber accent, shadow unified
-- [x] Purposeful accent colour — amber applied only where it earns its place
-- [x] Month cell contrast bug fixed — no more text-white on pastel mood cells
-- [x] Committed and pushed to GitHub
-- [x] BUILDLOG updated
-
-**Files changed:**
-- `src/styles/fonts.css`
-- `src/styles/theme.css`
-- `src/app/components/TimelineView.tsx`
+**Files:** `src/app/components/TimelineView.tsx`, `src/styles/fonts.css`, `src/styles/theme.css`, multiple components
 
 ---
 
-#### SESSION A6a — Tag Infrastructure ← START HERE NEXT
+#### SESSION A6a — Tag Infrastructure
 **Status:** NOT STARTED
 **Depends on:** A5 done
 **Scope creep risk:** Low
@@ -926,18 +940,18 @@ New value created from resolution
 
 ---
 
-## HOW TO START SESSION A6a
+## HOW TO START SESSION A5b
 
 In a new Claude conversation, say exactly this:
 
-> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A6a — Tag Infrastructure."
+> "I am building a privacy-first journaling desktop app. Please read the BUILDLOG.md carefully, then help me complete Session A5b — Timeline + Global Polish."
 
 Then attach:
 1. This `BUILDLOG.md`
-2. `src/app/components/JournalEntry.tsx`
-3. `src/app/utils/storage.ts`
-4. `src/app/db/index.ts`
-5. `src/app/components/TagManager.tsx`
+2. `src/app/components/TimelineView.tsx`
+3. `src/styles/fonts.css`
+4. `src/styles/theme.css`
+5. `src/styles/index.css`
 
 ---
 
@@ -961,8 +975,9 @@ Then attach:
 | Session A4d | 2026-03-01 | First-run WelcomeCard + today cell pulse + daily prompt + intention surface + year-in-numbers | ✅ Complete |
 | Session Brainstorm-1 | 2026-03-01 | IS-AS + gap analysis + SWOT — Tags, Eras, Questions, Anchors, Threads, Insights. Session map A5a–A11b locked. Philosophy expanded and audited. | ✅ Complete (brainstorm only) |
 | Session A5a | 2026-03-01 | oneWord field, staggered animations, closing lines audit. Prompt chips built and removed. | ✅ Complete |
-| Session A5b | 2026-03-02 | Typography upgrade (Cormorant Garamond + DM Sans), mood language audit ("Difficult" → "Hard"), month cell contrast fix, amber accent audit, DayView date heading, BelowHeatmap polish | ✅ Complete |
-| Session A6a | — | Tag infrastructure — autocomplete, normalise, import clean | ⏳ Next |
+| Session A4e | 2026-03-02 | Deep Write enhancements — word count, typewriter scroll, amber caret, display font on headings + closing moment | ✅ Complete |
+| Session A5b | — | Timeline + global polish — typography, mood language audit, empty states, visual language | ⏳ Next |
+| Session A6a | — | Tag infrastructure — autocomplete, normalise, import clean | ⏳ Pending |
 | Session A6b | — | Tag navigation — clickable in Timeline, filter state, heatmap filter | ⏳ Pending |
 | Session A6c | — | Search — full-text + tag dimension + result view | ⏳ Pending |
 | Session A7a | — | Era management — redesign ErasManager, data model audit | ⏳ Pending |

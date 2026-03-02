@@ -152,6 +152,11 @@ function getClosingLine(): string {
   return closingLines[Math.floor(Math.random() * closingLines.length)];
 }
 
+/** Count words in a string — used for quiet word count in Deep Write */
+function countWords(text: string): number {
+  return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+}
+
 /**
  * Build a continuity prompt from yesterday's entry.
  * Only fires if yesterday has an entry and has content worth referencing.
@@ -412,7 +417,7 @@ function ClosingMoment({
         <p className="text-slate-400 text-sm tracking-widest uppercase font-medium">
           {formatEntryDate(date)}
         </p>
-        <p className="text-2xl text-slate-700 font-light">{line}</p>
+        <p className="text-2xl text-slate-700 font-light" style={{ fontFamily: 'var(--font-display)' }}>{line}</p>
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -605,6 +610,8 @@ export function JournalEntry({
   // ─────────────────────────────────────────────────────────────────────────
 
   if (mode === 'deep') {
+    const wordCount = countWords(entry.freeWrite || '');
+
     return (
       <>
         <AnimatePresence>
@@ -637,23 +644,59 @@ export function JournalEntry({
             </Button>
           </div>
 
-          {/* Deep mode canvas */}
-          <div className="flex-1 overflow-auto px-8 py-10 max-w-3xl mx-auto w-full">
-            <input
-              type="text"
-              value={entry.whatMatters || ''}
-              onChange={e => updateField('whatMatters', e.target.value)}
-              placeholder="A title, if you want one…"
-              className="w-full text-2xl font-light text-slate-700 placeholder:text-slate-300 border-none outline-none bg-transparent mb-8"
-            />
-            <textarea
-              value={entry.freeWrite || ''}
-              onChange={e => updateField('freeWrite', e.target.value)}
-              placeholder="Write freely. No prompts, no fields. Just you and the page."
-              className="w-full min-h-[60vh] text-base leading-loose text-slate-700 placeholder:text-slate-300 border-none outline-none bg-transparent resize-none"
-              autoFocus
-            />
+          {/* Deep mode canvas — typewriter scroll via scroll-pt + overflow-y-auto */}
+          <div
+            className="flex-1 overflow-y-auto"
+            style={{ scrollPaddingTop: '40vh' }}
+          >
+            <div className="px-8 pt-[20vh] pb-[50vh] max-w-3xl mx-auto w-full">
+              <input
+                type="text"
+                value={entry.whatMatters || ''}
+                onChange={e => updateField('whatMatters', e.target.value)}
+                placeholder="A title, if you want one…"
+                className="w-full text-2xl font-light text-slate-700 placeholder:text-slate-300 border-none outline-none bg-transparent mb-8"
+                style={{ fontFamily: 'var(--font-display)' }}
+              />
+              <textarea
+                value={entry.freeWrite || ''}
+                onChange={e => updateField('freeWrite', e.target.value)}
+                placeholder="Write freely. No prompts, no fields. Just you and the page."
+                className="w-full text-base leading-[2] text-slate-700 placeholder:text-slate-300 border-none outline-none bg-transparent resize-none"
+                style={{ minHeight: '60vh', caretColor: '#f59e0b' }}
+                autoFocus
+                onKeyDown={e => {
+                  // On Enter, scroll caret into vertical centre
+                  if (e.key === 'Enter') {
+                    requestAnimationFrame(() => {
+                      const el = e.target as HTMLTextAreaElement;
+                      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    });
+                  }
+                }}
+              />
+            </div>
           </div>
+
+          {/* Word count — quiet, bottom-right, fades in once writing starts */}
+          <AnimatePresence>
+            {wordCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1 }}
+                className="fixed bottom-6 right-8 pointer-events-none"
+              >
+                <span
+                  className="text-xs text-slate-300 tabular-nums"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </>
     );
@@ -681,7 +724,7 @@ export function JournalEntry({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-light text-slate-700">
+              <h1 className="text-2xl font-light text-slate-700" style={{ fontFamily: 'var(--font-display)' }}>
                 {formatEntryDate(selectedDate)}
               </h1>
               <p className="text-sm text-slate-400 mt-0.5">Quick capture</p>
@@ -772,7 +815,7 @@ export function JournalEntry({
           className="flex items-start justify-between mb-6"
         >
           <div>
-            <h1 className="text-3xl font-light text-slate-800">
+            <h1 className="text-3xl font-light text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
               {formatEntryDate(selectedDate)}
             </h1>
             {reflectionMeta && (
