@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A4e complete (2026-03-02)
+# Last updated: Sessions A5b + A4e complete (2026-03-02)
 
 ---
 
@@ -552,7 +552,8 @@ export const db = {
 
 ---
 
-
+#### SESSION A5b — Timeline + Global Polish
+**Status:** ✅ COMPLETE (2026-03-02)
 **Depends on:** A5a ✅
 **Scope creep risk:** Low
 
@@ -773,8 +774,11 @@ New value created from resolution
 - Thread reading mode — distraction-free, chronological, clean typography
 - Thread cover — title, date range (auto-computed), optional note
 - Entry cards — compact, mood colour, snippet, date. Click → Day View
+- **Markdown rendering** — install lightweight renderer (e.g. `marked` or `micromark`). Render markdown in DayView (`freeWrite` + `whatHappened` fields) and Thread reading mode. No changes to Write form — writing stays raw, reading is rendered. No toolbar, no live preview, no syntax highlighting. Writer uses `**bold**`, `# heading`, `- list` naturally; it renders when read back.
 
-**Files:** `MemoryThreads.tsx`, `threads.ts`
+**Decision locked:** Markdown is a reading-experience feature, not a writing-experience feature. The textarea stays plain text always.
+
+**Files:** `MemoryThreads.tsx`, `threads.ts`, `TimelineView.tsx`
 
 ---
 
@@ -975,9 +979,9 @@ Then attach:
 | Session A4d | 2026-03-01 | First-run WelcomeCard + today cell pulse + daily prompt + intention surface + year-in-numbers | ✅ Complete |
 | Session Brainstorm-1 | 2026-03-01 | IS-AS + gap analysis + SWOT — Tags, Eras, Questions, Anchors, Threads, Insights. Session map A5a–A11b locked. Philosophy expanded and audited. | ✅ Complete (brainstorm only) |
 | Session A5a | 2026-03-01 | oneWord field, staggered animations, closing lines audit. Prompt chips built and removed. | ✅ Complete |
+| Session A5b | 2026-03-02 | Typography upgrade (Cormorant Garamond + DM Sans), mood language audit ("Difficult" → "Hard"), month cell contrast fix, amber accent audit, DayView date heading, BelowHeatmap polish | ✅ Complete |
 | Session A4e | 2026-03-02 | Deep Write enhancements — word count, typewriter scroll, amber caret, display font on headings + closing moment | ✅ Complete |
-| Session A5b | — | Timeline + global polish — typography, mood language audit, empty states, visual language | ⏳ Next |
-| Session A6a | — | Tag infrastructure — autocomplete, normalise, import clean | ⏳ Pending |
+| Session A6a | — | Tag infrastructure — autocomplete, normalise, import clean | ⏳ Next |
 | Session A6b | — | Tag navigation — clickable in Timeline, filter state, heatmap filter | ⏳ Pending |
 | Session A6c | — | Search — full-text + tag dimension + result view | ⏳ Pending |
 | Session A7a | — | Era management — redesign ErasManager, data model audit | ⏳ Pending |
