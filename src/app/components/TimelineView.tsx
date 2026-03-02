@@ -147,6 +147,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
   const [focusMonth, setFocus]  = useState<number>(getMonth(new Date())); // 0-indexed
   const [focusWeek, setFocusW]  = useState<Date>(startOfWeek(new Date()));
   const [focusDay, setFocusDay] = useState<string | null>(null);
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
 
   // ── First-run empty state ──────────────────────────────────────────────
   const dailyEntries = useMemo(() => entries.filter(e => !e.date.startsWith('reflection-')), [entries]);
@@ -339,6 +340,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   const ds    = format(day, 'yyyy-MM-dd');
                   const entry = entryMap.get(ds);
                   const todayC = isToday(day);
+                  const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
                   return (
                     <motion.button
                       key={ds}
@@ -352,7 +354,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                       }}
                       title={ds}
                       className={`
-                        aspect-square rounded-sm transition-colors
+                        aspect-square rounded-sm transition-all
                         ${entry?.mood
                           ? MOOD_CELL[entry.mood]
                           : entry
@@ -360,6 +362,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                             : 'bg-slate-100 hover:bg-slate-200'
                         }
                         ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-slate-500 ring-offset-1' : ''}
+                        ${activeTagFilter && !tagMatch ? 'opacity-20' : ''}
                       `}
                     />
                   );
@@ -469,6 +472,38 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       </div>
     </div>
   );
+
+  // ── TAG FILTER STRIP — shown below YearNav when a filter is active ───
+  const TagFilterStrip = () => {
+    if (!activeTagFilter) return null;
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.18 }}
+        className="flex items-center gap-2 mb-6 -mt-2"
+      >
+        <span className="text-[11px] text-slate-400 uppercase tracking-widest">Filtered by</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 text-white text-xs rounded-full font-medium">
+          {activeTagFilter}
+          <button
+            onClick={() => setActiveTagFilter(null)}
+            className="text-slate-300 hover:text-white transition-colors ml-0.5"
+            aria-label="Clear tag filter"
+          >
+            ×
+          </button>
+        </span>
+        <button
+          onClick={() => setActiveTagFilter(null)}
+          className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          clear
+        </button>
+      </motion.div>
+    );
+  };
 
   // ── REFLECTION PANEL — replaces flat banners in Month/Week/Year views ─
   const REFLECTION_PANEL_META: Record<ReflectionEntryType, {
@@ -677,6 +712,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   const entry    = entryMap.get(ds);
                   const inMonth  = isSameMonth(day, mStart);
                   const todayC   = isToday(day);
+                  const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
 
                   return (
                     <motion.button
@@ -699,6 +735,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                             : 'bg-white border-slate-100 hover:border-slate-300 text-slate-600'
                         }
                         ${todayC ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
+                        ${activeTagFilter && !tagMatch && inMonth ? 'opacity-20' : ''}
                       `}
                     >
                       <span>{format(day, 'd')}</span>
@@ -745,6 +782,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               const entry = entryMap.get(ds);
               const today = isToday(day);
               const dotCls = entry?.mood ? MOOD_CELL[entry.mood] : today ? 'bg-slate-400' : 'bg-slate-200';
+              const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
 
               return (
                 <motion.div
@@ -752,7 +790,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="flex items-start gap-4"
+                  className={`flex items-start gap-4 transition-opacity ${activeTagFilter && !tagMatch ? 'opacity-25' : ''}`}
                 >
                   {/* Dot */}
                   <button
@@ -894,13 +932,25 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           </div>
         )}
 
-        {/* Tags */}
+        {/* Tags — clickable to filter */}
         {entry.tags && entry.tags.length > 0 && (
           <div className="flex gap-2 flex-wrap">
             {entry.tags.map(tag => (
-              <span key={tag} className="px-2.5 py-1 bg-slate-100 text-slate-500 text-xs rounded-full tracking-wide">
+              <button
+                key={tag}
+                onClick={() => {
+                  setActiveTagFilter(activeTagFilter === tag ? null : tag);
+                  setLevel('year');
+                }}
+                className={`px-2.5 py-1 text-xs rounded-full tracking-wide transition-all
+                  ${activeTagFilter === tag
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'
+                  }`}
+                title={activeTagFilter === tag ? 'Clear filter' : `Filter by "${tag}"`}
+              >
                 {tag}
-              </span>
+              </button>
             ))}
           </div>
         )}
@@ -951,6 +1001,10 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       {/* ── Main heatmap area ── */}
       <div className="flex-1 min-w-0">
         <YearNav />
+
+        <AnimatePresence>
+          <TagFilterStrip />
+        </AnimatePresence>
 
         <AnimatePresence mode="wait">
           {level === 'year' && (

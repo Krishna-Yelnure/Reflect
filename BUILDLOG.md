@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A6a complete (2026-03-02)
+# Last updated: Session A6b complete (2026-03-02)
 
 ---
 
@@ -616,26 +616,47 @@ export const db = {
 
 ---
 
-#### SESSION A6b — Tag Navigation ← START HERE NEXT
-**Status:** NOT STARTED
-**Depends on:** A6a
-**Scope creep risk:** Medium
+#### SESSION A6b — Tag Navigation
+**Status:** ✅ COMPLETE (2026-03-02)
+**Depends on:** A6a ✅
 
 **Goal:** Tags become navigable. Click a tag anywhere → filtered Timeline view.
 
-**What to build:**
-- Clickable tags in Day View → triggers tag filter in Timeline
-- `activeTagFilter` state in TimelineView.tsx
-- Filtered heatmap — untagged cells fade, tagged entries full colour
-- "Filtered by: [tag]" breadcrumb indicator at all drill levels
-- Clear filter exits to full Timeline
-- Filter persists as user drills year → month → week → day
+**What was done:**
 
-**Files:** `src/app/components/TimelineView.tsx`, `src/app/components/JournalEntry.tsx`
+1. **`activeTagFilter: string | null` state** — added to `TimelineView`. Entirely internal — no `App.tsx` changes, no prop drilling.
+
+2. **`TagFilterStrip` component** — renders just below `YearNav` at all drill levels when a filter is active. Active tag shown as a dark pill with × to dismiss. Plain "clear" text link as secondary dismiss target. `AnimatePresence` enter/exit animation.
+
+3. **Heatmap fading (year view)** — cells whose entry doesn't include the active tag fade to `opacity-20`. Tagged entries stay at full colour. Shape of the full year stays visible. Days with no entry unaffected.
+
+4. **MonthView fading** — in-month cells without the tag fade to `opacity-20`. Out-of-month cells already at `opacity-20` — unchanged.
+
+5. **WeekView fading** — entire day rows (dot + card) fade to `opacity-25` when unmatched.
+
+6. **DayView tag pills → clickable** — changed from `<span>` to `<button>`. Clicking a tag sets the filter and navigates back to year view so the filtered heatmap is immediately visible. Clicking the active tag again clears it (toggle). Active tag gets `bg-slate-900 text-white` so it's clear which filter is live. Tooltip says "Filter by X" or "Clear filter".
+
+**Decision confirmed:** Filter entry point is DayView only — the natural discovery moment. User reads an entry, sees a tag, wonders "when else did I write about this?" — that question has an immediate answer. No other entry points built. Witness-led, not search-led.
+
+**Session checklist:**
+- [x] `activeTagFilter` state in TimelineView
+- [x] TagFilterStrip visible at all drill levels when filter active
+- [x] TagFilterStrip absent when no filter
+- [x] Heatmap cells fade when unmatched
+- [x] MonthView cells fade when unmatched
+- [x] WeekView rows fade when unmatched
+- [x] DayView tag pills clickable — sets filter + returns to year view
+- [x] Toggle: clicking active tag clears filter
+- [x] App.tsx untouched
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/app/components/TimelineView.tsx`
 
 ---
 
-#### SESSION A6c — Search
+#### SESSION A6c — Search ← START HERE NEXT
 **Status:** NOT STARTED
 **Depends on:** A6a
 **Scope creep risk:** Medium
