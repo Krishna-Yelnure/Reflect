@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Sessions A5b + A4e complete (2026-03-02)
+# Last updated: Session A6a complete (2026-03-02)
 
 ---
 
@@ -573,24 +573,50 @@ export const db = {
 ---
 
 #### SESSION A6a — Tag Infrastructure
-**Status:** NOT STARTED
+**Status:** ✅ COMPLETE (2026-03-02)
 **Depends on:** A5 done
 **Scope creep risk:** Low
 
 **Goal:** Make tags clean, consistent, and queryable. The foundation every other feature depends on.
 
-**What to build:**
-- Tag normalisation on save — lowercase, trim, deduplicate
-- Tag normalisation on import — historical tags cleaned when importing JSON
-- Tag autocomplete in Write — existing tags surface as suggestions while typing
-- Computed unique-tags list — derived from all entries, used by autocomplete and future surfaces
-- TagManager.tsx audit — absorbed into autocomplete or kept as management screen?
+**What was done:**
 
-**Files:** `src/app/components/JournalEntry.tsx`, `src/app/utils/storage.ts`, `src/app/db/index.ts`, `TagManager.tsx`
+1. **`db/index.ts` — `normaliseTags()` helper** — lowercase, trim, deduplicate, remove empties. Applied in `entries.add()` and `entries.update()` so every save is clean. Also applied in `backup.importAll()` so imported historical JSON gets cleaned on the way in. One function, three call sites, covers all paths.
+
+2. **`TagManager.tsx` — full rewrite** — replaced the two-step "Add tag" button flow with an inline input field embedded directly in the tag pill row:
+   - Type to filter existing tags — dropdown appears with up to 6 matches
+   - Press Enter or comma to add a new tag
+   - Press Backspace on empty input to remove the last tag
+   - Click any suggestion to add instantly
+   - `onMouseDown` (not `onClick`) on suggestions prevents input blur before selection fires
+   - Escape clears input and dismisses dropdown
+   - Helper text appears on focus only — not always visible
+   - Tags render as compact pills with × button inline
+   - Zero dependency on `Button`, `Input`, `Badge` shadcn components — self-contained
+
+3. **`JournalEntry.tsx`** — removed unused `isSameDay` import. No other changes needed — TagManager interface is backwards-compatible.
+
+**Decision confirmed:** TagManager was never a standalone nav item — it was always used inline in JournalEntry. No nav change needed. A separate management screen is not needed — autocomplete covers all use cases.
+
+**Session checklist:**
+- [x] Tags normalised on save (add + update)
+- [x] Tags normalised on import
+- [x] Autocomplete surfaces existing tags while typing
+- [x] Enter / comma to add new tag
+- [x] Backspace to remove last tag
+- [x] No extra clicks — one field, inline experience
+- [x] `isSameDay` unused import removed from JournalEntry
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/app/db/index.ts`
+- `src/app/components/TagManager.tsx`
+- `src/app/components/JournalEntry.tsx`
 
 ---
 
-#### SESSION A6b — Tag Navigation
+#### SESSION A6b — Tag Navigation ← START HERE NEXT
 **Status:** NOT STARTED
 **Depends on:** A6a
 **Scope creep risk:** Medium
@@ -981,8 +1007,8 @@ Then attach:
 | Session A5a | 2026-03-01 | oneWord field, staggered animations, closing lines audit. Prompt chips built and removed. | ✅ Complete |
 | Session A5b | 2026-03-02 | Typography upgrade (Cormorant Garamond + DM Sans), mood language audit ("Difficult" → "Hard"), month cell contrast fix, amber accent audit, DayView date heading, BelowHeatmap polish | ✅ Complete |
 | Session A4e | 2026-03-02 | Deep Write enhancements — word count, typewriter scroll, amber caret, display font on headings + closing moment | ✅ Complete |
-| Session A6a | — | Tag infrastructure — autocomplete, normalise, import clean | ⏳ Next |
-| Session A6b | — | Tag navigation — clickable in Timeline, filter state, heatmap filter | ⏳ Pending |
+| Session A6a | 2026-03-02 | Tag normalisation (save + import), TagManager rewrite — inline autocomplete, Enter/comma/Backspace UX | ✅ Complete |
+| Session A6b | — | Tag navigation — clickable in Timeline, filter state, heatmap filter | ⏳ Next |
 | Session A6c | — | Search — full-text + tag dimension + result view | ⏳ Pending |
 | Session A7a | — | Era management — redesign ErasManager, data model audit | ⏳ Pending |
 | Session A7b | — | Era surfaces — heatmap overlay, era label in all views, era filter | ⏳ Pending |

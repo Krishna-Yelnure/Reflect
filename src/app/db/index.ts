@@ -75,6 +75,15 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   languageAnalysisEnabled: true,
 };
 
+// ── Tag normalisation ─────────────────────────────────────────────────────────
+// Applied on every entry save — lowercase, trim, deduplicate, remove empties.
+// Keeps tag data clean regardless of how or when it was entered.
+
+function normaliseTags(tags?: string[]): string[] {
+  if (!tags || tags.length === 0) return [];
+  return [...new Set(tags.map(t => t.trim().toLowerCase()).filter(Boolean))];
+}
+
 // ── Journal Entries ───────────────────────────────────────────────────────────
 
 const entries = {
@@ -88,7 +97,7 @@ const entries = {
 
   add(entry: JournalEntry): void {
     const all = this.getAll();
-    all.push(entry);
+    all.push({ ...entry, tags: normaliseTags(entry.tags) });
     this.save(all);
   },
 
@@ -96,7 +105,12 @@ const entries = {
     const all = this.getAll();
     const index = all.findIndex(e => e.id === id);
     if (index !== -1) {
-      all[index] = { ...all[index], ...updates, updatedAt: nowISO() };
+      all[index] = {
+        ...all[index],
+        ...updates,
+        tags: normaliseTags(updates.tags ?? all[index].tags),
+        updatedAt: nowISO(),
+      };
       this.save(all);
     }
   },
@@ -456,7 +470,7 @@ const backup = {
       const d = snapshot.data;
       if (!d) throw new Error('Invalid backup format');
 
-      if (d.entries)      entries.save(d.entries);
+      if (d.entries)      entries.save((d.entries as JournalEntry[]).map(e => ({ ...e, tags: normaliseTags(e.tags) })));
       if (d.habits)       habits.save(d.habits);
       if (d.gentleStarts) gentleStarts.save(d.gentleStarts);
       if (d.engagements)  engagements.save(d.engagements);

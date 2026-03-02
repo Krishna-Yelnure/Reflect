@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { format, subDays, isSameDay, parseISO } from 'date-fns';
+import { format, subDays, parseISO } from 'date-fns';
 import { Sparkles, Save, X, Zap, BookOpen, Edit3, ChevronLeft } from 'lucide-react';
 import type { JournalEntry as JournalEntryType } from '@/app/types';
 import { storage } from '@/app/utils/storage';
