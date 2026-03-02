@@ -39,10 +39,10 @@ const MOOD_CELL: Record<string, string> = {
   good:      'bg-emerald-300',
   okay:      'bg-slate-300',
   low:       'bg-blue-300',
-  difficult: 'bg-slate-500',
+  difficult: 'bg-slate-400',
 };
 const MOOD_LABEL: Record<string, string> = {
-  great: 'Great', good: 'Good', okay: 'Okay', low: 'Low', difficult: 'Difficult',
+  great: 'Great', good: 'Good', okay: 'Okay', low: 'Low', difficult: 'Hard',
 };
 const MOOD_BG: Record<string, string> = {
   great:     'bg-amber-50 border-amber-200',
@@ -53,10 +53,10 @@ const MOOD_BG: Record<string, string> = {
 };
 const MOOD_TEXT: Record<string, string> = {
   great: 'text-amber-700', good: 'text-emerald-700', okay: 'text-slate-600',
-  low: 'text-blue-700', difficult: 'text-slate-700',
+  low: 'text-blue-700', difficult: 'text-slate-600',
 };
 const MOOD_EMOJI: Record<string, string> = {
-  great: '✨', good: '😊', okay: '😐', low: '😔', difficult: '😣',
+  great: '✨', good: '🌿', okay: '○', low: '◌', difficult: '·',
 };
 
 type DrillLevel = 'year' | 'month' | 'week' | 'day';
@@ -188,13 +188,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
   // ── Breadcrumb nav ─────────────────────────────────────────────────────
   const YearNav = () => (
-    <div className="flex items-center gap-1 mb-6 flex-wrap">
+    <div className="flex items-center gap-1.5 mb-8 flex-wrap">
       {/* Year */}
       <button
         onClick={() => setLevel('year')}
-        className={`text-lg font-medium transition-colors ${
-          level === 'year' ? 'text-slate-800 cursor-default' : 'text-slate-400 hover:text-slate-700'
+        className={`transition-colors leading-none ${
+          level === 'year'
+            ? 'text-slate-900 cursor-default text-2xl font-light'
+            : 'text-slate-400 hover:text-slate-700 text-xl'
         }`}
+        style={{ fontFamily: 'var(--font-display)' }}
       >
         {year}
       </button>
@@ -202,12 +205,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       {/* Month crumb */}
       {(level === 'month' || level === 'week' || level === 'day') && (
         <>
-          <span className="text-slate-300 text-lg">/</span>
+          <span className="text-slate-200 text-lg">/</span>
           <button
             onClick={() => setLevel('month')}
-            className={`text-lg font-medium transition-colors ${
-              level === 'month' ? 'text-slate-800 cursor-default' : 'text-slate-400 hover:text-slate-700'
+            className={`transition-colors leading-none ${
+              level === 'month'
+                ? 'text-slate-900 cursor-default text-2xl font-light'
+                : 'text-slate-400 hover:text-slate-700 text-xl'
             }`}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {MONTH_NAMES[focusMonth]}
           </button>
@@ -217,12 +223,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       {/* Week crumb */}
       {(level === 'week' || level === 'day') && (
         <>
-          <span className="text-slate-300 text-lg">/</span>
+          <span className="text-slate-200 text-lg">/</span>
           <button
             onClick={() => setLevel('week')}
-            className={`text-lg font-medium transition-colors ${
-              level === 'week' ? 'text-slate-800 cursor-default' : 'text-slate-400 hover:text-slate-700'
+            className={`transition-colors leading-none ${
+              level === 'week'
+                ? 'text-slate-900 cursor-default text-2xl font-light'
+                : 'text-slate-400 hover:text-slate-700 text-xl'
             }`}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {(() => {
               const wStart = startOfMonth(new Date(year, focusMonth, 1));
@@ -237,15 +246,18 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       {/* Day crumb */}
       {level === 'day' && focusDay && (
         <>
-          <span className="text-slate-300 text-lg">/</span>
-          <span className="text-lg font-medium text-slate-800">
+          <span className="text-slate-200 text-lg">/</span>
+          <span
+            className="text-slate-900 text-2xl font-light leading-none"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
             {format(parseISO(focusDay), 'EEE d')}
           </span>
         </>
       )}
 
       {level !== 'day' && (
-        <span className="ml-auto text-sm text-slate-400">{(() => {
+        <span className="ml-auto text-xs text-slate-400 tracking-wide">{(() => {
           if (level === 'year')  return summaryLine(yearEntries);
           if (level === 'month') {
             const mEntries = dailyEntries.filter(e => {
@@ -300,12 +312,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     return (
       <div>
-        <div className="grid grid-cols-6 gap-4">
+        <div className="grid grid-cols-6 gap-5">
           {months.map(({ name, mi, monthDays, paddingBefore }) => (
             <div key={mi} className="min-w-0">
               <button
                 onClick={() => { setFocus(mi); setLevel('month'); }}
-                className="text-xs font-medium text-slate-500 hover:text-slate-800 mb-2 flex items-center transition-colors"
+                className="text-[11px] font-medium text-slate-400 hover:text-slate-700 mb-2 flex items-center gap-0.5 transition-colors tracking-wider uppercase"
               >
                 {name}
                 {(() => {
@@ -318,7 +330,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               </button>
               <div className="grid grid-cols-7 gap-0.5">
                 {DAY_LABELS.map((d, i) => (
-                  <div key={i} className="text-[8px] text-slate-300 text-center pb-0.5">{d}</div>
+                  <div key={i} className="text-[7px] text-slate-300 text-center pb-0.5 font-medium">{d}</div>
                 ))}
                 {Array(paddingBefore).fill(null).map((_, i) => (
                   <div key={`pad-${i}`} />
@@ -330,8 +342,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   return (
                     <motion.button
                       key={ds}
-                      whileHover={{ scale: 1.3 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.4 }}
+                      whileTap={{ scale: 0.85 }}
                       onClick={() => {
                         setFocus(mi);
                         setFocusW(startOfWeek(day));
@@ -340,14 +352,14 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                       }}
                       title={ds}
                       className={`
-                        aspect-square rounded-sm transition-all
+                        aspect-square rounded-sm transition-colors
                         ${entry?.mood
                           ? MOOD_CELL[entry.mood]
                           : entry
-                            ? 'bg-slate-200 ring-1 ring-slate-400 ring-offset-[1px] ring-dashed'
+                            ? 'bg-slate-300 ring-1 ring-slate-400 ring-offset-[1px] ring-dashed'
                             : 'bg-slate-100 hover:bg-slate-200'
                         }
-                        ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-slate-700 ring-offset-1' : ''}
+                        ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-slate-500 ring-offset-1' : ''}
                       `}
                     />
                   );
@@ -368,23 +380,28 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.5 }}
-      className="mb-6 rounded-2xl bg-amber-50 border border-amber-100 px-6 py-5 max-w-xl"
+      className="mb-8 rounded-2xl bg-amber-50 border border-amber-100 px-6 py-6 max-w-xl"
     >
-      <p className="text-slate-600 leading-relaxed mb-4">
-        This is your journal. Every day you write, a dot lights up in the colour of how you felt.
-        Over time, this becomes a map of your emotional life.
+      <p
+        className="text-slate-700 text-xl font-light leading-snug mb-2"
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        Every day you write, a dot lights up.
+      </p>
+      <p className="text-slate-500 text-sm leading-relaxed mb-5">
+        Over time this becomes a map of your emotional life — colours for how you felt, a record only you can read.
       </p>
       <div className="flex items-center gap-4">
         <Button
           size="sm"
-          className="bg-amber-400 hover:bg-amber-500 text-amber-900 border-0 font-medium"
+          className="bg-amber-400 hover:bg-amber-500 text-amber-900 border-0 font-medium shadow-none"
           onClick={() => onSelectDate(format(new Date(), 'yyyy-MM-dd'))}
         >
           Write today's entry →
         </Button>
         <button
           onClick={handleDismissWelcome}
-          className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
         >
           Got it
         </button>
@@ -398,34 +415,39 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     const intentionLabel = activeIntention?.type === 'monthly' ? 'This month you intended:' : 'This week you intended:';
 
     return (
-      <div className="mt-8 space-y-5 max-w-xl">
+      <div className="mt-10 space-y-4 max-w-md">
         {/* Daily opening prompt — fades after 6s, once per day */}
         <AnimatePresence>
           {showDailyPrompt && (
             <motion.p
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.7 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 1 }}
-              className="text-slate-400 text-sm italic leading-relaxed"
+              transition={{ duration: 1.2 }}
+              className="text-slate-400 text-sm italic leading-relaxed cursor-pointer"
               onClick={() => setShowDailyPrompt(false)}
+              style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem' }}
             >
               {dailyPrompt}
             </motion.p>
           )}
         </AnimatePresence>
 
-        {/* Witness observation — year-scoped, shown after prompt */}
+        {/* Witness observation — quiet, factual, no judgement */}
         {activeDayStr && (
-          <p className="text-sm text-slate-400">You write most on {activeDayStr}.</p>
+          <p className="text-xs text-slate-400 tracking-wide">You tend to write on {activeDayStr}.</p>
         )}
 
         {/* Active intention — labelled correctly by type */}
         {activeIntention && (
-          <div className="text-sm text-slate-500 leading-relaxed">
-            <span className="text-slate-400">{intentionLabel}</span>
-            <br />
-            <span className="text-slate-600 italic">"{activeIntention.text}"</span>
+          <div className="pt-1 border-t border-slate-100">
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">{intentionLabel}</p>
+            <p
+              className="text-slate-500 italic text-sm leading-relaxed"
+              style={{ fontFamily: 'var(--font-display)', fontSize: '1rem' }}
+            >
+              "{activeIntention.text}"
+            </p>
           </div>
         )}
       </div>
@@ -434,17 +456,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
   // ── Shared mood legend ─────────────────────────────────────────────────
   const MoodLegend = () => (
-    <div className="mt-6 flex items-center gap-4 flex-wrap">
-      <span className="text-xs text-slate-400">Mood:</span>
+    <div className="mt-5 flex items-center gap-3 flex-wrap">
       {Object.entries(MOOD_CELL).map(([mood, cls]) => (
         <div key={mood} className="flex items-center gap-1.5">
-          <div className={`w-3 h-3 rounded-sm ${cls}`} />
-          <span className="text-xs text-slate-500">{MOOD_LABEL[mood]}</span>
+          <div className={`w-2.5 h-2.5 rounded-sm ${cls}`} />
+          <span className="text-[10px] text-slate-400 tracking-wide">{MOOD_LABEL[mood]}</span>
         </div>
       ))}
       <div className="flex items-center gap-1.5">
-        <div className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200" />
-        <span className="text-xs text-slate-400">No entry</span>
+        <div className="w-2.5 h-2.5 rounded-sm bg-slate-100 border border-slate-200" />
+        <span className="text-[10px] text-slate-300 tracking-wide">No entry</span>
       </div>
     </div>
   );
@@ -670,14 +691,14 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                       className={`
                         aspect-square rounded-lg border transition-all flex flex-col items-center justify-center
                         text-sm relative
-                        ${!inMonth ? 'opacity-25' : ''}
+                        ${!inMonth ? 'opacity-20' : ''}
                         ${entry?.mood
-                          ? `${MOOD_CELL[entry.mood]} border-transparent text-white font-medium`
+                          ? `${MOOD_CELL[entry.mood]} border-transparent text-slate-700 font-medium`
                           : entry
-                            ? 'bg-slate-200 border-slate-300 text-slate-600 ring-1 ring-slate-400 ring-dashed'
-                            : 'bg-white border-slate-100 hover:border-slate-300 text-slate-700'
+                            ? 'bg-slate-100 border-slate-200 text-slate-600 ring-1 ring-slate-300 ring-dashed'
+                            : 'bg-white border-slate-100 hover:border-slate-300 text-slate-600'
                         }
-                        ${todayC ? 'ring-2 ring-slate-800 ring-offset-1' : ''}
+                        ${todayC ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
                       `}
                     >
                       <span>{format(day, 'd')}</span>
@@ -803,8 +824,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     if (!entry) {
       return (
-        <div className="max-w-lg text-center py-16 text-slate-400">
-          <p className="mb-4">Nothing written for this day.</p>
+        <div className="max-w-lg py-16">
+          <p className="text-slate-300 text-sm mb-4">Nothing written for this day.</p>
           <Button onClick={() => onSelectDate(focusDay)} variant="outline" size="sm">
             Write an entry →
           </Button>
@@ -816,9 +837,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     const moodText  = entry.mood ? MOOD_TEXT[entry.mood] : 'text-slate-600';
 
     const REFLECTION_BADGE: Record<string, { label: string; cls: string }> = {
-      weekly:  { label: 'Weekly reflection', cls: 'bg-violet-100 text-violet-700' },
-      monthly: { label: 'Monthly reflection', cls: 'bg-sky-100 text-sky-700' },
-      yearly:  { label: 'Yearly reflection', cls: 'bg-amber-100 text-amber-700' },
+      weekly:  { label: 'Weekly reflection', cls: 'bg-violet-100 text-violet-600' },
+      monthly: { label: 'Monthly reflection', cls: 'bg-sky-100 text-sky-600' },
+      yearly:  { label: 'Yearly reflection',  cls: 'bg-amber-100 text-amber-700' },
     };
     const badge = entry.reflectionType && entry.reflectionType !== 'daily'
       ? REFLECTION_BADGE[entry.reflectionType]
@@ -826,13 +847,26 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl space-y-5"
+        className="max-w-2xl space-y-6"
       >
+        {/* Date heading — display font */}
+        <div>
+          <p
+            className="text-3xl font-light text-slate-800 leading-tight"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {format(parseISO(focusDay), 'EEEE, MMMM d')}
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5 tracking-wide">
+            {format(parseISO(focusDay), 'yyyy')}
+          </p>
+        </div>
+
         {/* Reflection type badge */}
         {badge && (
-          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${badge.cls}`}>
+          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium tracking-wide ${badge.cls}`}>
             {badge.label}
           </span>
         )}
@@ -842,7 +876,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           <div className={`flex items-center gap-4 px-4 py-3 rounded-xl border ${moodStyle}`}>
             {entry.mood && (
               <span className={`text-sm font-medium flex items-center gap-2 ${moodText}`}>
-                <span className="text-lg">{MOOD_EMOJI[entry.mood]}</span>
+                <span className="text-base">{MOOD_EMOJI[entry.mood]}</span>
                 {MOOD_LABEL[entry.mood]}
               </span>
             )}
@@ -864,7 +898,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         {entry.tags && entry.tags.length > 0 && (
           <div className="flex gap-2 flex-wrap">
             {entry.tags.map(tag => (
-              <span key={tag} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">
+              <span key={tag} className="px-2.5 py-1 bg-slate-100 text-slate-500 text-xs rounded-full tracking-wide">
                 {tag}
               </span>
             ))}
@@ -872,25 +906,27 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         )}
 
         {/* Content sections */}
-        {[
-          { key: 'whatHappened', label: 'What happened' },
-          { key: 'feelings',     label: 'How it felt' },
-          { key: 'whatMatters',  label: 'What mattered most' },
-          { key: 'insight',      label: 'Insight' },
-          { key: 'freeWrite',    label: 'Free write' },
-        ].map(({ key, label }) => {
-          const val = entry[key as keyof JournalEntry] as string;
-          if (!val) return null;
-          return (
-            <div key={key}>
-              <p className="text-xs text-slate-400 uppercase tracking-wide mb-1.5">{label}</p>
-              <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{val}</p>
-            </div>
-          );
-        })}
+        <div className="space-y-5">
+          {[
+            { key: 'whatHappened', label: 'What happened' },
+            { key: 'feelings',     label: 'How it felt' },
+            { key: 'whatMatters',  label: 'What mattered most' },
+            { key: 'insight',      label: 'Insight' },
+            { key: 'freeWrite',    label: 'Free write' },
+          ].map(({ key, label }) => {
+            const val = entry[key as keyof JournalEntry] as string;
+            if (!val) return null;
+            return (
+              <div key={key}>
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap text-[0.95rem]">{val}</p>
+              </div>
+            );
+          })}
+        </div>
 
         {/* Edit button */}
-        <div className="pt-4 border-t border-slate-100">
+        <div className="pt-5 border-t border-slate-100">
           <Button
             variant="outline"
             size="sm"
@@ -977,7 +1013,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 onClick={() => { setYear(y); setLevel('year'); }}
                 className={`
                   flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left w-full
-                  ${isActive ? 'bg-slate-900 text-white font-medium' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+                  ${isActive
+                    ? 'bg-slate-900 text-white font-medium border border-transparent'
+                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}
                 `}
               >
                 <span>{y}</span>
@@ -1020,7 +1058,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               onClick={() => { setFocus(mi); setLevel('month'); }}
               className={`
                 flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
-                ${isActive ? 'bg-slate-900 text-white font-medium' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+                ${isActive
+                  ? 'bg-slate-900 text-white font-medium border border-transparent'
+                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}
               `}
             >
               <span>{name}</span>
@@ -1050,7 +1090,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 }}
                 className={`
                   flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
-                  ${today ? 'bg-slate-900 text-white font-medium' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+                  ${today
+                    ? 'bg-slate-900 text-white font-medium border border-transparent'
+                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}
                 `}
               >
                 <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
@@ -1083,7 +1125,11 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 }}
                 className={`
                   flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all text-left
-                  ${isCurrentDay ? 'bg-slate-900 text-white font-medium' : today ? 'text-slate-700 bg-slate-100' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}
+                  ${isCurrentDay
+                    ? 'bg-slate-900 text-white font-medium border border-transparent'
+                    : today
+                      ? 'bg-slate-50 text-slate-700 border border-slate-200'
+                      : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}
                 `}
               >
                 <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
