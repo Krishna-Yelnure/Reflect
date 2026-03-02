@@ -852,120 +852,97 @@ export function JournalEntry({
           />
         </motion.div>
 
-        {/* ── Mood & Energy — daily entries only ──────────────────────────── */}
+        {/* ── Mood & Energy — compact single row, daily entries only ─────── */}
         {!isReflection && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.18 }}
-          className="mb-8 space-y-8"
+          className="mb-8 flex items-center gap-4"
         >
-          {/* Mood */}
-          <div>
-            <Label className="text-xs text-slate-400 mb-4 block tracking-widest uppercase font-medium">
-              How are you feeling?
-            </Label>
-            <div className="flex gap-3 flex-wrap">
-              {moods.map(mood => {
-                const selected = entry.mood === mood.value;
-                return (
-                  <button
-                    key={mood.value}
-                    onClick={() => updateField('mood', selected ? undefined : mood.value)}
-                    className={`
-                      relative flex flex-col items-center gap-1.5 px-4 pt-4 pb-3
-                      rounded-2xl border-2 transition-all duration-200 cursor-pointer
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-                      ${selected
-                        ? `${mood.bg} ${mood.border} shadow-lg ${mood.glow} scale-105 ring-2 ${mood.ring} ring-offset-1`
-                        : 'bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50 shadow-sm hover:shadow'
-                      }
-                    `}
-                    aria-pressed={selected}
-                    aria-label={mood.label}
-                  >
-                    <span
-                      className={`text-3xl leading-none transition-transform duration-200 ${selected ? 'scale-110' : ''}`}
-                      role="img"
-                      aria-hidden="true"
-                    >
-                      {mood.emoji}
-                    </span>
-                    <span className={`text-xs font-medium transition-colors ${selected ? mood.text : 'text-slate-400'}`}>
-                      {mood.label}
-                    </span>
+          {/* Mood — 5 tight emoji buttons */}
+          <div className="flex items-center gap-1">
+            {moods.map(mood => {
+              const selected = entry.mood === mood.value;
+              return (
+                <button
+                  key={mood.value}
+                  onClick={() => updateField('mood', selected ? undefined : mood.value)}
+                  aria-pressed={selected}
+                  aria-label={mood.label}
+                  title={mood.label}
+                  className={`
+                    relative flex items-center gap-1.5 rounded-full transition-all duration-200
+                    focus:outline-none
+                    ${selected
+                      ? `${mood.bg} ${mood.border} border px-2.5 py-1`
+                      : 'px-1.5 py-1 hover:bg-slate-100'
+                    }
+                  `}
+                >
+                  <span className={`leading-none transition-all duration-200 ${selected ? 'text-xl' : 'text-lg'}`}>
+                    {mood.emoji}
+                  </span>
+                  <AnimatePresence>
                     {selected && (
                       <motion.span
-                        layoutId="mood-indicator"
-                        className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${mood.border.replace('border-', 'bg-')}`}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Energy */}
-          <div>
-            <Label className="text-xs text-slate-400 mb-4 block tracking-widest uppercase font-medium">
-              Energy level
-            </Label>
-            <div className="flex items-end gap-2" role="group" aria-label="Energy level">
-              {energyLevels.map(level => {
-                const selected = entry.energy !== undefined && level <= entry.energy;
-                const isActive = entry.energy === level;
-                const barHeight = 12 + level * 6;
-                return (
-                  <button
-                    key={level}
-                    onClick={() => updateField('energy', isActive ? undefined : level)}
-                    aria-label={`Energy level ${level}`}
-                    aria-pressed={isActive}
-                    className="group flex flex-col items-center gap-2 focus:outline-none"
-                  >
-                    <motion.div
-                      animate={{
-                        backgroundColor: selected ? '#f59e0b' : '#e2e8f0',
-                        opacity: selected ? 1 : 0.5,
-                      }}
-                      whileHover={{
-                        backgroundColor: selected ? '#fbbf24' : '#cbd5e1',
-                        opacity: 0.85,
-                      }}
-                      transition={{ duration: 0.15 }}
-                      className="rounded-sm w-7 cursor-pointer"
-                      style={{ height: `${barHeight}px` }}
-                    />
-                    {isActive && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-xs text-amber-500 font-semibold"
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className={`text-xs font-medium overflow-hidden whitespace-nowrap ${mood.text}`}
                       >
-                        {level}
+                        {mood.label}
                       </motion.span>
                     )}
-                    {!isActive && (
-                      <span className="text-xs text-transparent group-hover:text-slate-300 transition-colors select-none">
-                        {level}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-              {entry.energy !== undefined && (
-                <button
-                  onClick={() => updateField('energy', undefined)}
-                  className="ml-2 text-xs text-slate-300 hover:text-slate-400 transition-colors self-center"
-                  aria-label="Clear energy"
-                >
-                  ✕
+                  </AnimatePresence>
                 </button>
-              )}
-            </div>
+              );
+            })}
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-slate-200 shrink-0" />
+
+          {/* Energy — bars only, no labels */}
+          <div className="flex items-end gap-1" role="group" aria-label="Energy level">
+            {energyLevels.map(level => {
+              const filled = entry.energy !== undefined && level <= entry.energy;
+              const isActive = entry.energy === level;
+              const barHeight = 8 + level * 4;
+              return (
+                <button
+                  key={level}
+                  onClick={() => updateField('energy', isActive ? undefined : level)}
+                  aria-label={`Energy level ${level}`}
+                  aria-pressed={isActive}
+                  className="focus:outline-none"
+                >
+                  <motion.div
+                    animate={{
+                      backgroundColor: filled ? '#f59e0b' : '#e2e8f0',
+                      opacity: filled ? 1 : 0.45,
+                    }}
+                    whileHover={{
+                      backgroundColor: filled ? '#fbbf24' : '#cbd5e1',
+                      opacity: 0.9,
+                    }}
+                    transition={{ duration: 0.15 }}
+                    className="w-3.5 rounded-sm cursor-pointer"
+                    style={{ height: `${barHeight}px` }}
+                  />
+                </button>
+              );
+            })}
+            {entry.energy !== undefined && (
+              <button
+                onClick={() => updateField('energy', undefined)}
+                className="ml-1 text-xs text-slate-300 hover:text-slate-400 transition-colors self-center leading-none"
+                aria-label="Clear energy"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </motion.div>
         )} {/* end !isReflection mood+energy */}

@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: Session A6b complete (2026-03-02)
+# Last updated: Session A6b-polish complete (2026-03-02)
 
 ---
 
@@ -625,26 +625,18 @@ export const db = {
 **What was done:**
 
 1. **`activeTagFilter: string | null` state** — added to `TimelineView`. Entirely internal — no `App.tsx` changes, no prop drilling.
-
 2. **`TagFilterStrip` component** — renders just below `YearNav` at all drill levels when a filter is active. Active tag shown as a dark pill with × to dismiss. Plain "clear" text link as secondary dismiss target. `AnimatePresence` enter/exit animation.
-
-3. **Heatmap fading (year view)** — cells whose entry doesn't include the active tag fade to `opacity-20`. Tagged entries stay at full colour. Shape of the full year stays visible. Days with no entry unaffected.
-
-4. **MonthView fading** — in-month cells without the tag fade to `opacity-20`. Out-of-month cells already at `opacity-20` — unchanged.
-
+3. **Heatmap fading (year view)** — cells whose entry doesn't include the active tag fade to `opacity-20`. Tagged entries stay at full colour. Shape of the full year stays visible.
+4. **MonthView fading** — in-month cells without the tag fade to `opacity-20`.
 5. **WeekView fading** — entire day rows (dot + card) fade to `opacity-25` when unmatched.
+6. **DayView tag pills → clickable** — changed from `<span>` to `<button>`. Clicking a tag sets the filter and navigates back to year view. Clicking the active tag again clears it (toggle). Active tag gets `bg-slate-900 text-white`. Tooltip indicates intent.
 
-6. **DayView tag pills → clickable** — changed from `<span>` to `<button>`. Clicking a tag sets the filter and navigates back to year view so the filtered heatmap is immediately visible. Clicking the active tag again clears it (toggle). Active tag gets `bg-slate-900 text-white` so it's clear which filter is live. Tooltip says "Filter by X" or "Clear filter".
-
-**Decision confirmed:** Filter entry point is DayView only — the natural discovery moment. User reads an entry, sees a tag, wonders "when else did I write about this?" — that question has an immediate answer. No other entry points built. Witness-led, not search-led.
+**Decision confirmed:** Filter entry point is DayView only — the natural discovery moment. Witness-led, not search-led.
 
 **Session checklist:**
 - [x] `activeTagFilter` state in TimelineView
 - [x] TagFilterStrip visible at all drill levels when filter active
-- [x] TagFilterStrip absent when no filter
-- [x] Heatmap cells fade when unmatched
-- [x] MonthView cells fade when unmatched
-- [x] WeekView rows fade when unmatched
+- [x] Heatmap, MonthView, WeekView cells/rows fade when unmatched
 - [x] DayView tag pills clickable — sets filter + returns to year view
 - [x] Toggle: clicking active tag clears filter
 - [x] App.tsx untouched
@@ -653,6 +645,42 @@ export const db = {
 
 **Files changed:**
 - `src/app/components/TimelineView.tsx`
+
+---
+
+#### SESSION A6b-polish — Mood & Energy Compact Redesign
+**Status:** ✅ COMPLETE (2026-03-02)
+**Depends on:** A6b ✅
+
+**What prompted this:** Screenshot review showed mood cards + energy bars consuming ~220px of vertical space before writing begins. Two full labelled sections pushing writing fields off-screen. Design critique: mood is metadata, not the point — the writing is the point.
+
+**Decision process:**
+- Bottom placement rejected — risks mood data going uncaptured, heatmap starves of colour
+- Expandable/collapsed rejected — extra interaction step, inconsistent capture
+- Compact single row chosen — same position, ~40px total height, nothing removed
+
+**What was done:**
+
+1. **Mood — 5 compact emoji buttons** — removed cards (`px-4 pt-4 pb-3`, `text-3xl`, border, shadow, scale). Now tight pill row: unselected = emoji only (`text-lg`, minimal padding, `hover:bg-slate-100`). Selected = emoji grows to `text-xl` + label animates in with `width: auto` slide. Colour-wash background pill on selected. All expressiveness preserved at a fraction of the height.
+
+2. **Energy — bars only** — removed all number labels (always-visible, hover, active). Bars slightly smaller (`w-3.5`, max 28px height vs old 42px). `✕` clear still appears when set. No section label above. Bars read themselves.
+
+3. **Single row layout** — mood buttons + thin vertical divider + energy bars all on one `flex items-center` row. `~36–40px` total height. Writing fields begin immediately below. No `space-y-8`, no separate `<div>` per control.
+
+**Principle confirmed:** Mood + energy are closing punctuation on an entry, not a gate before writing. Making them small honours that.
+
+**Session checklist:**
+- [x] Mood fits in one compact row, no cards
+- [x] Label only appears on selected mood, animates in cleanly
+- [x] Energy bars only — zero number labels anywhere
+- [x] Both controls on single line with divider
+- [x] Writing fields immediately visible on load
+- [x] Mood data still captures reliably (visible, easy to tap)
+- [x] Committed and pushed to GitHub
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/app/components/JournalEntry.tsx`
 
 ---
 
