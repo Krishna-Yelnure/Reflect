@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: A6c deferred, A7a marked next (2026-03-02)
+# Last updated: A7a brainstorm complete, brainstorm-first rule added (2026-03-02)
 
 ---
 
@@ -10,6 +10,20 @@ This file is the single source of truth for this project.
 At the start of every new session, share this file + the project zip with Claude and say:
 **"Read the BUILDLOG.md and continue from [SESSION NAME]."**
 Update this file at the end of every session with what was done and what's next.
+
+### BRAINSTORM-FIRST RULE (added A6c/A7a — 2026-03-02)
+
+From A6c onward, every session has real design decisions — decisions that affect the product for years and are expensive to undo. Building without resolving them first produces inconsistent UX.
+
+**The rule:** Every session with design decisions gets a brainstorm entry in the BUILDLOG *before* any code is written. The brainstorm documents:
+- What decisions need to be made
+- The options for each decision
+- A recommendation where one exists
+- The reasoning so future sessions don't re-litigate settled questions
+
+**The test before opening any file:** Can you answer every decision question in the session spec? If no → brainstorm first. If yes → build.
+
+This adds one conversation per session before the build session. It saves multiples of that time in rework.
 
 ---
 
@@ -767,18 +781,89 @@ Do not build A6c until you have 30+ real entries and feel the absence of search 
 ---
 
 #### SESSION A7a — Era Management ← START HERE NEXT
-**Status:** NOT STARTED
-**Depends on:** A6a
+**Status:** NOT STARTED — BRAINSTORM COMPLETE, DECISIONS NEEDED BEFORE BUILDING
+**Depends on:** A6a ✅
 **Scope creep risk:** Low
+**Estimated build time:** 2–3 hours once decisions are made upfront
 
 **Goal:** Redesign ErasManager to current design language. Data model solid before surfaces are built.
 
-**What to build:**
-- ErasManager.tsx redesign to warm minimal design language
-- Era creation: name, date range (start + optional end), colour (6-option warm palette)
-- Era editing and deletion — deleting un-tags entries, never deletes them
-- `eras.ts` audit — full db abstraction layer integration
-- Edge cases: overlapping eras (warn, don't prevent), open-ended eras (no end date = ongoing)
+---
+
+**Brainstorm completed (2026-03-02) — resolve all decisions before opening a file**
+
+**Current state assessment:**
+
+`eras.ts` — solid foundation. Clean CRUD, correct data model, good structure. Not a rewrite — needs a thin shim to point `erasStorage` → `db.eras`, identical pattern to `storage.ts` in A2. 15 minutes of mechanical work.
+
+`ErasManager.tsx` — functional bones, wrong skin. Form logic works, inline editing works, list renders. But built with unstyled shadcn defaults (`Card`, generic `Input`, `Textarea`, `Button`) — looks like a settings panel, not a warm personal product. Needs redesign, not rewrite.
+
+---
+
+**The five decisions that must be made before building:**
+
+**Decision 1 — Era colour palette**
+Current palette has 7 colours including red (`#ef4444`) and generic grey (`#64748b`). Both will clash with the mood colour system on the heatmap in A7b (mood uses amber, emerald, slate, blue, stone). Need 6 warm colours that are visually distinct from each other AND from the mood system, so when era bands appear behind mood dots in A7b, nothing fights.
+
+Candidate palette to discuss:
+- Terracotta `#c2714f` — warm earth, nothing like mood colours
+- Sage `#7c9a7e` — muted green, distinct from emerald
+- Dusty rose `#b87d8a` — warm, distinct from all mood colours
+- Warm indigo `#6b6fa8` — distinct from blue mood
+- Ochre `#c49a3c` — warm gold, adjacent to amber but distinct enough
+- Slate violet `#7c6f8a` — muted purple, nothing in the mood system
+
+*Decision needed: approve this palette or propose alternatives.*
+
+**Decision 2 — Era assignment in the Write view**
+`JournalEntry.tsx` is listed as a file to change. Entries already have an `eraId` field in types but no UI to set it. Three options:
+
+- **Manual** — quiet dropdown of active eras near the tags field. User picks one. Simple, explicit, adds a small decision to every entry.
+- **Auto by date** — on save, find which era(s) the entry date falls within, assign automatically. Zero friction. Problem: what if eras overlap?
+- **Hybrid** — auto-assign if unambiguous (one era covers this date), show quiet prompt if ambiguous (multiple eras overlap this date), show nothing if no eras exist. Most Witness-appropriate. Most complex.
+
+*Decision needed: which model. Recommendation is Hybrid — but only build the auto-assign part in A7a, leave the ambiguous-overlap prompt for A7b when eras are visible in the timeline.*
+
+**Decision 3 — Overlap warning style**
+Currently no overlap detection exists. Spec says warn, don't prevent. When user sets a date range that overlaps an existing era, what happens?
+
+Options:
+- **Inline under date fields** — quiet text appears below the date inputs: *"This overlaps with 'Early Career' — that's fine if both feel true."* Non-blocking, contextual, Witness-appropriate.
+- **Toast on save** — fires after creation. Less immediate but less cluttered.
+- **Defer to A7b** — overlapping eras only become a visual problem when rendered on the heatmap. Could argue the warning belongs there, not here.
+
+*Decision needed: inline warning is recommended — it's the least manager-like of the three.*
+
+**Decision 4 — Delete confirmation**
+Currently delete fires immediately with no confirmation. Deleting an era is significant — it un-tags potentially hundreds of entries. Options:
+
+- **Inline confirm** — clicking delete changes the button to "Are you sure? Yes / No" inline in the card. No modal, no interruption, one extra click.
+- **Confirm dialog** — modal appears. More disruptive but harder to misfire.
+- **Soft delete with undo** — era disappears, toast appears with "Undo" for 5 seconds. Most elegant but more complex.
+
+*Decision needed: inline confirm is recommended — consistent with the app's calm, non-alarming philosophy.*
+
+**Decision 5 — Empty state and copy**
+Current empty state: *"No life chapters defined yet. Create one to organize your journey."* — generic, not Witness voice.
+
+Needs to feel like an open door, not a void. Draft:
+> *"Your story has chapters even if they haven't been named yet."*
+> [Create your first era →]
+
+The "About Life Chapters" info box at the bottom also needs to be either removed or absorbed into the empty state — it's old design language.
+
+*Decision needed: approve copy or suggest alternatives.*
+
+---
+
+**Build order when ready:**
+
+1. `eras.ts` shim → `db.eras` (15 min, mechanical)
+2. Era colour palette finalised and documented
+3. `ErasManager.tsx` redesign — form, list, empty state, all to current design language
+4. Delete with inline confirmation + un-tag entries on delete
+5. Overlap detection + inline warning
+6. `JournalEntry.tsx` — auto-assign era by date (simple path first)
 
 **Files:** `src/app/components/ErasManager.tsx`, `src/app/utils/eras.ts`, `src/app/components/JournalEntry.tsx`
 
