@@ -1,6 +1,6 @@
 # DOCS-STATUS.md
-# Premium Journal App — Document Health Tracker
-# Last updated: 2026-03-02
+# Journal App — Document Health Tracker
+# Last updated: 2026-03-03
 # Rule: check and update this file after every build session and every doc session.
 # If a build session changes behaviour, flag the affected documents here before committing.
 
@@ -15,10 +15,10 @@ Each document has a status, a last-updated marker, what triggered the last updat
 - `DRAFT` — exists but incomplete, not reliable
 - `IN PROGRESS` — actively being worked on this session
 - `COMPLETE` — all sections filled, reflects current state
-- `NEEDS UPDATE` — was complete but a build session has changed something. Must be updated before next doc session.
+- `NEEDS UPDATE` — was complete but a build session has changed something
 
 **Trigger column** — what session or event last changed this document.
-**Stale flags** — specific sections or facts that are known to be out of date.
+**Stale flags** — specific sections or facts known to be out of date.
 
 ---
 
@@ -27,30 +27,69 @@ Each document has a status, a last-updated marker, what triggered the last updat
 ### BA-Document.docx
 | Field | Value |
 |---|---|
-| Status | `NEEDS UPDATE` |
+| Status | `COMPLETE` |
 | Location | `docs/BA-Document.docx` |
-| Last updated | Session A2 (2026-02-28) |
-| Last trigger | A2 — storage abstraction + sidebar nav |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 |
 | Owner | Product |
 
-**What exists:** Executive summary, problem statement, competitive landscape (header only), Witness philosophy (header only), as-is state (stale at A2), gap analysis (partial), SWOT (header only), functional requirements (partial), non-functional requirements, risk register (partial), scope definition (A2 state), user journey framework (header only), privacy architecture, delivery roadmap, design language, tech stack appendix.
+**Sections (18 total):**
+1. Executive Summary ✅
+2. Problem Statement ✅
+3. Witness Philosophy ✅
+4. Competitive Landscape ✅
+5. As-Is State (A6b-polish) ✅
+6. Gap Analysis ✅
+7. SWOT Analysis ✅
+8. Functional Requirements Summary ✅
+9. Non-Functional Requirements ✅
+10. Risk Register Summary ✅
+11. V1 Scope Summary ✅
+12. User Journey Summary ✅
+13. Privacy Architecture ✅
+14. Delivery Roadmap ✅
+15. Design Language ✅
+16. Technical Stack ✅
+17. Assumptions and Constraints ✅
+18. Glossary ✅
 
-**Stale flags — must update before Doc Sprint Session 2:**
-- Section 3 (Witness philosophy) — header only, no content
-- Section 4 (As-is state) — stale at A2, now at A6b-polish
-- Section 5 (Gap analysis) — partial, needs full update
-- Section 6 (SWOT) — header only, no content
-- Section 9 (Risk register) — partial
-- Section 10 (Scope definition) — stale at A2
-- Section 11 (User journey) — header only, no content
-- Competitive landscape — header only, no content
-- Does not reflect: A3 mood/energy, A3b timeline, A4 reflection types, A4c reflection panels, A4d empty state, A5a write polish, A4e deep write, A5b timeline polish, A6a tag infrastructure, A6b tag navigation, A6b-polish compact mood/energy
-
-**Target:** Complete and current in Doc Sprint Session 1.
+**Next stale trigger:** Any build session that changes the as-is state (§5), scope decisions (§11), or risk profile (§10). Do not update after routine sessions — update at doc sprint checkpoints or phase boundaries.
 
 ---
 
-### PRD.md — Product Requirements Document
+### V1-Scope.md
+| Field | Value |
+|---|---|
+| Status | `COMPLETE` |
+| Location | `docs/V1-Scope.md` |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 |
+| Owner | Product |
+
+**Contents:** V1 complete criteria, Phase A→B trigger conditions, full scope verdict table (IN/POST-V1/NEVER per session), conditional scope constraints, permanently out-of-scope list, scope change process, document completion requirements.
+
+**Next stale trigger:** Any feature verdict changes (IN → POST-V1, or new session added). Check this file whenever a feature is deferred — do not update unless a verdict actually changes.
+
+**Unlocks:** PRD.md, FRD.md, SRS.md — do not write these before V1-Scope is locked. ✅ Now locked.
+
+---
+
+### Witness-Philosophy.md
+| Field | Value |
+|---|---|
+| Status | `COMPLETE` |
+| Location | `docs/Witness-Philosophy.md` |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 |
+| Owner | Product |
+
+**Contents:** One-sentence product description, core principle, three layers (Witness / Mirror / Patterns Surface) with guards, full product identity, five never-build rationales (streaks, AI reading entries, urgency notifications, demographic design, social features), Tier Test, Never-Build table.
+
+**Next stale trigger:** This document should almost never change. Update only if the philosophy is genuinely refined at a fundamental level — not when features change or sessions complete.
+
+---
+
+### PRD.md
 | Field | Value |
 |---|---|
 | Status | `NOT STARTED` |
@@ -59,42 +98,14 @@ Each document has a status, a last-updated marker, what triggered the last updat
 | Last trigger | — |
 | Owner | Product |
 
-**What it needs to contain:**
-- Every feature with priority (must have / should have / nice to have)
-- Acceptance criteria per feature
-- Dependencies between features
-- V1 verdict for each feature (in / post-V1 / never)
-
-**Prerequisite:** V1-Scope.md must be locked first — do not write PRD before scope is defined.
-
+**Prerequisite:** V1-Scope.md locked ✅ — PRD can now be written.
 **Target:** Doc Sprint Session 2.
-
----
-
-### V1-Scope.md — V1 Scope Definition
-| Field | Value |
-|---|---|
-| Status | `NOT STARTED` |
-| Location | `docs/V1-Scope.md` |
-| Last updated | — |
-| Last trigger | — |
-| Owner | Product |
-
-**What it needs to contain:**
-- Every planned session: in V1 / post-V1 / never, with reason
-- Clear definition of what "V1 complete" means
-- What triggers the move from Phase A to Phase B (Electron)
-- What triggers public release / early adopter testing
-
-**This is the most important document to produce first in Doc Sprint Session 1 — it unlocks PRD, FRD, and SRS.**
-
-**Target:** Doc Sprint Session 1.
 
 ---
 
 ## TIER 2 — TECHNICAL SPECIFICATION
 
-### FRD.md — Functional Requirements Document
+### FRD.md
 | Field | Value |
 |---|---|
 | Status | `NOT STARTED` |
@@ -103,27 +114,12 @@ Each document has a status, a last-updated marker, what triggered the last updat
 | Last trigger | — |
 | Owner | Technical + Product |
 
-**What it needs to contain:**
-- Every behavioural rule the system must follow
-- Every edge case and how it is handled
-- Every user interaction and its outcome
-- State transitions (e.g. new entry → closing moment → timeline)
-- Rules that protect the Witness philosophy (no streaks, no AI reading entries, etc.)
-
-**Known rules to document (non-exhaustive):**
-- Deleting an era un-tags entries, never deletes them
-- Closing moment fires for new entries only, not edits
-- Tags normalised on save: lowercase, trim, deduplicate
-- Continuity prompt suppressed for reflection entries
-- Year-ago search uses ±3 day window
-- Mood filter persists as user drills year → month → week → day
-- Auto-dismiss welcome card once first entry exists
-
+**Prerequisite:** V1-Scope.md locked ✅, PRD.md drafted.
 **Target:** Doc Sprint Session 2.
 
 ---
 
-### SRS.md — Software Requirements Specification
+### SRS.md
 | Field | Value |
 |---|---|
 | Status | `NOT STARTED` |
@@ -132,14 +128,7 @@ Each document has a status, a last-updated marker, what triggered the last updat
 | Last trigger | — |
 | Owner | Technical |
 
-**What it needs to contain:**
-- Data models for all types (JournalEntry, Habit, Era, Thread, Question, etc.)
-- Storage contracts — what db.ts guarantees
-- Component interfaces — props and responsibilities
-- Performance requirements
-- Phase A → Phase B swap contract (what changes in db/index.ts, what doesn't)
-- localStorage keys and their schemas
-
+**Prerequisite:** V1-Scope.md locked ✅, FRD.md drafted.
 **Target:** Doc Sprint Session 2.
 
 ---
@@ -149,21 +138,15 @@ Each document has a status, a last-updated marker, what triggered the last updat
 ### User-Journey.md
 | Field | Value |
 |---|---|
-| Status | `NOT STARTED` |
+| Status | `COMPLETE` |
 | Location | `docs/User-Journey.md` |
-| Last updated | — |
-| Last trigger | — |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 |
 | Owner | Product |
 
-**What it needs to contain:**
-- Day 1 / Day 7 / Day 30 / Day 365 / Day 10,000 narrative fully written
-- What the user feels, sees, and needs at each stage
-- Which features serve which day
-- Feature-to-day mapping table (already exists in BUILDLOG — extract and expand)
+**Contents:** Temporal model rationale, five journey stages (Day 1/7/30/365/10,000) — each with profile, needs, failure modes table with current state column, feature-to-day mapping table, The Real Need closing section.
 
-**Source material:** BUILDLOG section "THE FEATURE-TO-DAY FRAMEWORK" and "USER JOURNEY SCENARIOS" — extract, expand, and make standalone.
-
-**Target:** Doc Sprint Session 1.
+**Next stale trigger:** When a failure mode listed in the stage tables is resolved by a build session — update the current state column for that row only. Full rewrite not needed.
 
 ---
 
@@ -175,12 +158,6 @@ Each document has a status, a last-updated marker, what triggered the last updat
 | Last updated | — |
 | Last trigger | — |
 | Owner | Product + Technical |
-
-**Flows to diagram (Mermaid, renderable on GitHub):**
-- Write entry flow (open → mode select → write → save → closing moment → timeline)
-- Timeline drill-down flow (year → month → week → day → edit)
-- Tag filter flow (day view → click tag → filtered heatmap → clear)
-- Reflection entry flow (timeline → write reflection → save → panel)
 
 **Target:** Doc Sprint Session 2.
 
@@ -195,15 +172,6 @@ Each document has a status, a last-updated marker, what triggered the last updat
 | Last trigger | — |
 | Owner | Portfolio |
 
-**What it needs to contain:**
-- What AI did vs what the human decided — the distinction that makes this portfolio piece rare
-- Key decisions that were human-led (no streaks, Witness philosophy, A6c deferred, brainstorm-first rule)
-- Key decisions AI contributed to (architecture recommendations, edge case identification)
-- The BUILDLOG as evidence of process — not just a finished product
-- What this demonstrates to a hiring manager
-
-**This is the strongest portfolio differentiator. Most developers using AI tools use them to write code faster. This project used AI as a thinking partner with the human retaining full product ownership. That is genuinely rare right now.**
-
 **Target:** Doc Sprint Session 2.
 
 ---
@@ -214,48 +182,130 @@ Each document has a status, a last-updated marker, what triggered the last updat
 | Status | `INTENTIONALLY DEFERRED` |
 | Location | `docs/Early-Adopter-Brief.md` |
 | Last updated | — |
-| Last trigger | — |
 | Owner | Product |
 
-**Why deferred:** Must be written from lived experience, not hypothesis. Build when 30+ real entries exist. The questions you want to ask early adopters will be clearer once you've felt the gaps yourself.
+**Why deferred:** Must be written from lived experience. Build after 30+ real entries — the questions worth asking early adopters will only be clear once the product has been used at depth.
 
-**When to build:** After 30+ real entries, before any public sharing of the app.
+---
+
+## TIER 4 — EXECUTION & TRACKING
+
+### WBS.md
+| Field | Value |
+|---|---|
+| Status | `NOT STARTED` |
+| Location | `docs/WBS.md` |
+| Last updated | — |
+| Owner | Project |
+
+**Target:** Doc Sprint Session 2. Source material: BUILDLOG session map.
+
+---
+
+### Product-Roadmap.md
+| Field | Value |
+|---|---|
+| Status | `NOT STARTED` |
+| Location | `docs/Product-Roadmap.md` |
+| Last updated | — |
+| Owner | Product |
+
+**Target:** Doc Sprint Session 2.
+
+---
+
+### Risk-Register.md
+| Field | Value |
+|---|---|
+| Status | `NOT STARTED` |
+| Location | `docs/Risk-Register.md` |
+| Last updated | — |
+| Owner | Product + Technical |
+
+**Note:** Risk summary exists in BA-Document §10. Standalone Risk-Register.md adds forward-looking risk scoring and mitigation ownership.
+**Target:** Doc Sprint Session 2.
+
+---
+
+### Assumptions-and-Constraints.md
+| Field | Value |
+|---|---|
+| Status | `NOT STARTED` |
+| Location | `docs/Assumptions-and-Constraints.md` |
+| Last updated | — |
+| Owner | Product + Technical |
+
+**Note:** Assumptions summary exists in BA-Document §17. Standalone file adds invalidation tracking.
+**Target:** Doc Sprint Session 2.
+
+---
+
+### RTM.md
+| Field | Value |
+|---|---|
+| Status | `NOT STARTED` |
+| Location | `docs/RTM.md` |
+| Last updated | — |
+| Owner | Product + Technical |
+
+**Prerequisite:** PRD.md and FRD.md must exist first.
+**Target:** Doc Sprint Session 2 (after PRD + FRD complete).
 
 ---
 
 ## TRACKING FILES
+
+### DOCS-REGISTRY.md
+| Field | Value |
+|---|---|
+| Status | `COMPLETE` |
+| Location | `docs/DOCS-REGISTRY.md` |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 — governance layer created |
+
+---
 
 ### DOCS-STATUS.md (this file)
 | Field | Value |
 |---|---|
 | Status | `COMPLETE` |
 | Location | `docs/DOCS-STATUS.md` |
-| Last updated | 2026-03-02 |
-| Last trigger | Documentation strategy session |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 |
 
 ---
 
 ### FEATURE-STATUS.md
 | Field | Value |
 |---|---|
-| Status | `NOT STARTED` |
+| Status | `COMPLETE` |
 | Location | `docs/FEATURE-STATUS.md` |
-| Last updated | — |
-| Last trigger | — |
-| Owner | Product + Technical |
+| Last updated | 2026-03-02 |
+| Last trigger | Documentation strategy session |
 
-**What it needs to contain:**
-- Every feature built or planned
-- Status: built / in progress / planned / deferred / never
-- Which session built or will build it
-- Which documents cover it (PRD ref, FRD ref)
-- V1 verdict
+**Next stale trigger:** Any build session that changes a feature status.
 
-**Why this exists separately from BUILDLOG and PRD:**
-BUILDLOG is chronological — great for history, hard to scan for current state.
-PRD has features with priorities. Neither gives a single clean view of every feature's status and documentation coverage. FEATURE-STATUS.md is that view.
+---
 
-**Target:** Doc Sprint Session 1. Requires careful reading of full BUILDLOG to populate accurately — do not rush.
+### INDEX.md
+| Field | Value |
+|---|---|
+| Status | `COMPLETE` |
+| Location | `docs/INDEX.md` |
+| Last updated | 2026-03-03 |
+| Last trigger | Doc Sprint Session 1 — new docs added, Tier 4 and 5 sections added |
+
+---
+
+## TIER 5 — DEFERRED
+
+### Test-Cases.md
+| Status | `DEFERRED` — write after A11b. Feature set must be stable before test cases are written. |
+|---|---|
+
+### Post-Implementation-Review.md
+| Status | `DEFERRED` — write after Phase A complete. |
+|---|---|
 
 ---
 
@@ -264,6 +314,7 @@ PRD has features with priorities. Neither gives a single clean view of every fea
 | Date | Session | What changed |
 |---|---|---|
 | 2026-03-02 | Documentation strategy session | File created. All documents entered with initial status. |
+| 2026-03-03 | Doc Sprint Session 1 | BA-Document, V1-Scope, Witness-Philosophy, User-Journey marked COMPLETE. DOCS-REGISTRY added. Tier 4 and 5 documents added with NOT STARTED status. PRD prerequisite unlocked. |
 
 ---
 
