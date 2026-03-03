@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Premium Journal App — Project Source of Truth
-# Last updated: A7a brainstorm complete, brainstorm-first rule added (2026-03-02)
+# Last updated: Full tracking suite complete, Doc Sprint Session 1 pending (2026-03-02)
 
 ---
 
@@ -24,6 +24,21 @@ From A6c onward, every session has real design decisions — decisions that affe
 **The test before opening any file:** Can you answer every decision question in the session spec? If no → brainstorm first. If yes → build.
 
 This adds one conversation per session before the build session. It saves multiples of that time in rework.
+
+---
+
+## COMPANION FILES
+
+| File | Purpose | Updated |
+|---|---|---|
+| `BUILDLOG.md` | Build history, decisions, session log | After every build session |
+| `docs/INDEX.md` | Master entry point — all docs at a glance | When any doc changes status |
+| `docs/DOCS-STATUS.md` | Health of every product document | After every build or doc session |
+| `docs/FEATURE-STATUS.md` | Every feature: status, session, doc coverage | After every build session |
+| `docs/DECISIONS-LOG.md` | Every significant product & architecture decision | When any decision is made |
+| `docs/BUGS-AND-DEBT.md` | Known issues, severity, fix plan | When any issue is found or fixed |
+
+**Excel tracker:** `PROJECT-TRACKER.xlsx` lives locally only — not committed to git. Update alongside markdown files. Share as file or PDF, never commit.
 
 ---
 
