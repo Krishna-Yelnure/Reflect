@@ -86,6 +86,8 @@ This index is the single entry point. Start here.
 It is the chronological build history and session log.
 This folder contains everything else.
 
+| [DOCS-REGISTRY.md](./DOCS-REGISTRY.md) | Governance layer — owns/triggers/routing for every doc | ✅ Current | 2026-03-02 |
+
 ---
 
 *This index is only useful if it is kept current. Update it when any document changes status.*
