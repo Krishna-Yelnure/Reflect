@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Journal App — Project Source of Truth
-# Last updated: A7a decisions locked — all 5 resolved, ready to build (2026-03-04)
+# Last updated: Session A7a complete — Era Management (2026-03-04)
 
 ---
 
@@ -780,11 +780,10 @@ Do not build A6c until you have 30+ real entries and feel the absence of search 
 
 ---
 
-#### SESSION A7a — Era Management ← START HERE NEXT
-**Status:** NOT STARTED — BRAINSTORM COMPLETE, ALL DECISIONS LOCKED ✅
+#### SESSION A7a — Era Management
+**Status:** ✅ COMPLETE (2026-03-04)
 **Depends on:** A6a ✅
-**Scope creep risk:** Low
-**Estimated build time:** 2–3 hours
+**Files changed:** `src/app/utils/eras.ts`, `src/app/components/ErasManager.tsx`, `src/app/components/JournalEntry.tsx`
 
 **Goal:** Redesign ErasManager to current design language. Data model solid before surfaces are built.
 
@@ -1210,7 +1209,7 @@ Then attach:
 | Doc Sprint 1 | 2026-03-03 | BA-Document v1.0, V1-Scope, Witness-Philosophy, User-Journey, INDEX, DOCS-STATUS all completed | ✅ Complete |
 | Session A6c | — | Search — full-text + tag dimension + result view. **Deferred until 30+ real entries. IN V1.** | ⏳ Pending |
 | **BRAINSTORM A7a** | 2026-03-04 | Era colour palette, data model audit, heatmap overlay design. All 5 decisions locked. | ✅ Complete |
-| Session A7a | — | Era management — redesign ErasManager, data model audit, era colour palette. **All decisions locked — ready to build.** | ⏳ Pending |
+| Session A7a | 2026-03-04 | Era management — ErasManager redesign, eras.ts shim, auto-assign eraId by date in JournalEntry.tsx | ✅ Complete |
 | Session A7b | — | Era surfaces — heatmap overlay, era label in all views, era filter | ⏳ Pending |
 | Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
 | Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
@@ -1412,6 +1411,13 @@ Then attach:
 - **2026-03-04 (A7a decisions):** Overlap warning — inline under date fields. Quiet text appears below date inputs when a new era's range overlaps an existing one. Non-blocking. Witness-appropriate phrasing: *"This overlaps with '[name]' — that's fine if both feel true."*
 - **2026-03-04 (A7a decisions):** Delete confirmation — inline confirm. Delete button changes to "Are you sure? Yes / No" inline in the card. No modal. One extra click, calm, no interruption.
 - **2026-03-04 (A7a decisions):** Empty state copy locked — *"Your story has chapters even if they haven't been named yet."* with "Create your first era →" as the action. Info box at bottom removed.
+- **2026-03-04 (A7a):** `eras.ts` rewritten as thin shim — all logic in `db/index.ts`. Identical pattern to `storage.ts` shim from A2. `erasStorage.getAll/add/update/delete/getById/getActive` all delegate to `db.eras`.
+- **2026-03-04 (A7a):** `ErasManager.tsx` full redesign — warm design language throughout. Shadcn Card/Input/Textarea/Button/Label removed entirely. Form fields use bottom-border-only treatment matching A5c. Era list renders as warm borderless rows with colour dot, hover-reveal edit/delete actions.
+- **2026-03-04 (A7a):** Era colour palette applied: Terracotta `#c2714f`, Sage `#7c9a7e`, Dusty rose `#b87d8a`, Warm indigo `#6b6fa8`, Ochre `#c49a3c`, Slate violet `#7c6f8a`. Old palette (red, grey) removed.
+- **2026-03-04 (A7a):** Overlap detection — `findOverlap()` helper computed live from date inputs. Warning renders inline below date fields with AnimatePresence enter/exit. Non-blocking. Copy: *"This overlaps with '[name]' — that's fine if both feel true."*
+- **2026-03-04 (A7a):** Delete confirmation — inline Yes / No appears in place of delete button. No modal. `confirmDeleteId` state tracks which era is pending.
+- **2026-03-04 (A7a):** `ERA_COLOURS` exported from ErasManager.tsx — ready for A7b heatmap overlay to import directly.
+- **2026-03-04 (A7a):** `JournalEntry.tsx` — `erasStorage` imported. On save, `autoEraId` computed by finding first era whose date range covers the entry date. Reflection entries (synthetic keys) skipped. On update, existing `eraId` preserved if no era covers the date. Silent — zero UI change.
 
 ---
 

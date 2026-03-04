@@ -4,6 +4,7 @@ import { format, subDays, parseISO } from 'date-fns';
 import { Sparkles, Save, X, Zap, BookOpen, Edit3, ChevronLeft } from 'lucide-react';
 import type { JournalEntry as JournalEntryType } from '@/app/types';
 import { storage } from '@/app/utils/storage';
+import { erasStorage } from '@/app/utils/eras';
 import { getSmartPrompt } from '@/app/utils/prompts';
 import { getReflectionPrompt } from '@/app/utils/prompts-v2';
 import { findSimilarEntries, createMemorySurface } from '@/app/utils/memory-surface';
@@ -564,13 +565,30 @@ export function JournalEntry({
 
     const existing = storage.getEntryByDate(selectedDate);
 
+    // A7a — auto-assign eraId by date. Silent, zero friction.
+    // Find the first era whose date range covers this entry's date.
+    // Reflection entries (synthetic date keys) are skipped — they don't belong to a day.
+    const autoEraId = (() => {
+      if (selectedDate.startsWith('reflection-')) return undefined;
+      const allEras = erasStorage.getAll();
+      const entryTime = new Date(selectedDate).getTime();
+      const match = allEras.find(era => {
+        if (!era.startDate) return false;
+        const start = new Date(era.startDate).getTime();
+        const end   = era.endDate ? new Date(era.endDate).getTime() : Infinity;
+        return entryTime >= start && entryTime <= end;
+      });
+      return match?.id;
+    })();
+
     if (existing) {
-      storage.updateEntry(existing.id, entry);
+      storage.updateEntry(existing.id, { ...entry, eraId: autoEraId ?? existing.eraId });
     } else {
       const newEntry: JournalEntryType = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         date: selectedDate,
         ...(entry as JournalEntryType),
+        eraId: autoEraId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
