@@ -1217,6 +1217,7 @@ Then attach:
 | Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
 | Session A8c | 2026-03-04 | Sanskrit Reveal Layer — **REJECTED**. Wrong surfaces. Philosophy screen in Settings will do this properly when built. | ❌ Not building |
 | Session A8d | 2026-03-04 | Habit Builder re-engagement — “Returning is the practice.” in GentleStartTracker after a gap. Other copy changes scoped out as marginal. | ✅ Complete |
+| Session A5c | — | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession, write view field treatment | ⏳ Pending |
 | Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
@@ -1397,9 +1398,15 @@ Then attach:
 - **2026-03-04 (A8b):** `getInnerStateDistribution()` and `InnerStateDistribution` interface added to insights.ts. Returns raw counts only — no percentages, no month-over-month comparison (Copy Audit Standard).
 - **2026-03-04 (A8b):** `InnerStateChart` component added to Insights.tsx — horizontal bar landscape, animated fill, count labels on right. Visible only when 3+ entries have innerState set. Appears above existing insight cards.
 - **2026-03-04 (A8b):** DayView in TimelineView.tsx renders innerState as a quiet pill below the mood+energy bar when present. Absent on old entries.
-- **2026-03-04 (A8c):** Sanskrit Reveal Layer rejected. Tap-to-reveal on the closing moment (2.8s auto-dismiss) and BelowHeatmap prompt (6s fade) are wrong surfaces — almost no user would find them. Philosophy already works invisibly through the prompts and inner state dimension. Progressive disclosure of Sanskrit deferred to the Philosophy screen in Settings.
-- **2026-03-04 (A8d):** Habit Builder copy refresh scoped to one change only — re-engagement detection in GentleStartTracker.tsx. Other four copy swaps (heading, day 21 celebration, Why label, archive line) rejected as marginal; existing copy is not broken.
-- **2026-03-04 (A8d):** "Returning is the practice." surfaces in GentleStartTracker when: user has prior engagement, engaged today, did not engage yesterday. Quiet card, display font, italic. Never shows on day 2 of a fresh start. Never shows after completion.
+- **2026-03-04 (A8c):** Sanskrit Reveal Layer rejected. Tap-to-reveal on the closing moment (2.8s auto-dismiss) and BelowHeatmap prompt (6s fade) are wrong surfaces — almost no user would find them. Philosophy already works invisibly through prompts and inner state dimension. Progressive disclosure of Sanskrit deferred to Philosophy screen in Settings.
+- **2026-03-04 (A8d):** Habit Builder copy refresh scoped to one change only — re-engagement detection in GentleStartTracker.tsx. Other four copy swaps rejected as marginal; existing copy is not broken.
+- **2026-03-04 (A8d):** “Returning is the practice.” surfaces in GentleStartTracker when: user has prior engagement, engaged today, did not engage yesterday. Quiet card, display font, italic. Never shows on day 2 of a fresh start. Never shows after completion.
+- **2026-03-04 (A5c brainstorm):** App currently reads as a web app, not a journal. Decision: background #EDE8DF (warm parchment) as global body colour. Checked against Day One, Bear, iA Writer — all use white by default. This is a genuine differentiator.
+- **2026-03-04 (A5c brainstorm):** A5c scoped to four changes: (1) background + ink colour in index.css, (2) sidebar recession in App.tsx, (3) write view field border treatment in JournalEntry.tsx. No logic, no new components. Runs before A9a.
+- **2026-03-04 (A5c brainstorm):** Ink colour locked at #3C3C38 — warm near-black, reads as ink not pixels. Replaces cool slate default globally.
+- **2026-03-04 (A5c brainstorm):** Sidebar — background inherits page, no separate white panel. Nav text slate-400 at rest, slate-700 active. Active indicator: thin amber left border, no fill.
+- **2026-03-04 (A5c brainstorm):** Write view — textarea borders removed, single bottom border only, backgrounds inherit page. Labels remain as captions.
+- **2026-03-04 (A5c brainstorm):** Flash of unstyled content on load deferred to dedicated polish pass after testing phase. Not A5c scope.
 
 ---
 
