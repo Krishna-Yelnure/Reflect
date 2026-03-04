@@ -8,7 +8,6 @@ import {
   Calendar,
   Menu,
   X,
-  MessageSquare,
   Heart,
   Shield,
   Layers,
@@ -21,7 +20,6 @@ import { JournalEntry } from "@/app/components/JournalEntry";
 import { TimelineView } from "@/app/components/TimelineView";
 import { Insights } from "@/app/components/Insights";
 import { MoodChart } from "@/app/components/MoodChart";
-import { LanguageInsights } from "@/app/components/LanguageInsights";
 import { ReflectionAnchors } from "@/app/components/ReflectionAnchors";
 import { PrivacySettings } from "@/app/components/PrivacySettings";
 import { ErasManager } from "@/app/components/ErasManager";
@@ -38,7 +36,6 @@ type View =
   | "timeline"
   | "insights"
   | "mood"
-  | "language"
   | "anchors"
   | "privacy"
   | "eras"
@@ -61,7 +58,6 @@ const NAV_GROUPS = [
     items: [
       { id: "insights"  as View, label: "Insights",  icon: Lightbulb },
       { id: "mood"      as View, label: "Mood",       icon: TrendingUp },
-      { id: "language"  as View, label: "Language",   icon: MessageSquare },
     ],
   },
   {
@@ -214,17 +210,6 @@ export default function App() {
       {currentView === "insights" && (
         <motion.div key="insights" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
           <Insights entries={entries} />
-        </motion.div>
-      )}
-      {currentView === "language" && (
-        <motion.div key="language" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <div className="max-w-3xl mx-auto px-6 py-8">
-            <div className="mb-8">
-              <h2 className="text-2xl mb-2">Language Patterns</h2>
-              <p className="text-slate-600">Descriptive observations from your writing</p>
-            </div>
-            <LanguageInsights entries={entries} />
-          </div>
         </motion.div>
       )}
       {currentView === "anchors" && (

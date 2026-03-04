@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Journal App — Project Source of Truth
-# Last updated: Session A7a complete — Era Management (2026-03-04)
+# Last updated: Session A9a complete — Insights Audit + Witness Redesign (2026-03-04)
 
 ---
 
@@ -953,18 +953,47 @@ New value created from resolution
 ---
 
 #### SESSION A9a — Insights: Audit + Witness Redesign
-**Status:** NOT STARTED
+**Status:** ✅ COMPLETE (2026-03-04)
 **Depends on:** A5 done
 **Scope creep risk:** Medium
 
-**What to build:**
-- Full audit of `Insights.tsx`, `insights.ts`, `LanguageInsights.tsx`, `language-analysis.ts`
-- Rebuild with Witness philosophy — every stat passes copy test
-- Warm empty state for Day 1–30: *"Your patterns are still forming. Come back after a few more weeks."*
-- MoodChart.tsx — integrate into Insights or keep separate (decide at session start)
-- `LanguageInsights.tsx` — absorb into Insights, remove as separate sidebar item
+**Brainstorm decisions (made before code):**
+- `Language` view absorbed into `Insights` — content belonged there, "Language" was a confusing nav label. Sidebar Understand group: Insights + Mood only.
+- `MoodChart` kept as standalone `Mood` view — three tabs and data depth earns its own space. Division locked: Insights = qualitative patterns, Mood = quantitative data.
+- Tiered empty states by data density (not a hard 30-day time gate) — more honest to actual data.
 
-**Files:** `Insights.tsx`, `MoodChart.tsx`, `LanguageInsights.tsx`, `insights.ts`, `language-analysis.ts`, `App.tsx`
+**What was done:**
+
+1. **`insights.ts`** — two Witness test fixes:
+   - `"Your energy has been lower than usual"` removed — absence-pointing, negative observation, fails presence guard
+   - Mood language rule applied to `generateInsights()` — `difficult`/`low` dominant mood → `"This has been a tender month"`, never the raw label surfaced
+
+2. **`language-analysis.ts`** — self-evaluative pattern reframed:
+   - Phrase changed from `"self-critical language"` to `'words like "should have" and "mistake"'` — describes the words present, not a diagnosis
+   - Context changed from `'self-critical'` to `'neutral'` — removes the verdict entirely
+
+3. **`LanguageInsights.tsx`** — full Witness audit:
+   - `TrendingDown`/`TrendingUp` icon logic removed — icons were encoding judgement (down = bad, up = good)
+   - Coloured context badges (`amber-50`, `emerald-50`) removed — colour was a verdict
+   - Single neutral `MessageSquare` icon for all patterns
+   - Copy updated throughout; own empty state removed — parent `Insights.tsx` owns that
+
+4. **`Insights.tsx`** — redesigned:
+   - Absorbs `LanguageInsights` as a section below insight cards
+   - Tiered empty states: < 5 entries → *"Keep writing. Patterns take a little time to surface."* / 5–14 → *"Your story is starting to take shape."* / 15+ → full view
+   - Warm design language throughout: `slate-*` → `#3C3C38`/`#EDE8DF` system, cards at `rgba(255,255,255,0.5)`
+   - "About Insights" copy: `"patterns you might not notice day-to-day"` → `"patterns that were always there, made visible"`
+
+5. **`App.tsx`** — navigation cleaned:
+   - `"language"` removed from `View` type, `NAV_GROUPS`, `MainContent` routing
+   - `MessageSquare` and `LanguageInsights` imports removed
+
+**Files changed:**
+- `src/app/components/Insights.tsx`
+- `src/app/components/LanguageInsights.tsx`
+- `src/app/utils/insights.ts`
+- `src/app/utils/language-analysis.ts`
+- `src/app/App.tsx`
 
 ---
 
@@ -1217,7 +1246,7 @@ Then attach:
 | Session A8c | 2026-03-04 | Sanskrit Reveal Layer — **REJECTED**. Wrong surfaces. Philosophy screen in Settings will do this properly when built. | ❌ Not building |
 | Session A8d | 2026-03-04 | Habit Builder re-engagement — “Returning is the practice.” in GentleStartTracker after a gap. Other copy changes scoped out as marginal. | ✅ Complete |
 | Session A5c | — | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession, write view field treatment | ⏳ Pending |
-| Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
+| Session A9a | 2026-03-04 | Insights audit + Witness redesign — Language absorbed into Insights, tiered empty states, full copy audit | ✅ Complete |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
 | Session A10b | — | Threads intelligent building — tag/question-assisted. **POST-V1.** | ⏳ POST-V1 |
@@ -1400,6 +1429,13 @@ Then attach:
 - **2026-03-04 (A8c):** Sanskrit Reveal Layer rejected. Tap-to-reveal on the closing moment (2.8s auto-dismiss) and BelowHeatmap prompt (6s fade) are wrong surfaces — almost no user would find them. Philosophy already works invisibly through prompts and inner state dimension. Progressive disclosure of Sanskrit deferred to Philosophy screen in Settings.
 - **2026-03-04 (A8d):** Habit Builder copy refresh scoped to one change only — re-engagement detection in GentleStartTracker.tsx. Other four copy swaps rejected as marginal; existing copy is not broken.
 - **2026-03-04 (A8d):** “Returning is the practice.” surfaces in GentleStartTracker when: user has prior engagement, engaged today, did not engage yesterday. Quiet card, display font, italic. Never shows on day 2 of a fresh start. Never shows after completion.
+- **2026-03-04 (A9a):** `"language"` view removed from sidebar — LanguageInsights absorbed into Insights as a section. Sidebar Understand group now: Insights + Mood only (was Insights + Mood + Language).
+- **2026-03-04 (A9a):** MoodChart kept as standalone Mood view — data depth (3 tabs, energy trends, distribution) earns its own space. Division locked: Insights = qualitative patterns, Mood = quantitative data.
+- **2026-03-04 (A9a):** `"Your energy has been lower than usual"` insight removed from insights.ts — absence-pointing, negative observation, fails presence guard.
+- **2026-03-04 (A9a):** Mood language rule applied to `generateInsights()` — difficult/low dominant mood → *"This has been a tender month"*, raw mood label never surfaced.
+- **2026-03-04 (A9a):** language-analysis.ts self-evaluative pattern reframed — phrase now names the words present (*'words like "should have" and "mistake"'*), not a diagnosis. Context changed from `'self-critical'` to `'neutral'`.
+- **2026-03-04 (A9a):** LanguageInsights.tsx — TrendingDown/TrendingUp icon logic removed (icons were encoding judgement). Coloured context badges (amber/emerald) removed (colour was a verdict). Single neutral icon for all patterns.
+- **2026-03-04 (A9a):** Insights.tsx redesigned — LanguageInsights absorbed as bottom section; tiered empty states by data density not time gate; warm design language throughout; About copy: *"patterns that were always there, made visible."*
 - **2026-03-04 (A5c brainstorm):** App currently reads as a web app, not a journal. Decision: background #EDE8DF (warm parchment) as global body colour. Checked against Day One, Bear, iA Writer — all use white by default. This is a genuine differentiator.
 - **2026-03-04 (A5c brainstorm):** A5c scoped to four changes: (1) background + ink colour in index.css, (2) sidebar recession in App.tsx, (3) write view field border treatment in JournalEntry.tsx. No logic, no new components. Runs before A9a.
 - **2026-03-04 (A5c brainstorm):** Ink colour locked at #3C3C38 — warm near-black, reads as ink not pixels. Replaces cool slate default globally.

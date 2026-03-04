@@ -83,9 +83,13 @@ export function generateInsights(entries: JournalEntry[]): Insight[] {
 
   const dominantMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
   if (dominantMood && dominantMood[1] >= 3) {
+    // Mood language rule: difficult/low → Witness-compliant copy, never the raw label
+    const moodText = (dominantMood[0] === 'difficult' || dominantMood[0] === 'low')
+      ? "This has been a tender month"
+      : `You've mostly felt ${dominantMood[0]} this month`;
     insights.push({
       type: 'pattern',
-      text: `You've mostly felt ${dominantMood[0]} this month`,
+      text: moodText,
       period: 'month'
     });
   }
@@ -122,13 +126,8 @@ export function generateInsights(entries: JournalEntry[]): Insight[] {
         text: 'Your energy has been high this week',
         period: 'week'
       });
-    } else if (avgEnergy <= 2) {
-      insights.push({
-        type: 'trend',
-        text: 'Your energy has been lower than usual',
-        period: 'week'
-      });
     }
+    // Note: low energy is not surfaced — absence/negative observations violate Witness philosophy.
   }
 
   // Detect writing frequency changes

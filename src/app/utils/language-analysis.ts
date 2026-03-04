@@ -47,15 +47,15 @@ export function analyzeLanguagePatterns(entries: JournalEntry[], days = 30): Lan
     });
   }
 
-  // Detect self-critical patterns
+  // Detect self-evaluative patterns — described by the words, not a diagnosis
   const criticalCount = patterns.selfCritical.reduce((sum, word) =>
     sum + (allText.match(new RegExp(`\\b${word}\\b`, 'g')) || []).length, 0
   );
   if (criticalCount > 5) {
     detected.push({
-      phrase: 'self-critical language',
+      phrase: 'words like "should have" and "mistake"',
       frequency: criticalCount,
-      context: 'self-critical',
+      context: 'neutral',   // was 'self-critical' — that label was a diagnosis, not an observation
     });
   }
 
