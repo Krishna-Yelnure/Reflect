@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Journal App — Project Source of Truth
-# Last updated: Session A5c complete — Journal Warmth Pass done (2026-03-04)
+# Last updated: A7a decisions locked — all 5 resolved, ready to build (2026-03-04)
 
 ---
 
@@ -781,10 +781,10 @@ Do not build A6c until you have 30+ real entries and feel the absence of search 
 ---
 
 #### SESSION A7a — Era Management ← START HERE NEXT
-**Status:** NOT STARTED — BRAINSTORM COMPLETE, DECISIONS NEEDED BEFORE BUILDING
+**Status:** NOT STARTED — BRAINSTORM COMPLETE, ALL DECISIONS LOCKED ✅
 **Depends on:** A6a ✅
 **Scope creep risk:** Low
-**Estimated build time:** 2–3 hours once decisions are made upfront
+**Estimated build time:** 2–3 hours
 
 **Goal:** Redesign ErasManager to current design language. Data model solid before surfaces are built.
 
@@ -1209,15 +1209,15 @@ Then attach:
 | Doc Strategy | 2026-03-02 | Documentation governance — DOCS-REGISTRY created, all 17 docs audited, keep/skip/defer decisions locked | ✅ Complete |
 | Doc Sprint 1 | 2026-03-03 | BA-Document v1.0, V1-Scope, Witness-Philosophy, User-Journey, INDEX, DOCS-STATUS all completed | ✅ Complete |
 | Session A6c | — | Search — full-text + tag dimension + result view. **Deferred until 30+ real entries. IN V1.** | ⏳ Pending |
-| **BRAINSTORM A7a** | — | Era colour palette, data model audit, heatmap overlay design. Required before A7a build. | ⏳ Next |
-| Session A7a | — | Era management — redesign ErasManager, data model audit, era colour palette | ⏳ Pending |
+| **BRAINSTORM A7a** | 2026-03-04 | Era colour palette, data model audit, heatmap overlay design. All 5 decisions locked. | ✅ Complete |
+| Session A7a | — | Era management — redesign ErasManager, data model audit, era colour palette. **All decisions locked — ready to build.** | ⏳ Pending |
 | Session A7b | — | Era surfaces — heatmap overlay, era label in all views, era filter | ⏳ Pending |
 | Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
 | Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
 | Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
 | Session A8c | 2026-03-04 | Sanskrit Reveal Layer — **REJECTED**. Wrong surfaces. Philosophy screen in Settings will do this properly when built. | ❌ Not building |
 | Session A8d | 2026-03-04 | Habit Builder re-engagement — “Returning is the practice.” in GentleStartTracker after a gap. Other copy changes scoped out as marginal. | ✅ Complete |
-| Session A5c | 2026-03-04 | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession (amber left-border active, no fill), textarea bottom-border-only treatment | ✅ Complete |
+| Session A5c | — | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession, write view field treatment | ⏳ Pending |
 | Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
@@ -1407,9 +1407,11 @@ Then attach:
 - **2026-03-04 (A5c brainstorm):** Sidebar — background inherits page, no separate white panel. Nav text slate-400 at rest, slate-700 active. Active indicator: thin amber left border, no fill.
 - **2026-03-04 (A5c brainstorm):** Write view — textarea borders removed, single bottom border only, backgrounds inherit page. Labels remain as captions.
 - **2026-03-04 (A5c brainstorm):** Flash of unstyled content on load deferred to dedicated polish pass after testing phase. Not A5c scope.
-- **2026-03-04 (A5c):** `src/styles/index.css` — two rules added on `html, body`: `background-color: #EDE8DF` and `color: #3C3C38`. All views inherit. No per-component changes needed.
-- **2026-03-04 (A5c):** `App.tsx` — sidebar `<aside>` lost `bg-white border-r border-slate-200`; replaced with `border-stone-200/50` hairline only. Background inherits parchment. Active nav item changed from filled `bg-slate-900 text-white` pill to `border-l-2 border-amber-500 text-stone-700` — thin amber rule, no fill. Resting text `stone-400`, hover `stone-700`. Collapsed icon mode: active icon `text-amber-600` (no bg). Mobile drawer bg set to `#EDE8DF` inline. Root div `bg-slate-50` removed.
-- **2026-03-04 (A5c):** `JournalEntry.tsx` — all guided mode `<Textarea>` fields: `border-slate-200 focus:border-slate-400` box border removed → `border: none`, `borderBottom: 1px solid #c8c2b6`, `borderRadius: 0`, `background: transparent`. Amber caret on all fields. Same treatment on intention field and Quick mode textarea. Deep Write container `bg-white` → `backgroundColor: #EDE8DF`.
+- **2026-03-04 (A7a decisions):** Era colour palette locked — 6 colours chosen to be warm and distinct from the mood system: Terracotta `#c2714f`, Sage `#7c9a7e`, Dusty rose `#b87d8a`, Warm indigo `#6b6fa8`, Ochre `#c49a3c`, Slate violet `#7c6f8a`.
+- **2026-03-04 (A7a decisions):** Era assignment model — Auto by date, silent, zero friction. On save, find which era(s) the entry date falls within, assign automatically. No UI added to Write view.
+- **2026-03-04 (A7a decisions):** Overlap warning — inline under date fields. Quiet text appears below date inputs when a new era's range overlaps an existing one. Non-blocking. Witness-appropriate phrasing: *"This overlaps with '[name]' — that's fine if both feel true."*
+- **2026-03-04 (A7a decisions):** Delete confirmation — inline confirm. Delete button changes to "Are you sure? Yes / No" inline in the card. No modal. One extra click, calm, no interruption.
+- **2026-03-04 (A7a decisions):** Empty state copy locked — *"Your story has chapters even if they haven't been named yet."* with "Create your first era →" as the action. Info box at bottom removed.
 
 ---
 
