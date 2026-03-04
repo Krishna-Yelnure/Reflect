@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Journal App — Project Source of Truth
-# Last updated: Doc Sprint Session 1 complete — BA-Document, V1-Scope, Witness-Philosophy, User-Journey, INDEX, DOCS-STATUS all current (2026-03-03)
+# Last updated: Session A5c complete — Journal Warmth Pass done (2026-03-04)
 
 ---
 
@@ -1217,7 +1217,7 @@ Then attach:
 | Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
 | Session A8c | 2026-03-04 | Sanskrit Reveal Layer — **REJECTED**. Wrong surfaces. Philosophy screen in Settings will do this properly when built. | ❌ Not building |
 | Session A8d | 2026-03-04 | Habit Builder re-engagement — “Returning is the practice.” in GentleStartTracker after a gap. Other copy changes scoped out as marginal. | ✅ Complete |
-| Session A5c | — | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession, write view field treatment | ⏳ Pending |
+| Session A5c | 2026-03-04 | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession (amber left-border active, no fill), textarea bottom-border-only treatment | ✅ Complete |
 | Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
@@ -1407,6 +1407,9 @@ Then attach:
 - **2026-03-04 (A5c brainstorm):** Sidebar — background inherits page, no separate white panel. Nav text slate-400 at rest, slate-700 active. Active indicator: thin amber left border, no fill.
 - **2026-03-04 (A5c brainstorm):** Write view — textarea borders removed, single bottom border only, backgrounds inherit page. Labels remain as captions.
 - **2026-03-04 (A5c brainstorm):** Flash of unstyled content on load deferred to dedicated polish pass after testing phase. Not A5c scope.
+- **2026-03-04 (A5c):** `src/styles/index.css` — two rules added on `html, body`: `background-color: #EDE8DF` and `color: #3C3C38`. All views inherit. No per-component changes needed.
+- **2026-03-04 (A5c):** `App.tsx` — sidebar `<aside>` lost `bg-white border-r border-slate-200`; replaced with `border-stone-200/50` hairline only. Background inherits parchment. Active nav item changed from filled `bg-slate-900 text-white` pill to `border-l-2 border-amber-500 text-stone-700` — thin amber rule, no fill. Resting text `stone-400`, hover `stone-700`. Collapsed icon mode: active icon `text-amber-600` (no bg). Mobile drawer bg set to `#EDE8DF` inline. Root div `bg-slate-50` removed.
+- **2026-03-04 (A5c):** `JournalEntry.tsx` — all guided mode `<Textarea>` fields: `border-slate-200 focus:border-slate-400` box border removed → `border: none`, `borderBottom: 1px solid #c8c2b6`, `borderRadius: 0`, `background: transparent`. Amber caret on all fields. Same treatment on intention field and Quick mode textarea. Deep Write container `bg-white` → `backgroundColor: #EDE8DF`.
 
 ---
 

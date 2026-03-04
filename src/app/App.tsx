@@ -140,19 +140,22 @@ export default function App() {
   };
 
   // ── Sidebar content ────────────────────────────────────────────────────
+  // A5c — Sidebar recession: no white panel, background inherits page warmth.
+  // Nav text slate-400 at rest → slate-700 on hover. Active: thin amber left
+  // border + slate-700 text, no fill. The sidebar disappears into the page.
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-5 py-6 border-b border-slate-100">
-        <h1 className="text-base font-medium tracking-tight text-slate-900">Journal</h1>
-        <p className="text-xs text-slate-400 mt-0.5">A quiet space to think clearly</p>
+      <div className="px-5 py-6 border-b border-stone-200/60">
+        <h1 className="text-base font-medium tracking-tight" style={{ color: '#3C3C38' }}>Journal</h1>
+        <p className="text-xs text-stone-400 mt-0.5">A quiet space to think clearly</p>
       </div>
 
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 px-3 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 px-3 mb-1">
               {group.label}
             </p>
             {group.items.map((item) => {
@@ -163,13 +166,14 @@ export default function App() {
                   key={item.id}
                   onClick={() => navigate(item.id)}
                   className={`
-                    w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm
-                    transition-all duration-150 mb-0.5
+                    w-full flex items-center gap-3 px-3 py-2 text-sm
+                    transition-all duration-150 mb-0.5 rounded-r-md
                     ${isActive
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "border-l-2 border-amber-500 text-stone-700 pl-[10px]"
+                      : "border-l-2 border-transparent text-stone-400 hover:text-stone-700 pl-[10px]"
                     }
                   `}
+                  style={isActive ? { color: '#3C3C38' } : undefined}
                 >
                   <Icon className="size-4 shrink-0" />
                   <span>{item.label}</span>
@@ -181,8 +185,8 @@ export default function App() {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-slate-100">
-        <p className="text-[10px] text-slate-400 leading-relaxed">
+      <div className="px-5 py-4 border-t border-stone-200/60">
+        <p className="text-[10px] text-stone-400 leading-relaxed">
           Private. Secure. Always yours.
         </p>
       </div>
@@ -262,13 +266,15 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen flex" style={{ backgroundColor: '#EDE8DF', color: '#3C3C38' }}>
       <Toaster position="top-center" />
 
       {/* ── Desktop Sidebar ── */}
+      {/* A5c — sidebar recedes into the page: no white bg, thin warm border only */}
       <aside
         className={`
-          hidden md:flex flex-col shrink-0 bg-white border-r border-slate-200
+          hidden md:flex flex-col shrink-0
+          border-r border-stone-200/50
           transition-all duration-200 sticky top-0 h-screen overflow-hidden
           ${sidebarOpen ? "w-52" : "w-14"}
         `}
@@ -279,7 +285,7 @@ export default function App() {
             {/* Collapse button */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="absolute top-4 right-3 p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+              className="absolute top-4 right-3 p-1.5 rounded-md text-stone-400 hover:text-stone-600 transition-all"
               title="Collapse sidebar"
             >
               <ChevronLeft className="size-4" />
@@ -291,7 +297,7 @@ export default function App() {
             {/* Expand button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 mb-3"
+              className="p-2 rounded-lg text-stone-400 hover:text-stone-700 mb-3"
               title="Expand sidebar"
             >
               <Menu className="size-4" />
@@ -306,7 +312,7 @@ export default function App() {
                   title={item.label}
                   className={`
                     p-2 rounded-lg transition-all
-                    ${isActive ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"}
+                    ${isActive ? "text-amber-600" : "text-stone-400 hover:text-stone-700"}
                   `}
                 >
                   <Icon className="size-4" />
@@ -320,11 +326,11 @@ export default function App() {
       {/* ── Mobile header + drawer ── */}
       <div className="flex flex-col flex-1 min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+        <header className="md:hidden border-b border-stone-200/60 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <div>
-            <span className="text-sm font-medium text-slate-900">Journal</span>
+            <span className="text-sm font-medium" style={{ color: '#3C3C38' }}>Journal</span>
           </div>
-          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-stone-500 hover:text-stone-700">
             <Menu className="size-5" />
           </button>
         </header>
@@ -347,10 +353,11 @@ export default function App() {
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed left-0 top-0 bottom-0 w-64 bg-white z-40 md:hidden shadow-xl"
+                className="fixed left-0 top-0 bottom-0 w-64 z-40 md:hidden shadow-xl"
+                style={{ backgroundColor: '#EDE8DF' }}
               >
                 <div className="absolute top-3 right-3">
-                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-slate-400 hover:bg-slate-100">
+                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-stone-400 hover:text-stone-600">
                     <X className="size-4" />
                   </button>
                 </div>

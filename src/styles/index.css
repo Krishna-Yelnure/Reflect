@@ -1,3 +1,16 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* ── A5c — Journal Warmth Pass ────────────────────────────────────────────
+   Background: warm parchment #EDE8DF — a genuine differentiator from
+   Day One, Bear, iA Writer (all use white by default).
+   Ink: #3C3C38 — warm near-black, reads as ink not pixels.
+   Applied globally so every view inherits without per-component changes.
+──────────────────────────────────────────────────────────────────────────── */
+
+html,
+body {
+  background-color: #EDE8DF;
+  color: #3C3C38;
+}

@@ -626,7 +626,8 @@ export function JournalEntry({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-white z-40 flex flex-col"
+          className="fixed inset-0 z-40 flex flex-col"
+          style={{ backgroundColor: '#EDE8DF' }}
         >
           {/* Deep mode toolbar */}
           <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100">
@@ -773,7 +774,18 @@ export function JournalEntry({
               value={entry.whatHappened || ''}
               onChange={e => updateField('whatHappened', e.target.value)}
               placeholder="One thing from today…"
-              className="min-h-[80px] resize-none border-slate-200 focus:border-slate-400 text-base"
+              className="min-h-[80px] resize-none text-base transition-colors"
+              style={{
+                border: 'none',
+                borderBottom: '1px solid #c8c2b6',
+                borderRadius: 0,
+                background: 'transparent',
+                outline: 'none',
+                boxShadow: 'none',
+                caretColor: '#f59e0b',
+              }}
+              onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
+              onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
               autoFocus
             />
           </div>
@@ -1019,7 +1031,18 @@ export function JournalEntry({
                       value={(entry[key as keyof JournalEntryType] as string) || ''}
                       onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
                       placeholder={placeholder}
-                      className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none border-slate-200 focus:border-slate-400 transition-colors`}
+                      className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none transition-colors`}
+                      style={{
+                        border: 'none',
+                        borderBottom: '1px solid #c8c2b6',
+                        borderRadius: 0,
+                        background: 'transparent',
+                        outline: 'none',
+                        boxShadow: 'none',
+                        caretColor: '#f59e0b',
+                      }}
+                      onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
+                      onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
                     />
                   </motion.div>
                 );
@@ -1056,7 +1079,18 @@ export function JournalEntry({
                     value={(entry.intention as string) || ''}
                     onChange={e => updateField('intention', e.target.value)}
                     placeholder={meta.placeholder}
-                    className="min-h-[80px] resize-none border-slate-200 focus:border-slate-400"
+                    className="min-h-[80px] resize-none transition-colors"
+                    style={{
+                      border: 'none',
+                      borderBottom: '1px solid #c8c2b6',
+                      borderRadius: 0,
+                      background: 'transparent',
+                      outline: 'none',
+                      boxShadow: 'none',
+                      caretColor: '#f59e0b',
+                    }}
+                    onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
+                    onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
                   />
                 </>
               );
