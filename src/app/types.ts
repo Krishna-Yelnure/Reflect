@@ -1,6 +1,8 @@
+// ── Journal Entry ─────────────────────────────────────────────────────────────
+
 export interface JournalEntry {
   id: string;
-  date: string; // ISO date string
+  date: string;                         // yyyy-MM-dd for daily; synthetic key for reflections
   whatHappened?: string;
   feelings?: string;
   whatMatters?: string;
@@ -8,141 +10,127 @@ export interface JournalEntry {
   freeWrite?: string;
   mood?: 'great' | 'good' | 'okay' | 'low' | 'difficult';
   energy?: 1 | 2 | 3 | 4 | 5;
-  tags?: string[]; // v2: user-controlled themes
-  reflectionType?: 'daily' | 'weekly' | 'monthly' | 'yearly'; // v2: reflection mode
-  eraId?: string; // v3: assigned to a life chapter
-  visibility?: 'normal' | 'never-resurface' | 'request-only' | 'safe-to-revisit'; // v3: memory control
-  isLongForm?: boolean; // v3: essay vs daily entry
-  questionId?: string; // v3: response to a persistent question
-  intention?: string;  // A4c: forward intention set at end of a reflection entry
-  createdAt: string;
-  updatedAt: string;
+  // A8b — Inner state quality (Guna dimension). Optional, never mandatory.
+  // Plain English labels: 'clear' = Sattva, 'restless' = Rajas, 'heavy' = Tamas.
+  // Sanskrit never shown in UI — progressive disclosure only in A8c.
+  innerState?: 'clear' | 'restless' | 'heavy';
+  tags?: string[];
+  reflectionType?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  eraId?: string;
+  visibility?: 'private' | 'legacy';
+  isLongForm?: boolean;
+  questionId?: string;
+  intention?: string;                   // A4c — forward-looking, reflection entries only
+  oneWord?: string;                     // A5a — past-facing closing word, reflection entries only
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export interface MoodData {
-  date: string;
-  mood: string;
-  energy?: number;
-}
+// ── Insight ───────────────────────────────────────────────────────────────────
 
 export interface Insight {
-  type: 'pattern' | 'trend' | 'observation' | 'language' | 'memory'; // v2: added types
+  type: 'pattern' | 'trend' | 'observation';
   text: string;
-  period: 'week' | 'month' | 'year';
-  relatedEntryIds?: string[]; // v2: link to relevant entries
+  period: 'week' | 'month' | 'quarter';
   dismissible?: boolean;
 }
 
-// v2: Reflection Anchors
-export interface ReflectionAnchor {
-  id: string;
-  type: 'value' | 'question' | 'intention';
-  text: string;
-  createdAt: string;
-}
+// ── Habit ─────────────────────────────────────────────────────────────────────
 
-// v2: User Preferences
-export interface UserPreferences {
-  insightsEnabled: boolean;
-  insightFrequency: 'weekly' | 'monthly' | 'off';
-  memoryRemindersEnabled: boolean;
-  languageAnalysisEnabled: boolean;
-  lastInsightDate?: string;
-}
-
-// v2: Memory Surface
-export interface MemorySurface {
-  id: string;
-  currentEntryId: string;
-  relatedEntryId: string;
-  reason: string;
-  dismissed?: boolean;
-  createdAt: string;
-}
-
-// v3: Personal Eras & Chapters
-export interface Era {
-  id: string;
-  name: string;
-  description?: string;
-  startDate?: string; // Optional - can be open-ended
-  endDate?: string; // Optional - can remain open
-  color?: string; // Visual distinction
-  createdAt: string;
-  updatedAt: string;
-}
-
-// v3: Memory Threads (User-Assembled)
-export interface MemoryThread {
-  id: string;
-  name: string;
-  description?: string;
-  entryIds: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-// v3: Persistent Questions
-export interface PersistentQuestion {
-  id: string;
-  question: string;
-  notes?: string;
-  isActive: boolean;
-  createdAt: string;
-  lastReflectedAt?: string;
-}
-
-// v3: Long-Form Reflection (not date-bound)
-export interface LongFormReflection {
-  id: string;
-  title: string;
-  content: string;
-  type: 'essay' | 'letter' | 'thinking' | 'belief';
-  questionId?: string; // Optional link to persistent question
-  tags?: string[];
-  eraId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// v3.1: Habit & 21-Day Gentle Start
 export interface Habit {
   id: string;
   name: string;
-  why: string; // Personal meaning
+  why?: string;
+  isArchived: boolean;
   createdAt: string;
   updatedAt: string;
-  isArchived: boolean;
 }
 
-// v3.1: 21-Day Gentle Start (opt-in practice window)
 export interface GentleStart {
   id: string;
   habitId: string;
   startDate: string;
-  endDate: string; // Automatically calculated (21 days from start)
-  engagements: HabitEngagement[];
+  endDate: string;
+  engagements: string[];
   completed: boolean;
   createdAt: string;
 }
 
-// v3.1: Habit Engagement (participation model)
 export interface HabitEngagement {
   id: string;
   habitId: string;
-  gentleStartId?: string;
   date: string;
-  type: 'performed' | 'reflected' | 'adjusted' | 'noted-difficulty';
-  note?: string; // Optional reflection
+  note?: string;
   createdAt: string;
 }
 
-// v3.1: Habit Reflection (linked to prompts)
-export interface HabitReflection {
+// ── User Preferences ──────────────────────────────────────────────────────────
+
+export interface UserPreferences {
+  insightsEnabled: boolean;
+  insightFrequency: 'daily' | 'weekly' | 'monthly';
+  memoryRemindersEnabled: boolean;
+  languageAnalysisEnabled: boolean;
+}
+
+// ── Reflection Anchors ────────────────────────────────────────────────────────
+
+export interface ReflectionAnchor {
   id: string;
-  habitId: string;
-  date: string;
-  prompt: string;
-  response: string;
+  type: 'value' | 'intention' | 'question';
+  text: string;
+  createdAt: string;
+}
+
+// ── Eras ──────────────────────────────────────────────────────────────────────
+
+export interface Era {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate?: string;
+  colour?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Memory Threads ────────────────────────────────────────────────────────────
+
+export interface MemoryThread {
+  id: string;
+  title: string;
+  entryIds: string[];
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Persistent Questions ──────────────────────────────────────────────────────
+
+export interface PersistentQuestion {
+  id: string;
+  text: string;
+  isOpen: boolean;
+  createdAt: string;
+}
+
+// ── Long-Form Reflections ─────────────────────────────────────────────────────
+
+export interface LongFormReflection {
+  id: string;
+  title?: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Memory Surface ────────────────────────────────────────────────────────────
+
+export interface MemorySurfaceItem {
+  id: string;
+  entryId: string;
+  relatedEntryId: string;
+  relevanceScore: number;
   createdAt: string;
 }

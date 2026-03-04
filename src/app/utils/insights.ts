@@ -1,6 +1,30 @@
 import type { JournalEntry, Insight } from '@/app/types';
 import { format, subDays, subMonths, isWithinInterval, parseISO } from 'date-fns';
 
+// ── Inner state distribution ──────────────────────────────────────────────────
+// Returns counts for each inner state across a set of entries.
+// Entries with undefined innerState are excluded — backward compatible.
+// Never returns percentages or month-over-month comparison (Copy Audit Standard).
+
+export interface InnerStateDistribution {
+  clear: number;
+  restless: number;
+  heavy: number;
+  total: number;          // entries that have innerState set (not total entries)
+}
+
+export function getInnerStateDistribution(entries: JournalEntry[]): InnerStateDistribution {
+  const dist = { clear: 0, restless: 0, heavy: 0, total: 0 };
+  entries.forEach(e => {
+    if (e.innerState === 'clear')    { dist.clear++;    dist.total++; }
+    if (e.innerState === 'restless') { dist.restless++; dist.total++; }
+    if (e.innerState === 'heavy')    { dist.heavy++;    dist.total++; }
+  });
+  return dist;
+}
+
+// ── Existing insight generation (unchanged) ───────────────────────────────────
+
 export function generateInsights(entries: JournalEntry[]): Insight[] {
   const insights: Insight[] = [];
   const now = new Date();

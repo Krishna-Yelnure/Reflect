@@ -937,6 +937,27 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           </div>
         )}
 
+        {/* Inner state — shown as a quiet pill when present */}
+        {entry.innerState && (() => {
+          const stateStyle: Record<string, string> = {
+            clear:    'bg-emerald-50 text-emerald-700 border-emerald-100',
+            restless: 'bg-amber-50 text-amber-700 border-amber-100',
+            heavy:    'bg-slate-100 text-slate-500 border-slate-200',
+          };
+          const stateLabel: Record<string, string> = {
+            clear:    'Clear mind',
+            restless: 'Restless mind',
+            heavy:    'Heavy mind',
+          };
+          return (
+            <div>
+              <span className={`inline-block px-2.5 py-1 rounded-full text-xs border ${stateStyle[entry.innerState!]}`}>
+                {stateLabel[entry.innerState!]}
+              </span>
+            </div>
+          );
+        })()}
+
         {/* Tags — clickable to filter */}
         {entry.tags && entry.tags.length > 0 && (
           <div className="flex gap-2 flex-wrap">

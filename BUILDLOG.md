@@ -1214,7 +1214,7 @@ Then attach:
 | Session A7b | — | Era surfaces — heatmap overlay, era label in all views, era filter | ⏳ Pending |
 | Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
 | Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
-| Session A8b | — | Inner State Dimension (Gunas) — `innerState` field, compact selector in Write, distribution chart in Insights | ⏳ Pending |
+| Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
 | Session A8c | — | Sanskrit Reveal Layer — progressive disclosure on closing moment + daily prompt | ⏳ Pending |
 | Session A8d | — | Habit Builder copy refresh — equanimity language throughout | ⏳ Pending |
 | Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
@@ -1391,6 +1391,13 @@ Then attach:
 - **2026-03-04 (A8a):** Copy Audit Standard formalised as permanent 9-point checklist in gita-buildlog-entries.md. Supersedes the older "Witness test" phrasing for all copy review going forward.
 - **2026-03-04 (A8a):** Chapter-to-cadence architecture documented (Ch. 1–6 daily, 7–12 weekly, 13–17 monthly, 18 yearly) — internal design guide only, never visible to user.
 - **2026-03-04 (A8a):** Gita A8a–A8d sessions replace the old Inner Compass A8a–A8c session slots in the session map. Inner Compass work still planned — renumbering deferred until Gita sessions complete.
+- **2026-03-04 (A8b):** `innerState?: 'clear' | 'restless' | 'heavy'` added to `JournalEntry` in types.ts. Maps to Sattva/Rajas/Tamas internally — Sanskrit never shown in UI.
+- **2026-03-04 (A8b):** db/index.ts unchanged — spread operator in add() and update() handles new field transparently. Old entries read back with innerState: undefined, fully backward compatible.
+- **2026-03-04 (A8b):** Inner state selector added to JournalEntry.tsx guided mode — three pill buttons (Clear/Restless/Heavy), optional, toggle to deselect, never gates writing. Positioned between mood+energy row and writing fields.
+- **2026-03-04 (A8b):** `getInnerStateDistribution()` and `InnerStateDistribution` interface added to insights.ts. Returns raw counts only — no percentages, no month-over-month comparison (Copy Audit Standard).
+- **2026-03-04 (A8b):** `InnerStateChart` component added to Insights.tsx — horizontal bar landscape, animated fill, count labels on right. Visible only when 3+ entries have innerState set. Appears above existing insight cards.
+- **2026-03-04 (A8b):** DayView in TimelineView.tsx renders innerState as a quiet pill below the mood+energy bar when present. Absent on old entries.
+- **2026-03-04 (A8b):** "Clear mind" pool prep deferred — entries with innerState === 'clear' are queryable via getInnerStateDistribution() when MemorySurface/Threads work begins in A10.
 
 ---
 

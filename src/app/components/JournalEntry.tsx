@@ -448,6 +448,7 @@ export function JournalEntry({
     freeWrite: '',
     mood: undefined,
     energy: undefined,
+    innerState: undefined,
     tags: [],
     reflectionType: initialReflectionType,
     oneWord: '',
@@ -491,6 +492,7 @@ export function JournalEntry({
         freeWrite: '',
         mood: undefined,
         energy: undefined,
+        innerState: undefined,
         tags: [],
         reflectionType: initialReflectionType,
         oneWord: '',
@@ -947,7 +949,44 @@ export function JournalEntry({
         </motion.div>
         )} {/* end !isReflection mood+energy */}
 
-        {/* ── Writing fields — reflection-aware ────────────────────────────── */}
+        {/* ── Inner State — optional, daily + reflection entries ────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.22 }}
+          className="mb-8"
+        >
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2.5">
+            How did your mind feel?
+          </p>
+          <div className="flex items-center gap-2">
+            {(
+              [
+                { value: 'clear',    label: 'Clear',    desc: 'Purposeful, grounded' },
+                { value: 'restless', label: 'Restless', desc: 'Driven, scattered'    },
+                { value: 'heavy',    label: 'Heavy',    desc: 'Stuck, depleted'      },
+              ] as const
+            ).map(state => {
+              const selected = entry.innerState === state.value;
+              const colours: Record<string, string> = {
+                clear:    selected ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600',
+                restless: selected ? 'bg-amber-50 border-amber-200 text-amber-700'      : 'border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600',
+                heavy:    selected ? 'bg-slate-100 border-slate-300 text-slate-600'     : 'border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600',
+              };
+              return (
+                <button
+                  key={state.value}
+                  onClick={() => updateField('innerState', selected ? undefined : state.value)}
+                  aria-pressed={selected}
+                  title={state.desc}
+                  className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 focus:outline-none ${colours[state.value]}`}
+                >
+                  {state.label}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
         {(() => {
           const fields = reflectionMeta?.fields ?? [
             { key: 'whatHappened', label: 'What happened today?',       placeholder: 'No pressure. Just what comes to mind…' },
