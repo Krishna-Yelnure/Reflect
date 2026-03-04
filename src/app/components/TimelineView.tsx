@@ -22,6 +22,7 @@ import { ChevronLeft, Edit } from 'lucide-react';
 import type { JournalEntry } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 import { getSmartPrompt } from '@/app/utils/prompts';
+import { getGitaDailyPrompt } from '@/app/utils/prompts-v2';
 
 type ReflectionEntryType = 'weekly' | 'monthly' | 'yearly';
 
@@ -172,7 +173,11 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     }
     return false;
   });
-  const [dailyPrompt] = useState(() => getSmartPrompt(entries));
+  // Combined daily prompt pool — existing smart prompts + Gita-informed prompts (A8a)
+  // 50/50 split gives both pools equal rotation weight without changing the once-per-day gate
+  const [dailyPrompt] = useState(() =>
+    Math.random() < 0.5 ? getSmartPrompt(entries) : getGitaDailyPrompt()
+  );
 
   useEffect(() => {
     if (!showDailyPrompt) return;

@@ -1,6 +1,6 @@
 # BUILDLOG.md
-# Premium Journal App — Project Source of Truth
-# Last updated: Full tracking suite complete, Doc Sprint Session 1 pending (2026-03-02)
+# Journal App — Project Source of Truth
+# Last updated: Doc Sprint Session 1 complete — BA-Document, V1-Scope, Witness-Philosophy, User-Journey, INDEX, DOCS-STATUS all current (2026-03-03)
 
 ---
 
@@ -24,21 +24,6 @@ From A6c onward, every session has real design decisions — decisions that affe
 **The test before opening any file:** Can you answer every decision question in the session spec? If no → brainstorm first. If yes → build.
 
 This adds one conversation per session before the build session. It saves multiples of that time in rework.
-
----
-
-## COMPANION FILES
-
-| File | Purpose | Updated |
-|---|---|---|
-| `BUILDLOG.md` | Build history, decisions, session log | After every build session |
-| `docs/INDEX.md` | Master entry point — all docs at a glance | When any doc changes status |
-| `docs/DOCS-STATUS.md` | Health of every product document | After every build or doc session |
-| `docs/FEATURE-STATUS.md` | Every feature: status, session, doc coverage | After every build session |
-| `docs/DECISIONS-LOG.md` | Every significant product & architecture decision | When any decision is made |
-| `docs/BUGS-AND-DEBT.md` | Known issues, severity, fix plan | When any issue is found or fixed |
-
-**Excel tracker:** `PROJECT-TRACKER.xlsx` lives locally only — not committed to git. Update alongside markdown files. Share as file or PDF, never commit.
 
 ---
 
@@ -1220,24 +1205,75 @@ Then attach:
 | Session A5b | 2026-03-02 | Typography upgrade (Cormorant Garamond + DM Sans), mood language audit ("Difficult" → "Hard"), month cell contrast fix, amber accent audit, DayView date heading, BelowHeatmap polish | ✅ Complete |
 | Session A4e | 2026-03-02 | Deep Write enhancements — word count, typewriter scroll, amber caret, display font on headings + closing moment | ✅ Complete |
 | Session A6a | 2026-03-02 | Tag normalisation (save + import), TagManager rewrite — inline autocomplete, Enter/comma/Backspace UX | ✅ Complete |
-| Session A6b | — | Tag navigation — clickable in Timeline, filter state, heatmap filter | ⏳ Next |
-| Session A6c | — | Search — full-text + tag dimension + result view | ⏳ Pending |
-| Session A7a | — | Era management — redesign ErasManager, data model audit | ⏳ Pending |
+| Session A6b | 2026-03-02 | Tag navigation — clickable tags in DayView, filter strip, heatmap fade at all drill levels | ✅ Complete |
+| Doc Strategy | 2026-03-02 | Documentation governance — DOCS-REGISTRY created, all 17 docs audited, keep/skip/defer decisions locked | ✅ Complete |
+| Doc Sprint 1 | 2026-03-03 | BA-Document v1.0, V1-Scope, Witness-Philosophy, User-Journey, INDEX, DOCS-STATUS all completed | ✅ Complete |
+| Session A6c | — | Search — full-text + tag dimension + result view. **Deferred until 30+ real entries. IN V1.** | ⏳ Pending |
+| **BRAINSTORM A7a** | — | Era colour palette, data model audit, heatmap overlay design. Required before A7a build. | ⏳ Next |
+| Session A7a | — | Era management — redesign ErasManager, data model audit, era colour palette | ⏳ Pending |
 | Session A7b | — | Era surfaces — heatmap overlay, era label in all views, era filter | ⏳ Pending |
-| Session A8a | — | Inner Compass — data model merge + Values tab + surface in Write | ⏳ Pending |
-| Session A8b | — | Inner Compass — Questions tab + thread view | ⏳ Pending |
-| Session A8c | — | Inner Compass — question lifecycle (resolution → value) | ⏳ Pending |
+| Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
+| Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
+| Session A8b | — | Inner State Dimension (Gunas) — `innerState` field, compact selector in Write, distribution chart in Insights | ⏳ Pending |
+| Session A8c | — | Sanskrit Reveal Layer — progressive disclosure on closing moment + daily prompt | ⏳ Pending |
+| Session A8d | — | Habit Builder copy refresh — equanimity language throughout | ⏳ Pending |
 | Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
-| Session A9b | — | Connected insights — tag, era, question, habit patterns | ⏳ Pending |
+| Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
-| Session A10b | — | Threads intelligent building — tag/question-assisted | ⏳ Pending |
+| Session A10b | — | Threads intelligent building — tag/question-assisted. **POST-V1.** | ⏳ POST-V1 |
 | Session A11a | — | Connecting the dots — passive connections | ⏳ Pending |
-| Session A11b | — | Connecting the dots — active surfaces (north star session) | ⏳ Pending |
-| Living With It | — | No building. Daily use until Phase B. | ⏳ After A11b |
-| Session B1 | — | Electron wrapper | ⏳ Pending |
-| Session B2 | — | GitHub Actions CI | ⏳ Pending |
-| Session B3 | — | Polish and final testing | ⏳ Pending |
-| Session C1 | — | Portfolio assets | ⏳ Pending |
+| Session A11b | — | Connecting the dots — active surfaces (north star session). **POST-V1.** | ⏳ POST-V1 |
+| Living With It | — | No building. Minimum 2 weeks daily use. Required before V1 declared complete. | ⏳ After A11a |
+| Doc Sprint 2 | — | PRD, FRD, SRS, WBS, Roadmap, Risk-Register, Assumptions, RTM, Flow-Diagrams, AI-Case-Study | ⏳ Pending |
+| Session B1 | — | Electron wrapper | ⏳ Phase B |
+| Session B2 | — | GitHub Actions CI — Linux, Windows, macOS builds | ⏳ Phase B |
+| Session B3 | — | Polish and final testing | ⏳ Phase B |
+| Session C1 | — | Portfolio assets — demo video, case study, README polish, early adopter testing | ⏳ Phase C |
+
+---
+
+## COMPANION FILES & DOC STATUS
+
+*All documents live in the `docs/` folder. Read DOCS-STATUS.md for full health detail on each.*
+
+| File | Purpose | Status | Last Updated |
+|---|---|---|---|
+| `docs/INDEX.md` | Master index — start here to navigate the doc suite | ✅ Current | 2026-03-03 |
+| `docs/DOCS-REGISTRY.md` | Governance — routing table, what each doc owns, update triggers | ✅ Current | 2026-03-03 |
+| `docs/DOCS-STATUS.md` | Health of every document — stale flags, what needs updating | ✅ Current | 2026-03-03 |
+| `docs/FEATURE-STATUS.md` | Every feature — BUILT / PLANNED / DEFERRED / NEVER with V1 verdict | ✅ Current | 2026-03-02 |
+| `docs/DECISIONS-LOG.md` | Every significant product and architecture decision with rationale | ✅ Current | 2026-03-02 |
+| `docs/BUGS-AND-DEBT.md` | Known issues, rough edges, technical debt — open and fixed | ✅ Current | 2026-03-02 |
+| `docs/BA-Document.docx` | Business analysis — 18 sections, full product definition | ✅ Current | 2026-03-03 |
+| `docs/V1-Scope.md` | V1 scope authority — IN / POST-V1 / NEVER verdicts per session | ✅ Current | 2026-03-03 |
+| `docs/Witness-Philosophy.md` | Full philosophy — three layers, guards, never-build rationale | ✅ Current | 2026-03-03 |
+| `docs/User-Journey.md` | Day 1 → Day 10,000 temporal model and feature-to-day mapping | ✅ Current | 2026-03-03 |
+| `docs/PRD.md` | Product requirements — features, priorities, acceptance criteria | ❌ Not Started | Doc Sprint 2 |
+| `docs/FRD.md` | Functional requirements — every behavioural rule and edge case | ❌ Not Started | Doc Sprint 2 |
+| `docs/SRS.md` | Software requirements — data models, storage contracts | ❌ Not Started | Doc Sprint 2 |
+| `docs/WBS.md` | Work breakdown structure — phases and sessions | ❌ Not Started | Doc Sprint 2 |
+| `docs/Product-Roadmap.md` | Phase narrative A → B → C → optional sync | ❌ Not Started | Doc Sprint 2 |
+| `docs/Risk-Register.md` | Forward-looking risks with scoring and mitigation ownership | ❌ Not Started | Doc Sprint 2 |
+| `docs/Assumptions-and-Constraints.md` | Operating assumptions with invalidation tracking | ❌ Not Started | Doc Sprint 2 |
+| `docs/RTM.md` | Requirements traceability matrix | ❌ Not Started | Doc Sprint 2 (after PRD + FRD) |
+| `docs/Flow-Diagrams.md` | Core user flows as Mermaid diagrams | ❌ Not Started | Doc Sprint 2 |
+| `docs/AI-Process-Case-Study.md` | Portfolio — how human-led AI development was done | ❌ Not Started | Doc Sprint 2 |
+| `docs/Early-Adopter-Brief.md` | Testing framework for first users | ⏳ Deferred | After 30+ real entries |
+| `PROJECT-TRACKER.xlsx` | Master spreadsheet — all trackers in one view | ✅ Current | 2026-03-02 |
+
+### Update routing — which file gets updated when
+
+| Change type | Files to update |
+|---|---|
+| Feature built or changed | BUILDLOG → FEATURE-STATUS → DOCS-STATUS (flag stale docs) |
+| Decision made | BUILDLOG → DECISIONS-LOG (immediately, same session) |
+| Bug found | BUILDLOG mention → BUGS-AND-DEBT (immediately, same session) |
+| Bug fixed | BUILDLOG → BUGS-AND-DEBT (move to FIXED) → FEATURE-STATUS |
+| Scope verdict changes | BUILDLOG → DECISIONS-LOG → FEATURE-STATUS → V1-Scope |
+| Doc session completes a document | BUILDLOG → DOCS-STATUS → INDEX |
+| BA-Document / PRD / FRD updates | Doc sprint checkpoints only — DOCS-STATUS holds stale flags between sprints |
+
+**Rule:** BUILDLOG, DECISIONS-LOG, and BUGS-AND-DEBT are written during or immediately after the session. BA-Document, PRD, FRD wait for the next doc sprint.
 
 ---
 
@@ -1338,6 +1374,23 @@ Then attach:
 - **2026-03-01 (Philosophy audit):** "Life OS" explicitly rejected as product label — accurate in capability but wrong in feeling. The product is warmer than an OS.
 - **2026-03-01 (Philosophy audit):** "Your life, made legible" confirmed as the one-sentence product description — legible implies meaning already exists, app makes it readable. Not interpreted, not improved. Legible.
 - **2026-03-01 (Philosophy audit):** Journal + Habits relationship formalised — not two tools bolted together. Journal witnesses inner life. Habits shape outer life. Patterns connect them over time. Neither is primary, both serve the same intention: helping a person know themselves more clearly.
+- **2026-03-02 (A6b):** Tag filter built — clickable tags in DayView, filter strip in Timeline, heatmap cells fade to 20% opacity when unmatched, filter persists across all drill levels (year → month → week → day). A6b complete.
+- **2026-03-02 (Doc Strategy):** Full documentation audit complete — 17 document types evaluated against this project. Keep/skip/defer decisions locked. DOCS-REGISTRY.md created as governance layer with routing table, layer architecture, and per-doc ownership entries.
+- **2026-03-02 (Doc Strategy):** Documentation layer architecture locked — Layer 0 (Governance) → Layer 1 (Product Definition) → Layer 2 (Requirements) → Layer 3 (Execution) → Layer 4 (Portfolio). Changes flow down only. If a change requires going upstream, the upstream decision was wrong.
+- **2026-03-02 (Doc Strategy):** Witness-Philosophy.md added to document suite — ethical positioning document explaining why streaks/AI-reading/urgency were rejected. Portfolio differentiator. Stands alone from BA-Document.
+- **2026-03-02 (Doc Strategy):** User-Journey.md uses temporal model (Day 1/7/30/365/10,000) not demographic personas. The defining variable is depth of use over time, not user identity.
+- **2026-03-02 (Doc Strategy):** BRD, Project Charter, standalone Personas, Communication Plan, RAID Log skipped — absorbed into other documents or not applicable to solo project. Decisions logged in DECISIONS-LOG.md.
+- **2026-03-03 (Doc Sprint 1):** Product renamed from "Premium Journal App" to "Journal App" — cleaner, no marketing qualifier, consistent across all docs and UI copy going forward.
+- **2026-03-03 (Doc Sprint 1):** V1 scope locked in V1-Scope.md. A9b, A10b, A11b moved to POST-V1 (scope creep risk). A11a remains IN V1 (third philosophical layer). A6c IN V1 with condition: build after 30+ real entries.
+- **2026-03-03 (Doc Sprint 1):** V1 complete criteria locked — all 7 criteria must be true before Phase B begins. See V1-Scope.md.
+- **2026-03-03 (Doc Sprint 1):** BA-Document v1.0 complete — 18 sections, McKinsey-register writing, proper 2×2 SWOT, Document Control + Revision History, Assumptions & Constraints, Glossary added.
+- **2026-03-03 (Doc update routing):** Rule locked — BUILDLOG gets an entry for every session without exception. DECISIONS-LOG and BUGS-AND-DEBT are captured immediately (not at end of session). BA-Document, PRD, FRD updated only at doc sprint checkpoints. DOCS-STATUS holds stale flags between sprints.
+- **2026-03-04 (A8a):** Gita prompt pool complete — 11 daily prompts (Ch. 1/3/5 arc + ego/conflict lens) and 14 reflection prompts (Ch. 9/11/13/15/18 arc) integrated into prompts-v2.ts as named exports `gitaPrompts` and `gitaReflectionPrompts`. No Sanskrit, no attribution in UI.
+- **2026-03-04 (A8a):** `getGitaDailyPrompt()` exported from prompts-v2.ts. TimelineView.tsx BelowHeatmap uses 50/50 split between `getSmartPrompt()` and `getGitaDailyPrompt()`. Once-per-day gate unchanged.
+- **2026-03-04 (A8a):** `getReflectionPrompt()` now draws from combined pool (existing + Gita). Interface identical — no downstream changes needed.
+- **2026-03-04 (A8a):** Copy Audit Standard formalised as permanent 9-point checklist in gita-buildlog-entries.md. Supersedes the older "Witness test" phrasing for all copy review going forward.
+- **2026-03-04 (A8a):** Chapter-to-cadence architecture documented (Ch. 1–6 daily, 7–12 weekly, 13–17 monthly, 18 yearly) — internal design guide only, never visible to user.
+- **2026-03-04 (A8a):** Gita A8a–A8d sessions replace the old Inner Compass A8a–A8c session slots in the session map. Inner Compass work still planned — renumbering deferred until Gita sessions complete.
 
 ---
 
