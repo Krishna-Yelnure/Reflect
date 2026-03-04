@@ -36,6 +36,23 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
   const engagedCount = engagedDates.size;
   const isComplete = gentleStart.completed || currentDay >= 21;
 
+  // Detect re-engagement after a gap — true only when:
+  // 1. The user has engaged at least once before
+  // 2. Today they have engaged (they just came back)
+  // 3. Yesterday they had NOT engaged (there was a real gap)
+  // "Returning is the practice." surfaces on this condition only.
+  const isReturning = useMemo(() => {
+    if (engagedCount === 0) return false;
+    if (!engagedDates.has(today)) return false;
+    const yesterday = format(
+      new Date(new Date().setDate(new Date().getDate() - 1)),
+      'yyyy-MM-dd'
+    );
+    // Must have at least one past engaged day that is not today
+    const hasPriorEngagement = [...engagedDates].some(d => d !== today);
+    return hasPriorEngagement && !engagedDates.has(yesterday);
+  }, [engagedDates, today, engagedCount]);
+
   // Rows: 3 rows × 7 cols
   const rows = [days.slice(0, 7), days.slice(7, 14), days.slice(14, 21)];
 
@@ -135,6 +152,15 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
           <span className="text-xs text-slate-400">Not yet</span>
         </div>
       </div>
+
+      {/* Re-engagement — shown the day a user returns after a gap */}
+      {isReturning && !isComplete && (
+        <div className="mt-4 p-3 rounded-lg bg-white border border-slate-100 text-center">
+          <p className="text-sm text-slate-500 italic" style={{ fontFamily: 'var(--font-display)' }}>
+            Returning is the practice.
+          </p>
+        </div>
+      )}
 
       {/* Celebration state */}
       {isComplete && (
