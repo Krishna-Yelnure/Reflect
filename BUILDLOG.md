@@ -1215,8 +1215,8 @@ Then attach:
 | Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
 | Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
 | Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
-| Session A8c | — | Sanskrit Reveal Layer — progressive disclosure on closing moment + daily prompt | ⏳ Pending |
-| Session A8d | — | Habit Builder copy refresh — equanimity language throughout | ⏳ Pending |
+| Session A8c | 2026-03-04 | Sanskrit Reveal Layer — **REJECTED**. Wrong surfaces. Philosophy screen in Settings will do this properly when built. | ❌ Not building |
+| Session A8d | 2026-03-04 | Habit Builder re-engagement — “Returning is the practice.” in GentleStartTracker after a gap. Other copy changes scoped out as marginal. | ✅ Complete |
 | Session A9a | — | Insights audit + Witness redesign + warm empty state | ⏳ Pending |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
@@ -1397,7 +1397,9 @@ Then attach:
 - **2026-03-04 (A8b):** `getInnerStateDistribution()` and `InnerStateDistribution` interface added to insights.ts. Returns raw counts only — no percentages, no month-over-month comparison (Copy Audit Standard).
 - **2026-03-04 (A8b):** `InnerStateChart` component added to Insights.tsx — horizontal bar landscape, animated fill, count labels on right. Visible only when 3+ entries have innerState set. Appears above existing insight cards.
 - **2026-03-04 (A8b):** DayView in TimelineView.tsx renders innerState as a quiet pill below the mood+energy bar when present. Absent on old entries.
-- **2026-03-04 (A8b):** "Clear mind" pool prep deferred — entries with innerState === 'clear' are queryable via getInnerStateDistribution() when MemorySurface/Threads work begins in A10.
+- **2026-03-04 (A8c):** Sanskrit Reveal Layer rejected. Tap-to-reveal on the closing moment (2.8s auto-dismiss) and BelowHeatmap prompt (6s fade) are wrong surfaces — almost no user would find them. Philosophy already works invisibly through the prompts and inner state dimension. Progressive disclosure of Sanskrit deferred to the Philosophy screen in Settings.
+- **2026-03-04 (A8d):** Habit Builder copy refresh scoped to one change only — re-engagement detection in GentleStartTracker.tsx. Other four copy swaps (heading, day 21 celebration, Why label, archive line) rejected as marginal; existing copy is not broken.
+- **2026-03-04 (A8d):** "Returning is the practice." surfaces in GentleStartTracker when: user has prior engagement, engaged today, did not engage yesterday. Quiet card, display font, italic. Never shows on day 2 of a fresh start. Never shows after completion.
 
 ---
 
