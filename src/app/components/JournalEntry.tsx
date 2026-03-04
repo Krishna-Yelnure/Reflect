@@ -277,7 +277,7 @@ function ModeSwitcher({
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+    <div className="flex items-center gap-1 p-1 rounded-xl w-fit" style={{ backgroundColor: '#ddd8cf' }}>
       {modes.map(m => (
         <button
           key={m.id}
@@ -285,10 +285,14 @@ function ModeSwitcher({
           className={`
             flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
             ${mode === m.id
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
+              ? 'shadow-sm'
+              : 'hover:text-stone-700'
             }
           `}
+          style={{
+            backgroundColor: mode === m.id ? '#EDE8DF' : 'transparent',
+            color: mode === m.id ? '#3C3C38' : '#8a7f72',
+          }}
         >
           {m.icon}
           {m.label}
@@ -348,10 +352,11 @@ function ContextualPrompt({
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-100 rounded-xl"
+        className="flex items-start gap-3 p-4 rounded-xl border border-stone-200/60"
+        style={{ backgroundColor: '#e8e2d8' }}
       >
         <span className="text-lg mt-0.5 flex-shrink-0">💬</span>
-        <p className="text-sm text-slate-600 italic leading-relaxed">{continuityPrompt}</p>
+        <p className="text-sm italic leading-relaxed" style={{ color: '#5a5550' }}>{continuityPrompt}</p>
       </motion.div>
     );
   }
@@ -374,10 +379,11 @@ function ContextualPrompt({
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-2.5 p-4 bg-slate-50 border border-slate-100 rounded-xl"
+        className="flex items-start gap-2.5 p-4 rounded-xl border border-stone-200/60"
+        style={{ backgroundColor: '#e8e2d8' }}
       >
-        <Sparkles className="size-4 mt-0.5 flex-shrink-0 text-slate-400" />
-        <p className="text-sm text-slate-600 italic leading-relaxed">{prompt}</p>
+        <Sparkles className="size-4 mt-0.5 flex-shrink-0 text-stone-400" />
+        <p className="text-sm italic leading-relaxed" style={{ color: '#5a5550' }}>{prompt}</p>
       </motion.div>
     );
   }
@@ -406,7 +412,8 @@ function ClosingMoment({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
-      className="fixed inset-0 bg-white flex flex-col items-center justify-center z-50"
+      className="fixed inset-0 flex flex-col items-center justify-center z-50"
+      style={{ backgroundColor: '#EDE8DF' }}
       onClick={onDone}
     >
       <motion.div
@@ -415,15 +422,15 @@ function ClosingMoment({
         transition={{ delay: 0.3, duration: 0.7 }}
         className="text-center space-y-4 px-8"
       >
-        <p className="text-slate-400 text-sm tracking-widest uppercase font-medium">
+        <p className="text-stone-400 text-sm tracking-widest uppercase font-medium">
           {formatEntryDate(date)}
         </p>
-        <p className="text-2xl text-slate-700 font-light" style={{ fontFamily: 'var(--font-display)' }}>{line}</p>
+        <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}>{line}</p>
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ delay: 0.8, duration: 1.8, ease: 'easeInOut' }}
-          className="h-px w-24 bg-slate-200 mx-auto origin-left"
+          className="h-px w-24 bg-stone-300 mx-auto origin-left"
         />
       </motion.div>
     </motion.div>
@@ -648,21 +655,26 @@ export function JournalEntry({
           style={{ backgroundColor: '#EDE8DF' }}
         >
           {/* Deep mode toolbar */}
-          <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100">
+          <div className="flex items-center justify-between px-8 py-4 border-b border-stone-200/60">
             <button
               onClick={() => handleModeChange('guided')}
-              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-600 transition-colors"
             >
               <ChevronLeft className="size-4" />
               Back to Guided
             </button>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-stone-400">
               {formatEntryDate(selectedDate)}
             </p>
-            <Button onClick={handleSave} disabled={isSaving} size="sm" className="gap-1.5">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-colors"
+              style={{ backgroundColor: '#3C3C38', color: '#EDE8DF' }}
+            >
               <Save className="size-3.5" />
               {isSaving ? 'Saving…' : 'Save'}
-            </Button>
+            </button>
           </div>
 
           {/* Deep mode canvas — typewriter scroll via scroll-pt + overflow-y-auto */}
@@ -676,15 +688,15 @@ export function JournalEntry({
                 value={entry.whatMatters || ''}
                 onChange={e => updateField('whatMatters', e.target.value)}
                 placeholder="A title, if you want one…"
-                className="w-full text-2xl font-light text-slate-700 placeholder:text-slate-300 border-none outline-none bg-transparent mb-8"
-                style={{ fontFamily: 'var(--font-display)' }}
+                className="w-full text-2xl font-light placeholder:text-stone-300 border-none outline-none bg-transparent mb-8"
+                style={{ fontFamily: 'var(--font-display)', color: '#3C3C38', caretColor: '#f59e0b' }}
               />
               <textarea
                 value={entry.freeWrite || ''}
                 onChange={e => updateField('freeWrite', e.target.value)}
                 placeholder="Write freely. No prompts, no fields. Just you and the page."
-                className="w-full text-base leading-[2] text-slate-700 placeholder:text-slate-300 border-none outline-none bg-transparent resize-none"
-                style={{ minHeight: '60vh', caretColor: '#f59e0b' }}
+                className="w-full text-base leading-[2] placeholder:text-stone-300 border-none outline-none bg-transparent resize-none"
+                style={{ minHeight: '60vh', caretColor: '#f59e0b', color: '#3C3C38' }}
                 autoFocus
                 onKeyDown={e => {
                   // On Enter, scroll caret into vertical centre
@@ -710,7 +722,7 @@ export function JournalEntry({
                 className="fixed bottom-6 right-8 pointer-events-none"
               >
                 <span
-                  className="text-xs text-slate-300 tabular-nums"
+                  className="text-xs text-stone-300 tabular-nums"
                   style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {wordCount} {wordCount === 1 ? 'word' : 'words'}
@@ -745,14 +757,14 @@ export function JournalEntry({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-light text-slate-700" style={{ fontFamily: 'var(--font-display)' }}>
+              <h1 className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}>
                 {formatEntryDate(selectedDate)}
               </h1>
-              <p className="text-sm text-slate-400 mt-0.5">Quick capture</p>
+              <p className="text-sm text-stone-400 mt-0.5">Quick capture</p>
             </div>
             <div className="flex items-center gap-2">
               <ModeSwitcher mode={mode} onChange={handleModeChange} />
-              <button onClick={handleCancel} className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+              <button onClick={handleCancel} className="ml-1 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/60 transition-colors">
                 <X className="size-5" />
               </button>
             </div>
@@ -760,7 +772,7 @@ export function JournalEntry({
 
           {/* Mood */}
           <div className="mb-6">
-            <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-3">How are you?</p>
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium mb-3">How are you?</p>
             <div className="flex gap-2 flex-wrap">
               {moods.map(mood => {
                 const selected = entry.mood === mood.value;
@@ -772,12 +784,12 @@ export function JournalEntry({
                       flex flex-col items-center gap-1 px-3 pt-3 pb-2 rounded-2xl border-2 transition-all duration-200
                       ${selected
                         ? `${mood.bg} ${mood.border} shadow-md ${mood.glow} scale-105 ring-2 ${mood.ring} ring-offset-1`
-                        : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'
+                        : 'border-stone-200 hover:border-stone-300 shadow-sm'
                       }
                     `}
                   >
                     <span className="text-2xl leading-none">{mood.emoji}</span>
-                    <span className={`text-xs font-medium ${selected ? mood.text : 'text-slate-400'}`}>
+                    <span className={`text-xs font-medium ${selected ? mood.text : 'text-stone-400'}`}>
                       {mood.label}
                     </span>
                   </button>
@@ -792,7 +804,7 @@ export function JournalEntry({
               value={entry.whatHappened || ''}
               onChange={e => updateField('whatHappened', e.target.value)}
               placeholder="One thing from today…"
-              className="min-h-[80px] resize-none text-base transition-colors"
+              className="min-h-[80px] resize-none text-base transition-colors placeholder:text-stone-400"
               style={{
                 border: 'none',
                 borderBottom: '1px solid #c8c2b6',
@@ -801,6 +813,7 @@ export function JournalEntry({
                 outline: 'none',
                 boxShadow: 'none',
                 caretColor: '#f59e0b',
+                color: '#3C3C38',
               }}
               onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
               onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -847,7 +860,7 @@ export function JournalEntry({
           className="flex items-start justify-between mb-6"
         >
           <div>
-            <h1 className="text-3xl font-light text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}>
               {formatEntryDate(selectedDate)}
             </h1>
             {reflectionMeta && (
@@ -860,7 +873,7 @@ export function JournalEntry({
             {!isReflection && <ModeSwitcher mode={mode} onChange={handleModeChange} />}
             <button
               onClick={handleCancel}
-              className="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              className="ml-1 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/60 transition-colors"
               aria-label="Cancel"
             >
               <X className="size-5" />
@@ -908,7 +921,7 @@ export function JournalEntry({
                     focus:outline-none
                     ${selected
                       ? `${mood.bg} ${mood.border} border px-2.5 py-1`
-                      : 'px-1.5 py-1 hover:bg-slate-100'
+                      : 'px-1.5 py-1 hover:bg-stone-200/60'
                     }
                   `}
                 >
@@ -934,7 +947,7 @@ export function JournalEntry({
           </div>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-slate-200 shrink-0" />
+          <div className="w-px h-5 bg-stone-300 shrink-0" />
 
           {/* Energy — bars only, no labels */}
           <div className="flex items-end gap-1" role="group" aria-label="Energy level">
@@ -952,11 +965,11 @@ export function JournalEntry({
                 >
                   <motion.div
                     animate={{
-                      backgroundColor: filled ? '#f59e0b' : '#e2e8f0',
-                      opacity: filled ? 1 : 0.45,
+                      backgroundColor: filled ? '#f59e0b' : '#b8b0a4',
+                      opacity: filled ? 1 : 0.5,
                     }}
                     whileHover={{
-                      backgroundColor: filled ? '#fbbf24' : '#cbd5e1',
+                      backgroundColor: filled ? '#fbbf24' : '#9a9088',
                       opacity: 0.9,
                     }}
                     transition={{ duration: 0.15 }}
@@ -969,7 +982,7 @@ export function JournalEntry({
             {entry.energy !== undefined && (
               <button
                 onClick={() => updateField('energy', undefined)}
-                className="ml-1 text-xs text-slate-300 hover:text-slate-400 transition-colors self-center leading-none"
+                className="ml-1 text-xs text-stone-400 hover:text-stone-600 transition-colors self-center leading-none"
                 aria-label="Clear energy"
               >
                 ✕
@@ -986,7 +999,7 @@ export function JournalEntry({
           transition={{ duration: 0.3, delay: 0.22 }}
           className="mb-8"
         >
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2.5">
+          <p className="text-[10px] text-stone-500 uppercase tracking-widest mb-2.5">
             How did your mind feel?
           </p>
           <div className="flex items-center gap-2">
@@ -999,9 +1012,9 @@ export function JournalEntry({
             ).map(state => {
               const selected = entry.innerState === state.value;
               const colours: Record<string, string> = {
-                clear:    selected ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600',
-                restless: selected ? 'bg-amber-50 border-amber-200 text-amber-700'      : 'border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600',
-                heavy:    selected ? 'bg-slate-100 border-slate-300 text-slate-600'     : 'border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600',
+                clear:    selected ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
+                restless: selected ? 'bg-amber-50 border-amber-300 text-amber-700'      : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
+                heavy:    selected ? 'bg-stone-200 border-stone-400 text-stone-700'     : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
               };
               return (
                 <button
@@ -1041,7 +1054,7 @@ export function JournalEntry({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.05 * index }}
                   >
-                    <Label htmlFor={key} className="text-sm text-slate-500 mb-2 block">
+                    <Label htmlFor={key} className="text-sm mb-2 block font-medium" style={{ color: '#5a5550' }}>
                       {label}
                     </Label>
                     <Textarea
@@ -1049,7 +1062,7 @@ export function JournalEntry({
                       value={(entry[key as keyof JournalEntryType] as string) || ''}
                       onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
                       placeholder={placeholder}
-                      className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none transition-colors`}
+                      className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none transition-colors placeholder:text-stone-400`}
                       style={{
                         border: 'none',
                         borderBottom: '1px solid #c8c2b6',
@@ -1058,6 +1071,7 @@ export function JournalEntry({
                         outline: 'none',
                         boxShadow: 'none',
                         caretColor: '#f59e0b',
+                        color: '#3C3C38',
                       }}
                       onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
                       onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -1075,7 +1089,7 @@ export function JournalEntry({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="mt-8 pt-6 border-t border-slate-100"
+            className="mt-8 pt-6 border-t border-stone-200/60"
           >
             {(() => {
               const intentionMeta: Record<string, { label: string; placeholder: string }> = {
@@ -1086,10 +1100,10 @@ export function JournalEntry({
               const meta = intentionMeta[initialReflectionType] ?? intentionMeta.weekly;
               return (
                 <>
-                  <Label htmlFor="intention" className="text-sm text-slate-500 mb-1 block">
+                  <Label htmlFor="intention" className="text-sm mb-1 block font-medium" style={{ color: '#5a5550' }}>
                     {meta.label}
                   </Label>
-                  <p className="text-xs text-slate-400 mb-3">
+                  <p className="text-xs text-stone-400 mb-3">
                     Not a goal. Not a commitment. Just a direction.
                   </p>
                   <Textarea
@@ -1097,7 +1111,7 @@ export function JournalEntry({
                     value={(entry.intention as string) || ''}
                     onChange={e => updateField('intention', e.target.value)}
                     placeholder={meta.placeholder}
-                    className="min-h-[80px] resize-none transition-colors"
+                    className="min-h-[80px] resize-none transition-colors placeholder:text-stone-400"
                     style={{
                       border: 'none',
                       borderBottom: '1px solid #c8c2b6',
@@ -1106,6 +1120,7 @@ export function JournalEntry({
                       outline: 'none',
                       boxShadow: 'none',
                       caretColor: '#f59e0b',
+                      color: '#3C3C38',
                     }}
                     onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
                     onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -1122,7 +1137,7 @@ export function JournalEntry({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.4 }}
-            className="mt-6 pt-6 border-t border-slate-100"
+            className="mt-6 pt-6 border-t border-stone-200/60"
           >
             {(() => {
               const oneWordMeta: Record<string, { label: string; placeholder: string }> = {
@@ -1133,10 +1148,10 @@ export function JournalEntry({
               const meta = oneWordMeta[initialReflectionType] ?? oneWordMeta.weekly;
               return (
                 <>
-                  <Label htmlFor="oneWord" className="text-sm text-slate-500 mb-1 block">
+                  <Label htmlFor="oneWord" className="text-sm mb-1 block font-medium" style={{ color: '#5a5550' }}>
                     {meta.label}
                   </Label>
-                  <p className="text-xs text-slate-400 mb-3">
+                  <p className="text-xs text-stone-400 mb-3">
                     Past-facing. Observational. No right answer.
                   </p>
                   <input
@@ -1144,13 +1159,20 @@ export function JournalEntry({
                     type="text"
                     value={(entry.oneWord as string) || ''}
                     onChange={e => {
-                      // Only allow a single word — strip spaces after first word
                       const val = e.target.value.replace(/\s+.*/, '');
                       updateField('oneWord', val);
                     }}
                     placeholder={meta.placeholder}
                     maxLength={32}
-                    className="w-full text-lg font-light text-slate-700 placeholder:text-slate-300 border-b border-slate-200 focus:border-slate-400 outline-none bg-transparent pb-2 transition-colors"
+                    className="w-full text-lg font-light placeholder:text-stone-400 outline-none bg-transparent pb-2 transition-colors"
+                    style={{
+                      border: 'none',
+                      borderBottom: '1px solid #c8c2b6',
+                      caretColor: '#f59e0b',
+                      color: '#3C3C38',
+                    }}
+                    onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
+                    onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
                   />
                 </>
               );
@@ -1175,9 +1197,9 @@ export function JournalEntry({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.35 }}
-          className="pt-6 border-t border-slate-100 mb-8"
+          className="pt-6 border-t border-stone-200/60 mb-8"
         >
-          <Label className="text-sm text-slate-500 mb-3 block">Tags (optional)</Label>
+          <Label className="text-sm mb-3 block font-medium" style={{ color: '#5a5550' }}>Tags (optional)</Label>
           <TagManager
             selectedTags={entry.tags || []}
             onChange={(tags) => updateField('tags', tags)}
