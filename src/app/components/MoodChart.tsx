@@ -21,7 +21,7 @@ const moodValues: Record<string, number> = {
 const moodColors: Record<string, string> = {
   great: '#10b981',
   good: '#3b82f6',
-  okay: '#64748b',
+  okay: '#7A7060',
   low: '#f59e0b',
   difficult: '#ef4444',
 };
@@ -72,7 +72,7 @@ export function MoodChart({ entries }: MoodChartProps) {
   if (entries.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-6 py-16 text-center">
-        <p className="text-slate-400 text-lg">
+        <p className="text-stone-400 text-lg">
           Track your mood and energy over time by adding journal entries.
         </p>
       </div>
@@ -83,7 +83,7 @@ export function MoodChart({ entries }: MoodChartProps) {
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Mood & Energy</h2>
-        <p className="text-slate-600">Visual patterns from your journal</p>
+        <p className="text-stone-600">Visual patterns from your journal</p>
       </div>
 
       <Tabs defaultValue="timeline" className="space-y-6">
@@ -104,20 +104,20 @@ export function MoodChart({ entries }: MoodChartProps) {
                 <AreaChart data={moodData}>
                   <defs>
                     <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#64748b" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#64748b" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#7A7060" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#7A7060" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(60,58,52,0.12)" />
                   <XAxis 
                     dataKey="date" 
-                    stroke="#94a3b8"
+                    stroke="#9A9690"
                     style={{ fontSize: '12px' }}
                   />
                   <YAxis 
                     domain={[0, 5]} 
                     ticks={[1, 2, 3, 4, 5]}
-                    stroke="#94a3b8"
+                    stroke="#9A9690"
                     style={{ fontSize: '12px' }}
                   />
                   <Tooltip
@@ -125,10 +125,10 @@ export function MoodChart({ entries }: MoodChartProps) {
                       if (!active || !payload?.[0]) return null;
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+                        <div style={{ backgroundColor: '#F0EBE2' }} className="p-3 rounded-lg shadow-lg border border-stone-200">
                           <p className="text-sm font-medium mb-1">{data.date}</p>
                           {data.moodLabel && (
-                            <p className="text-sm text-slate-600 capitalize">
+                            <p className="text-sm text-stone-600 capitalize">
                               Mood: {data.moodLabel}
                             </p>
                           )}
@@ -139,7 +139,7 @@ export function MoodChart({ entries }: MoodChartProps) {
                   <Area
                     type="monotone"
                     dataKey="mood"
-                    stroke="#64748b"
+                    stroke="#7A7060"
                     strokeWidth={2}
                     fill="url(#moodGradient)"
                     connectNulls
@@ -160,16 +160,16 @@ export function MoodChart({ entries }: MoodChartProps) {
               {moodDistribution.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={moodDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="mood" stroke="#94a3b8" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(60,58,52,0.12)" />
+                    <XAxis dataKey="mood" stroke="#9A9690" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9A9690" style={{ fontSize: '12px' }} />
                     <Tooltip
                       content={({ active, payload }) => {
                         if (!active || !payload?.[0]) return null;
                         return (
-                          <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+                          <div style={{ backgroundColor: '#F0EBE2' }} className="p-3 rounded-lg shadow-lg border border-stone-200">
                             <p className="text-sm font-medium">{payload[0].payload.mood}</p>
-                            <p className="text-sm text-slate-600">
+                            <p className="text-sm text-stone-600">
                               {payload[0].value} entries
                             </p>
                           </div>
@@ -180,7 +180,7 @@ export function MoodChart({ entries }: MoodChartProps) {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-slate-400 text-center py-12">
+                <p className="text-stone-400 text-center py-12">
                   No mood data yet. Start tracking moods in your entries.
                 </p>
               )}
@@ -197,8 +197,8 @@ export function MoodChart({ entries }: MoodChartProps) {
               <h3 className="font-medium mb-4">Energy Levels (Last 30 Days)</h3>
               <div className="mb-6 flex items-center gap-4">
                 <div className="text-center">
-                  <div className="text-3xl font-light text-slate-900">{averageEnergy}</div>
-                  <div className="text-sm text-slate-500">Average Energy</div>
+                  <div className="text-3xl font-light text-stone-800">{averageEnergy}</div>
+                  <div className="text-sm text-stone-500">Average Energy</div>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={300}>
@@ -209,16 +209,16 @@ export function MoodChart({ entries }: MoodChartProps) {
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(60,58,52,0.12)" />
                   <XAxis 
                     dataKey="date" 
-                    stroke="#94a3b8"
+                    stroke="#9A9690"
                     style={{ fontSize: '12px' }}
                   />
                   <YAxis 
                     domain={[0, 5]} 
                     ticks={[1, 2, 3, 4, 5]}
-                    stroke="#94a3b8"
+                    stroke="#9A9690"
                     style={{ fontSize: '12px' }}
                   />
                   <Tooltip
@@ -226,10 +226,10 @@ export function MoodChart({ entries }: MoodChartProps) {
                       if (!active || !payload?.[0]) return null;
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+                        <div style={{ backgroundColor: '#F0EBE2' }} className="p-3 rounded-lg shadow-lg border border-stone-200">
                           <p className="text-sm font-medium mb-1">{data.date}</p>
                           {data.energy && (
-                            <p className="text-sm text-slate-600">
+                            <p className="text-sm text-stone-600">
                               Energy: {data.energy}/5
                             </p>
                           )}

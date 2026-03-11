@@ -57,11 +57,11 @@ const moods = [
     value: 'okay',
     label: 'Okay',
     emoji: '😐',
-    bg: 'bg-slate-50',
-    border: 'border-slate-300',
+    bg: 'bg-stone-50',
+    border: 'border-stone-300',
     glow: 'shadow-slate-200/60',
     ring: 'ring-slate-300',
-    text: 'text-slate-600',
+    text: 'text-stone-600',
   },
   {
     value: 'low',
@@ -425,7 +425,7 @@ function ClosingMoment({
         <p className="text-stone-400 text-sm tracking-widest uppercase font-medium">
           {formatEntryDate(date)}
         </p>
-        <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}>{line}</p>
+        <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>{line}</p>
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -689,14 +689,14 @@ export function JournalEntry({
                 onChange={e => updateField('whatMatters', e.target.value)}
                 placeholder="A title, if you want one…"
                 className="w-full text-2xl font-light placeholder:text-stone-300 border-none outline-none bg-transparent mb-8"
-                style={{ fontFamily: 'var(--font-display)', color: '#3C3C38', caretColor: '#f59e0b' }}
+                style={{ fontFamily: 'var(--font-display)', color: '#1C1C18', caretColor: '#f59e0b' }}
               />
               <textarea
                 value={entry.freeWrite || ''}
                 onChange={e => updateField('freeWrite', e.target.value)}
                 placeholder="Write freely. No prompts, no fields. Just you and the page."
                 className="w-full text-base leading-[2] placeholder:text-stone-300 border-none outline-none bg-transparent resize-none"
-                style={{ minHeight: '60vh', caretColor: '#f59e0b', color: '#3C3C38' }}
+                style={{ minHeight: '60vh', caretColor: '#f59e0b', color: '#1C1C18' }}
                 autoFocus
                 onKeyDown={e => {
                   // On Enter, scroll caret into vertical centre
@@ -757,7 +757,7 @@ export function JournalEntry({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}>
+              <h1 className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
                 {formatEntryDate(selectedDate)}
               </h1>
               <p className="text-sm text-stone-400 mt-0.5">Quick capture</p>
@@ -813,7 +813,7 @@ export function JournalEntry({
                 outline: 'none',
                 boxShadow: 'none',
                 caretColor: '#f59e0b',
-                color: '#3C3C38',
+                color: '#1C1C18',
               }}
               onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
               onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -860,7 +860,7 @@ export function JournalEntry({
           className="flex items-start justify-between mb-6"
         >
           <div>
-            <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}>
+            <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
               {formatEntryDate(selectedDate)}
             </h1>
             {reflectionMeta && (
@@ -1071,7 +1071,7 @@ export function JournalEntry({
                         outline: 'none',
                         boxShadow: 'none',
                         caretColor: '#f59e0b',
-                        color: '#3C3C38',
+                        color: '#1C1C18',
                       }}
                       onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
                       onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -1120,7 +1120,7 @@ export function JournalEntry({
                       outline: 'none',
                       boxShadow: 'none',
                       caretColor: '#f59e0b',
-                      color: '#3C3C38',
+                      color: '#1C1C18',
                     }}
                     onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
                     onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -1169,7 +1169,7 @@ export function JournalEntry({
                       border: 'none',
                       borderBottom: '1px solid #c8c2b6',
                       caretColor: '#f59e0b',
-                      color: '#3C3C38',
+                      color: '#1C1C18',
                     }}
                     onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
                     onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}

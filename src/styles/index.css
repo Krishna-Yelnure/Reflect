@@ -2,15 +2,54 @@
 @import './tailwind.css';
 @import './theme.css';
 
-/* ── A5c — Journal Warmth Pass ────────────────────────────────────────────
-   Background: warm parchment #EDE8DF — a genuine differentiator from
-   Day One, Bear, iA Writer (all use white by default).
-   Ink: #3C3C38 — warm near-black, reads as ink not pixels.
-   Applied globally so every view inherits without per-component changes.
-──────────────────────────────────────────────────────────────────────────── */
+/* ── A5c+ — Journal Warmth + Readability Pass ─────────────────────────────
+   Background: warm parchment #EDE8DF — the soul of the app. Unchanged.
+   Ink: #1C1C18 — Decision 1 (agreed): meaningful lift, warm near-black.
+
+   DECISION 2 (agreed): Sidebar nav labels — darken + weight bump on
+   group labels ("TODAY", "UNDERSTAND" etc).
+
+   Tailwind's stone palette is calibrated for white backgrounds.
+   On parchment, stone-400/500 read as ghostly. These overrides remap
+   the stone scale to warm equivalents that hold their contrast.
+─────────────────────────────────────────────────────────────────────────── */
 
 html,
 body {
   background-color: #EDE8DF;
-  color: #3C3C38;
+  color: #1C1C18;
 }
+
+/* ── Decision 2: warm stone overrides ───────────────────────────────────── */
+
+/* Nav group labels ("TODAY", "UNDERSTAND", "EXPLORE", "SETTINGS") */
+.text-stone-400 { color: #787068 !important; }
+
+/* Secondary UI text — was near-invisible on parchment */
+.text-stone-500 { color: #696560 !important; }
+
+/* Nav item text at rest */
+.text-stone-600 { color: #484440 !important; }
+
+/* Nav item text on hover / active */
+.text-stone-700 { color: #2A2824 !important; }
+
+/* Primary ink */
+.text-stone-800 { color: #1C1C18 !important; }
+.text-stone-900 { color: #141412 !important; }
+
+/* ── Decision 2: weight bump on 10px uppercase nav group labels ──────────
+   These are the section separators in the sidebar. At 10px, colour alone
+   is not enough — font-weight 600 gives them the mass they need to read.
+─────────────────────────────────────────────────────────────────────────── */
+nav p.text-\[10px\] {
+  color: #787068 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+}
+
+/* ── Border warm-up ───────────────────────────────────────────────────────
+   Default stone borders on parchment are barely visible.
+─────────────────────────────────────────────────────────────────────────── */
+.border-stone-200\/60 { border-color: rgba(28, 28, 24, 0.18) !important; }
+.border-stone-200\/50 { border-color: rgba(28, 28, 24, 0.14) !important; }

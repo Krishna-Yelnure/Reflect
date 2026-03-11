@@ -78,7 +78,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Memory Threads</h2>
-        <p className="text-slate-600">
+        <p className="text-stone-600">
           Manually curate collections of entries that share meaning over time
         </p>
       </div>
@@ -99,7 +99,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
                 layout
               >
                 {editingId === thread.id ? (
-                  <Card className="p-6 space-y-4 border-2 border-slate-300">
+                  <Card className="p-6 space-y-4 border-2 border-stone-300">
                     <Input
                       value={formData.name}
                       onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -127,14 +127,14 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
                           onClick={() => setExpandedId(isExpanded ? null : thread.id)}
                           className="text-left w-full"
                         >
-                          <h3 className="font-medium mb-1 hover:text-slate-700">
+                          <h3 className="font-medium mb-1 hover:text-stone-700">
                             {thread.name}
                           </h3>
                         </button>
                         {thread.description && (
-                          <p className="text-sm text-slate-600 mb-2">{thread.description}</p>
+                          <p className="text-sm text-stone-600 mb-2">{thread.description}</p>
                         )}
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-stone-500">
                           {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
                         </p>
 
@@ -144,7 +144,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="mt-4 space-y-2 pl-4 border-l-2 border-slate-200"
+                              className="mt-4 space-y-2 pl-4 border-l-2 border-stone-200"
                             >
                               {entries.map(entry => (
                                 <div
@@ -152,10 +152,10 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
                                   className="flex items-center justify-between group"
                                 >
                                   <div className="flex-1">
-                                    <p className="text-sm text-slate-600">
+                                    <p className="text-sm text-stone-600">
                                       {format(parseISO(entry.date), 'MMM d, yyyy')}
                                     </p>
-                                    <p className="text-xs text-slate-400 line-clamp-1">
+                                    <p className="text-xs text-stone-400 line-clamp-1">
                                       {entry.whatHappened ||
                                         entry.feelings ||
                                         entry.freeWrite ||
@@ -183,7 +183,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => startEdit(thread)}
-                          className="text-slate-400 hover:text-slate-700"
+                          className="text-stone-400 hover:text-stone-700"
                         >
                           <Edit2 className="size-4" />
                         </Button>
@@ -191,7 +191,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(thread.id)}
-                          className="text-slate-400 hover:text-red-600"
+                          className="text-stone-400 hover:text-red-600"
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -209,7 +209,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="p-6 space-y-4 border-2 border-slate-300">
+            <Card className="p-6 space-y-4 border-2 border-stone-300">
               <Input
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -246,19 +246,19 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
 
       {threads.length === 0 && !isAdding && (
         <div className="text-center py-12">
-          <p className="text-slate-400">
+          <p className="text-stone-400">
             No threads yet. Create one to connect related entries over time.
           </p>
         </div>
       )}
 
-      <div className="mt-8 p-6 bg-slate-50 rounded-lg">
+      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
         <h3 className="font-medium mb-2">About Memory Threads</h3>
-        <p className="text-sm text-slate-600 mb-3">
+        <p className="text-sm text-stone-600 mb-3">
           Threads let you build your own narrative structure. They're manually curated—the
           app never auto-generates or auto-completes them.
         </p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           Add entries to threads from the entry detail view. Think of threads as personal
           themes you're tracking.
         </p>

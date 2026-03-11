@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   format,
@@ -35,12 +35,14 @@ interface TimelineViewProps {
 }
 
 // ── Mood colour system ─────────────────────────────────────────────────────
+// Decision 3 (agreed): faint dot colours deepened so they're visible on parchment.
+// okay: slate-300 → slate-400 (was ghostly), difficult: slate-400 → slate-500
 const MOOD_CELL: Record<string, string> = {
-  great:     'bg-amber-300',
-  good:      'bg-emerald-300',
-  okay:      'bg-slate-300',
-  low:       'bg-blue-300',
-  difficult: 'bg-slate-400',
+  great:     'bg-amber-400',
+  good:      'bg-emerald-400',
+  okay:      'bg-slate-400',
+  low:       'bg-blue-400',
+  difficult: 'bg-slate-500',
 };
 const MOOD_LABEL: Record<string, string> = {
   great: 'Great', good: 'Good', okay: 'Okay', low: 'Low', difficult: 'Hard',
@@ -363,8 +365,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                         ${entry?.mood
                           ? MOOD_CELL[entry.mood]
                           : entry
-                            ? 'bg-stone-300 ring-1 ring-stone-400 ring-offset-[1px] ring-dashed'
-                            : 'bg-stone-200/70 hover:bg-stone-300/60'
+                            ? 'bg-stone-400 ring-1 ring-stone-500 ring-offset-[1px] ring-dashed'
+                            : 'bg-stone-300/80 hover:bg-stone-400/60'
                         }
                         ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-stone-500 ring-offset-1' : ''}
                         ${activeTagFilter && !tagMatch ? 'opacity-20' : ''}
@@ -446,8 +448,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           <p className="text-xs text-stone-400 tracking-wide">You tend to write on {activeDayStr}.</p>
         )}
 
-        {/* Active intention — labelled correctly by type */}
-        {activeIntention && (
+        {/* Active intention — only shown when there's real content (Decision 5: hide if < 3 chars) */}
+        {activeIntention && activeIntention.text.trim().length >= 3 && (
           <div className="pt-1 border-t border-stone-200/60">
             <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-1">{intentionLabel}</p>
             <p
@@ -465,15 +467,16 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
   // ── Shared mood legend ─────────────────────────────────────────────────
   const MoodLegend = () => (
     <div className="mt-5 flex items-center gap-3 flex-wrap">
+      {/* Decision 3: legend dots enlarged (w-3/h-3) for visibility */}
       {Object.entries(MOOD_CELL).map(([mood, cls]) => (
         <div key={mood} className="flex items-center gap-1.5">
-          <div className={`w-2.5 h-2.5 rounded-sm ${cls}`} />
-          <span className="text-[10px] text-stone-400 tracking-wide">{MOOD_LABEL[mood]}</span>
+          <div className={`w-3 h-3 rounded-sm ${cls}`} />
+          <span className="text-[10px] text-stone-500 tracking-wide">{MOOD_LABEL[mood]}</span>
         </div>
       ))}
       <div className="flex items-center gap-1.5">
-        <div className="w-2.5 h-2.5 rounded-sm bg-stone-200/70 border border-stone-300/50" />
-        <span className="text-[10px] text-stone-300 tracking-wide">No entry</span>
+        <div className="w-3 h-3 rounded-sm bg-stone-300/80 border border-stone-400/60" />
+        <span className="text-[10px] text-stone-500 tracking-wide">No entry</span>
       </div>
     </div>
   );
@@ -516,8 +519,6 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     label: string;
     emptyLabel: string;
     emptyPrompt: string;
-    accentBg: string;
-    accentBorder: string;
     accentText: string;
     accentButton: string;
     dotCls: string;
@@ -526,30 +527,24 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       label:        'Weekly reflection',
       emptyLabel:   'No weekly reflection yet',
       emptyPrompt:  'How did the week unfold? What mattered most?',
-      accentBg:     'bg-violet-50',
-      accentBorder: 'border-violet-100',
-      accentText:   'text-violet-700',
-      accentButton: 'text-violet-600 hover:text-violet-800 border-violet-200 hover:border-violet-400',
+      accentText:   'text-violet-600',
+      accentButton: 'text-stone-500 hover:text-stone-700 border-stone-200 hover:border-stone-400',
       dotCls:       'bg-violet-400',
     },
     monthly: {
       label:        'Monthly reflection',
       emptyLabel:   'No monthly reflection yet',
       emptyPrompt:  'What defined this month? What shifted?',
-      accentBg:     'bg-sky-50',
-      accentBorder: 'border-sky-100',
-      accentText:   'text-sky-700',
-      accentButton: 'text-sky-600 hover:text-sky-800 border-sky-200 hover:border-sky-400',
+      accentText:   'text-sky-600',
+      accentButton: 'text-stone-500 hover:text-stone-700 border-stone-200 hover:border-stone-400',
       dotCls:       'bg-sky-400',
     },
     yearly: {
       label:        'Yearly reflection',
       emptyLabel:   'No yearly reflection yet',
       emptyPrompt:  'What chapters defined this year? Who did you become?',
-      accentBg:     'bg-amber-50',
-      accentBorder: 'border-amber-100',
-      accentText:   'text-amber-700',
-      accentButton: 'text-amber-600 hover:text-amber-800 border-amber-200 hover:border-amber-400',
+      accentText:   'text-amber-600',
+      accentButton: 'text-stone-500 hover:text-stone-700 border-stone-200 hover:border-stone-400',
       dotCls:       'bg-amber-400',
     },
   };
@@ -584,14 +579,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-2xl border px-5 py-4 mb-5 ${meta.accentBg} ${meta.accentBorder}`}
+          className="rounded-2xl border border-stone-200/60 px-5 py-4 mb-5"
+          style={{ backgroundColor: 'rgba(255,255,255,0.35)' }}
         >
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-xs font-semibold uppercase tracking-wide mb-0.5 ${meta.accentText}`}>
                 {meta.emptyLabel}
               </p>
-              <p className="text-sm text-slate-500 italic">{meta.emptyPrompt}</p>
+              <p className="text-sm text-stone-400 italic">{meta.emptyPrompt}</p>
             </div>
             <button
               onClick={onWrite}
@@ -617,7 +613,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`rounded-2xl border px-5 py-4 mb-5 ${meta.accentBg} ${meta.accentBorder}`}
+        className="rounded-2xl border border-stone-200/60 px-5 py-4 mb-5"
+        style={{ backgroundColor: 'rgba(255,255,255,0.35)' }}
       >
         {/* Header row */}
         <div className="flex items-center justify-between mb-3">
@@ -641,8 +638,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
         {/* Intention — prominent at top, shown before content */}
         {(reflection as JournalEntry & { intention?: string }).intention && (
-          <div className={`mb-4 pb-3 border-b ${meta.accentBorder}`}>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">Intention</p>
+          <div className="mb-4 pb-3 border-b border-stone-200/60">
+            <p className="text-[10px] text-stone-400 uppercase tracking-wide mb-1">Intention</p>
             <p className={`text-sm italic font-medium ${meta.accentText} leading-relaxed`}>
               "{(reflection as JournalEntry & { intention?: string }).intention}"
             </p>
@@ -656,8 +653,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             if (!val) return null;
             return (
               <div key={String(key)}>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">{label}</p>
-                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap line-clamp-4">
+                <p className="text-[10px] text-stone-400 uppercase tracking-wide mb-0.5">{label}</p>
+                <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-wrap line-clamp-4">
                   {val}
                 </p>
               </div>
@@ -676,94 +673,121 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     const periodKey = format(mStart, 'yyyy-MM');
     const monthlyReflection = findReflectionEntry(entries, 'monthly', periodKey);
 
+    // Scroll-triggered swap — calendar fades out when reflection sentinel enters viewport
+    const sentinelRef = useRef<HTMLDivElement>(null);
+    const [reflectionVisible, setReflectionVisible] = useState(false);
+
+    useEffect(() => {
+      const el = sentinelRef.current;
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => setReflectionVisible(entry.isIntersecting),
+        { threshold: 0.15 }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
+
     return (
       <div className="space-y-3">
-        {/* Day headers */}
-        <div className="grid grid-cols-7 gap-2 mb-1">
-          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-            <div key={d} className="text-xs text-center text-stone-400 font-medium">{d}</div>
-          ))}
-        </div>
+        {/* Calendar — fades out when reflection scrolls into view */}
+        <motion.div
+          animate={{ opacity: reflectionVisible ? 0.15 : 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-2 mb-1">
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+              <div key={d} className="text-xs text-center text-stone-400 font-medium">{d}</div>
+            ))}
+          </div>
 
-        {weeks.map((weekStart, wi) => {
-          const weekEnd    = endOfWeek(weekStart);
-          const weekDays   = eachDayOfInterval({ start: weekStart, end: weekEnd });
-          const weekEntries = weekDays
-            .map(d => entryMap.get(format(d, 'yyyy-MM-dd')))
-            .filter(Boolean) as JournalEntry[];
+          {weeks.map((weekStart, wi) => {
+            const weekEnd    = endOfWeek(weekStart);
+            const weekDays   = eachDayOfInterval({ start: weekStart, end: weekEnd });
+            const weekEntries = weekDays
+              .map(d => entryMap.get(format(d, 'yyyy-MM-dd')))
+              .filter(Boolean) as JournalEntry[];
+            void weekEntries;
 
-          return (
-            <div key={wi} className="relative">
-              {/* Week row header — click → drill into week, hold title for reflection */}
-              {(() => {
-                const weekKey = format(weekStart, 'yyyy-MM-dd');
-                const hasWeeklyReflection = entries.some(
-                  e => e.reflectionType === 'weekly' && e.date === `reflection-weekly-${weekKey}`
-                );
-                return (
-                  <button
-                    onClick={() => { setFocusW(weekStart); setLevel('week'); }}
-                    className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-stone-300 hover:text-stone-500 transition-colors"
-                    title="View this week"
-                  >
-                    W{getWeek(weekStart)}
-                    {hasWeeklyReflection && <ReflectionDot type="weekly" />}
-                  </button>
-                );
-              })()}
-
-              <div className="grid grid-cols-7 gap-2">
-                {weekDays.map(day => {
-                  const ds       = format(day, 'yyyy-MM-dd');
-                  const entry    = entryMap.get(ds);
-                  const inMonth  = isSameMonth(day, mStart);
-                  const todayC   = isToday(day);
-                  const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
-
-                  return (
-                    <motion.button
-                      key={ds}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => {
-                        setFocusW(weekStart);
-                        if (entry) { setFocusDay(ds); setLevel('day'); }
-                        else onSelectDate(ds);
-                      }}
-                      className={`
-                        aspect-square rounded-lg border transition-all flex flex-col items-center justify-center
-                        text-sm relative
-                        ${!inMonth ? 'opacity-20' : ''}
-                        ${entry?.mood
-                          ? `${MOOD_CELL[entry.mood]} border-transparent text-stone-700 font-medium`
-                          : entry
-                            ? 'bg-stone-200 border-stone-300 text-stone-600 ring-1 ring-stone-300 ring-dashed'
-                            : 'border-stone-200/60 hover:border-stone-300 text-stone-500'
-                        }
-                        ${todayC ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
-                        ${activeTagFilter && !tagMatch && inMonth ? 'opacity-20' : ''}
-                      `}
-                    >
-                      <span>{format(day, 'd')}</span>
-                      {entry?.mood && (
-                        <span className="text-[10px] leading-none mt-0.5 opacity-80">{MOOD_EMOJI[entry.mood]}</span>
-                      )}
-                    </motion.button>
+            return (
+              <div key={wi} className="relative mb-3">
+                {/* Week row header — click → drill into week */}
+                {(() => {
+                  const weekKey = format(weekStart, 'yyyy-MM-dd');
+                  const hasWeeklyReflection = entries.some(
+                    e => e.reflectionType === 'weekly' && e.date === `reflection-weekly-${weekKey}`
                   );
-                })}
-              </div>
-            </div>
-          );
-        })}
+                  return (
+                    <button
+                      onClick={() => { setFocusW(weekStart); setLevel('week'); }}
+                      className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-stone-300 hover:text-stone-500 transition-colors"
+                      title="View this week"
+                    >
+                      W{getWeek(weekStart)}
+                      {hasWeeklyReflection && <ReflectionDot type="weekly" />}
+                    </button>
+                  );
+                })()}
 
-        {/* Monthly reflection panel — below the calendar, after seeing the month's data */}
-        <div className="mt-6">
-          <ReflectionPanel
-            type="monthly"
-            reflection={monthlyReflection}
-            onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
-            onEdit={() => onEditEntry(monthlyReflection!.date)}
-          />
+                <div className="grid grid-cols-7 gap-2">
+                  {weekDays.map(day => {
+                    const ds       = format(day, 'yyyy-MM-dd');
+                    const entry    = entryMap.get(ds);
+                    const inMonth  = isSameMonth(day, mStart);
+                    const todayC   = isToday(day);
+                    const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
+
+                    return (
+                      <motion.button
+                        key={ds}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                          setFocusW(weekStart);
+                          if (entry) { setFocusDay(ds); setLevel('day'); }
+                          else onSelectDate(ds);
+                        }}
+                        className={`
+                          aspect-square rounded-lg border transition-all flex flex-col items-center justify-center
+                          text-sm relative
+                          ${!inMonth ? 'opacity-20' : ''}
+                          ${entry?.mood
+                            ? `${MOOD_CELL[entry.mood]} border-transparent text-stone-700 font-medium`
+                            : entry
+                              ? 'bg-stone-200 border-stone-300 text-stone-600 ring-1 ring-stone-300 ring-dashed'
+                              : 'border-stone-200/60 hover:border-stone-300 text-stone-500'
+                          }
+                          ${todayC ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
+                          ${activeTagFilter && !tagMatch && inMonth ? 'opacity-20' : ''}
+                        `}
+                      >
+                        <span>{format(day, 'd')}</span>
+                        {entry?.mood && (
+                          <span className="text-[10px] leading-none mt-0.5 opacity-80">{MOOD_EMOJI[entry.mood]}</span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </motion.div>
+
+        {/* Sentinel — reflection panel fades in as it enters viewport */}
+        <div ref={sentinelRef} className="mt-6">
+          <motion.div
+            animate={{ opacity: reflectionVisible ? 1 : 0, y: reflectionVisible ? 0 : 12 }}
+            transition={{ duration: 0.5 }}
+          >
+            <ReflectionPanel
+              type="monthly"
+              reflection={monthlyReflection}
+              onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
+              onEdit={() => onEditEntry(monthlyReflection!.date)}
+            />
+          </motion.div>
         </div>
       </div>
     );
@@ -776,9 +800,29 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     const weekKey = format(focusWeek, 'yyyy-MM-dd');
     const weeklyReflection = findReflectionEntry(entries, 'weekly', weekKey);
 
+    // Scroll-triggered swap — timeline fades out when reflection sentinel enters viewport
+    const sentinelRef = useRef<HTMLDivElement>(null);
+    const [reflectionVisible, setReflectionVisible] = useState(false);
+
+    useEffect(() => {
+      const el = sentinelRef.current;
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => setReflectionVisible(entry.isIntersecting),
+        { threshold: 0.15 }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
+
     return (
       <div className="max-w-lg">
-        <div className="relative">
+        {/* Timeline — fades out when reflection scrolls into view */}
+        <motion.div
+          className="relative"
+          animate={{ opacity: reflectionVisible ? 0.15 : 1 }}
+          transition={{ duration: 0.5 }}
+        >
           {/* Vertical line */}
           <div className="absolute left-[22px] top-4 bottom-4 w-px bg-stone-200" />
 
@@ -793,9 +837,6 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               return (
                 <motion.div
                   key={ds}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
                   className={`flex items-start gap-4 transition-opacity ${activeTagFilter && !tagMatch ? 'opacity-25' : ''}`}
                 >
                   {/* Dot */}
@@ -847,16 +888,21 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Weekly reflection panel — below the timeline, after seeing the week's data */}
-        <div className="mt-6">
-          <ReflectionPanel
-            type="weekly"
-            reflection={weeklyReflection}
-            onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
-            onEdit={() => onEditEntry(weeklyReflection!.date)}
-          />
+        {/* Sentinel — reflection panel fades in as it enters viewport */}
+        <div ref={sentinelRef} className="mt-6">
+          <motion.div
+            animate={{ opacity: reflectionVisible ? 1 : 0, y: reflectionVisible ? 0 : 12 }}
+            transition={{ duration: 0.5 }}
+          >
+            <ReflectionPanel
+              type="weekly"
+              reflection={weeklyReflection}
+              onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
+              onEdit={() => onEditEntry(weeklyReflection!.date)}
+            />
+          </motion.div>
         </div>
       </div>
     );
@@ -1098,8 +1144,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   flex items-center gap-2 px-3 py-1.5 rounded-r-md text-sm transition-all text-left w-full
                   border-l-2
                   ${isActive
-                    ? 'border-amber-500 text-stone-700 font-medium'
-                    : 'border-transparent text-stone-400 hover:text-stone-700'}
+                    ? 'border-amber-500 text-amber-700 font-semibold'
+                    : 'border-transparent text-stone-500 hover:text-stone-700'}
                 `}
               >
                 <span>{y}</span>
@@ -1144,8 +1190,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 flex items-center gap-2 px-3 py-1.5 rounded-r-md text-sm transition-all text-left
                 border-l-2
                 ${isActive
-                  ? 'border-amber-500 text-stone-700 font-medium'
-                  : 'border-transparent text-stone-400 hover:text-stone-700'}
+                  ? 'border-amber-500 text-amber-700 font-semibold'
+                  : 'border-transparent text-stone-500 hover:text-stone-700'}
               `}
             >
               <span>{name}</span>

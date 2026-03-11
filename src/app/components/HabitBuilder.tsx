@@ -129,29 +129,29 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Habit Builder</h2>
-        <p className="text-slate-600">
+        <p className="text-stone-600">
           Optional support for routines you want to explore
         </p>
       </div>
 
       {habits.length === 0 && !isAdding && (
-        <Card className="p-8 text-center mb-6 bg-slate-50">
+        <Card className="p-8 text-center mb-6 bg-stone-50">
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
               <Target className="size-8 text-emerald-600" />
             </div>
           </div>
           <h3 className="text-lg font-medium mb-3">Welcome to Habit Builder</h3>
-          <p className="text-slate-600 mb-4">
+          <p className="text-stone-600 mb-4">
             This section is completely optional. It exists to help you build routines gently,
             if and when you want to.
           </p>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-stone-500 mb-6">
             Your journaling experience remains unchanged whether you use this or not.
           </p>
-          <div className="p-4 bg-white rounded-lg border border-slate-200 text-left max-w-md mx-auto">
+          <div style={{ backgroundColor: '#F0EBE2' }} className="p-4 rounded-lg border border-stone-200 text-left max-w-md mx-auto">
             <p className="text-sm font-medium mb-2">How it works:</p>
-            <ol className="text-sm text-slate-600 space-y-2 list-decimal list-inside">
+            <ol className="text-sm text-stone-600 space-y-2 list-decimal list-inside">
               <li>Create a habit you want to explore</li>
               <li>Add personal meaning (why it matters to you)</li>
               <li>Optionally start a 21-day gentle start window</li>
@@ -179,7 +179,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                 layout
               >
                 {editingId === habit.id ? (
-                  <Card className="p-6 space-y-4 border-2 border-slate-300">
+                  <Card className="p-6 space-y-4 border-2 border-stone-300">
                     <div>
                       <Label className="text-sm mb-2 block">What you want to practice</Label>
                       <Input
@@ -210,7 +210,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h3 className="font-medium text-lg mb-1">{habit.name}</h3>
-                        <p className="text-sm text-slate-600 mb-3">{habit.why}</p>
+                        <p className="text-sm text-stone-600 mb-3">{habit.why}</p>
                         {gentleStart && (
                           <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
                             21-Day Gentle Start
@@ -222,7 +222,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => startEdit(habit)}
-                          className="text-slate-400 hover:text-slate-700"
+                          className="text-stone-400 hover:text-stone-700"
                         >
                           <Edit2 className="size-4" />
                         </Button>
@@ -230,7 +230,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => archiveHabit(habit.id)}
-                          className="text-slate-400 hover:text-slate-600"
+                          className="text-stone-400 hover:text-stone-600"
                         >
                           <Archive className="size-4" />
                         </Button>
@@ -250,13 +250,12 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-4 space-y-3 p-4 bg-slate-50 rounded-lg"
-                      >
+                        className="mt-4 space-y-3 p-4 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
                         <Label className="text-sm">Optional reflection</Label>
                         <select
                           value={selectedPrompt}
                           onChange={e => setSelectedPrompt(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm"
                         >
                           {reflectionPrompts.map(prompt => (
                             <option key={prompt} value={prompt}>
@@ -341,7 +340,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
         {/* Add New Habit */}
         {isAdding ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="p-6 space-y-4 border-2 border-slate-300">
+            <Card className="p-6 space-y-4 border-2 border-stone-300">
               <div>
                 <Label className="text-sm mb-2 block">What you want to practice</Label>
                 <Input
@@ -386,7 +385,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
         <div className="mt-8">
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className="text-sm text-slate-500 hover:text-slate-700 mb-4"
+            className="text-sm text-stone-500 hover:text-stone-700 mb-4"
           >
             {showArchived ? 'Hide' : 'Show'} archived habits ({archivedHabits.length})
           </button>
@@ -401,7 +400,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                 {archivedHabits.map(habit => (
                   <Card key={habit.id} className="p-4 opacity-60">
                     <p className="font-medium">{habit.name}</p>
-                    <p className="text-sm text-slate-600">{habit.why}</p>
+                    <p className="text-sm text-stone-600">{habit.why}</p>
                   </Card>
                 ))}
               </motion.div>
@@ -411,13 +410,13 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
       )}
 
       {/* Educational Footer */}
-      <div className="mt-8 p-6 bg-slate-50 rounded-lg">
+      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
         <h3 className="font-medium mb-2">About Habit Builder</h3>
-        <p className="text-sm text-slate-600 mb-3">
+        <p className="text-sm text-stone-600 mb-3">
           This space exists to support routine-building through reflection and meaning, not
           compliance. Missed days are neutral. Returning is success.
         </p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           The 21-day gentle start is a supported window to explore a habit—not a test of
           discipline. Reflection always counts as engagement.
         </p>
@@ -473,7 +472,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
               className={`
                 aspect-square rounded-full flex items-center justify-center
                 transition-all duration-300
-                ${isEngaged ? 'bg-emerald-500' : 'bg-white border-2 border-emerald-200'}
+                ${isEngaged ? 'bg-emerald-500' : 'bg-transparent border-2 border-emerald-200'}
                 ${isToday && !isEngaged ? 'border-emerald-400 border-dashed scale-110' : ''}
                 ${!isPast && !isToday ? 'opacity-40' : ''}
               `}
@@ -515,14 +514,14 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
       {/* Completion State */}
       {isComplete && !gentleStart.completed && (
         <div className="space-y-3 mt-4 pt-4 border-t border-emerald-300">
-          <div className="p-4 bg-white rounded-lg">
+          <div style={{ backgroundColor: '#F0EBE2' }} className="p-4 rounded-lg">
             <p className="font-medium text-emerald-900 mb-2">
               This 21-day Gentle Start is complete.
             </p>
-            <p className="text-sm text-slate-700 mb-1">
+            <p className="text-sm text-stone-700 mb-1">
               This wasn't about consistency.
             </p>
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-stone-700">
               It was about learning how this habit fits into your life.
             </p>
           </div>
@@ -543,7 +542,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
                 size="sm"
                 variant="outline"
                 onClick={onComplete}
-                className="text-slate-600 border-slate-300 hover:bg-slate-100"
+                className="text-stone-600 border-stone-300 hover:bg-stone-100"
               >
                 Archive Habit
               </Button>

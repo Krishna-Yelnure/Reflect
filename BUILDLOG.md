@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Journal App — Project Source of Truth
-# Last updated: Session A9a complete — Insights Audit + Witness Redesign (2026-03-04)
+# Last updated: Readability pass complete + DoD + Beta Sprint added (2026-03-11)
 
 ---
 
@@ -24,6 +24,24 @@ From A6c onward, every session has real design decisions — decisions that affe
 **The test before opening any file:** Can you answer every decision question in the session spec? If no → brainstorm first. If yes → build.
 
 This adds one conversation per session before the build session. It saves multiples of that time in rework.
+
+---
+
+### DEFINITION OF DONE (added — 2026-03-11)
+
+Every session checklist already covers functional requirements. This non-functional checklist runs at the end of **every** session, no exceptions. It prevents quality debt accumulating silently.
+
+**Before marking any session COMPLETE, verify:**
+
+- [ ] No new console errors or warnings in browser dev tools
+- [ ] No TypeScript errors — `npm run build` completes clean
+- [ ] Component renders without noticeable lag on a mid-spec machine
+- [ ] New interactive elements are keyboard-reachable (Tab + Enter)
+- [ ] Text contrast holds — no new `text-stone-300` or lighter on parchment
+- [ ] No hardcoded `bg-white`, `text-slate-*`, or cold hex values introduced
+- [ ] BUILDLOG updated before session is closed
+
+**Why this matters:** A bug introduced in A6 and caught in B3 costs 10x more to fix. These checks are 3 minutes each. They are not optional.
 
 ---
 
@@ -1090,6 +1108,61 @@ New value created from resolution
 **The true form moment:** The app surfaces something the user wrote two years ago that speaks to what they're going through today — without being asked.
 
 **Files:** `TimelineView.tsx`, `insights.ts`, new pattern detection module
+
+---
+
+---
+
+### PHASE A→B — BETA SPRINT (added — 2026-03-11)
+*Goal: Turn passive "living with it" into active quality discovery*
+
+**Trigger:** All Phase A sessions complete.
+**Duration:** 3–4 weeks of real daily use before touching Electron.
+**Rule:** No new features during this phase. Observe and log only.
+
+---
+
+**Why this phase exists:**
+
+The original plan said "living with it — no building, just using." That's right. But passive use produces vague impressions. Structured use produces specific bugs and sharp feature gaps. This phase converts the same time into concrete data that makes B3 polish targeted rather than guesswork.
+
+---
+
+**How to run it — weekly test missions:**
+
+Each week has a specific lens. Use the app normally, but pay attention to that lens.
+
+| Week | Mission | What to watch for |
+|---|---|---|
+| 1 | Write every day, Quick mode only | Is Quick actually quick? Any friction that breaks habit? |
+| 2 | Find old entries — no search, browse only | Does the Timeline tell your story back clearly? Dot colours meaningful? |
+| 3 | Use only on mobile browser | What breaks? What's too small? What's unreachable? |
+| 4 | Full guided mode — weekly + monthly reflections | Does the reflection flow feel earned or mechanical? |
+
+---
+
+**How to log findings — `BUGS-AND-FEEDBACK.md`:**
+
+Create this file at the project root. Log every observation immediately — don't batch. Format:
+
+```
+## [Date] — [Week Mission]
+
+**Bug:** [What broke and how to reproduce]
+**Friction:** [What required more effort than it should]
+**Missing:** [Something you reached for that didn't exist]
+**Feeling:** [Anything about the emotional experience — Witness-relevant]
+```
+
+Entries do not need to be long. One sentence is enough. Volume matters more than prose.
+
+---
+
+**After the Beta Sprint:**
+
+Review `BUGS-AND-FEEDBACK.md` before starting B1. Bugs go into B3 Polish. Strong "Missing" entries may justify a new Phase A session before going to Electron. Feeling observations feed directly into copy and empty-state refinements.
+
+**The test before moving to B1:** Can you use the app for a full week without thinking about the interface? If yes — it's ready for Electron. If no — one more targeted A-session first.
 
 ---
 

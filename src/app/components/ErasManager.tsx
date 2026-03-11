@@ -164,7 +164,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
             border: 'none',
             borderBottom: '1px solid #c8c2b6',
             caretColor: '#f59e0b',
-            color: '#3C3C38',
+            color: '#1C1C18',
           }}
           onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
           onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -183,7 +183,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
             border: 'none',
             borderBottom: '1px solid #c8c2b6',
             caretColor: '#f59e0b',
-            color: '#3C3C38',
+            color: '#1C1C18',
           }}
           onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
           onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -203,7 +203,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
               border: 'none',
               borderBottom: '1px solid #c8c2b6',
               caretColor: '#f59e0b',
-              color: '#3C3C38',
+              color: '#1C1C18',
             }}
             onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
             onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -220,7 +220,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
               border: 'none',
               borderBottom: '1px solid #c8c2b6',
               caretColor: '#f59e0b',
-              color: '#3C3C38',
+              color: '#1C1C18',
             }}
             onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
             onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -296,7 +296,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
       <div className="mb-10">
         <h1
           className="text-3xl font-light mb-1"
-          style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}
+          style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}
         >
           Life chapters
         </h1>
@@ -358,16 +358,16 @@ export function ErasManager({ entries }: ErasManagerProps) {
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-base font-medium mb-0.5"
-                      style={{ color: '#3C3C38' }}
+                      style={{ color: '#1C1C18' }}
                     >
                       {era.name}
                     </p>
                     {era.description && (
-                      <p className="text-sm text-stone-400 mb-2 leading-relaxed">
+                      <p className="text-sm text-stone-500 mb-2 leading-relaxed">
                         {era.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-stone-400">
+                    <div className="flex items-center gap-2 text-xs text-stone-500">
                       {era.startDate && (
                         <span>{format(parseISO(era.startDate), 'MMM yyyy')}</span>
                       )}
@@ -393,7 +393,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
                     {/* Inline delete confirm */}
                     {confirmDeleteId === era.id ? (
                       <div className="flex items-center gap-2 ml-1">
-                        <span className="text-xs text-stone-400">Remove?</span>
+                        <span className="text-xs text-stone-500">Remove?</span>
                         <button
                           onClick={() => handleDelete(era.id)}
                           className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"

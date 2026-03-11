@@ -70,7 +70,7 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Privacy & Data</h2>
-        <p className="text-slate-600">
+        <p className="text-stone-600">
           Your data never leaves this device. You have complete control.
         </p>
       </div>
@@ -79,10 +79,10 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
         {/* Insights Preferences */}
         <Card className="p-6">
           <div className="flex items-start gap-4 mb-6">
-            <Shield className="size-5 text-slate-600 mt-1" />
+            <Shield className="size-5 text-stone-600 mt-1" />
             <div className="flex-1">
               <h3 className="font-medium mb-1">Insights & Analysis</h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-stone-600">
                 Control how the app analyzes your entries
               </p>
             </div>
@@ -92,7 +92,7 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <Label htmlFor="insights-enabled">Enable insights</Label>
-                <p className="text-sm text-slate-500">Surface patterns and observations</p>
+                <p className="text-sm text-stone-500">Surface patterns and observations</p>
               </div>
               <Switch
                 id="insights-enabled"
@@ -105,10 +105,10 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="pl-6 space-y-4 border-l-2 border-slate-200"
+                className="pl-6 space-y-4 border-l-2 border-stone-200"
               >
                 <div>
-                  <Label className="text-sm text-slate-600 mb-2 block">Insight frequency</Label>
+                  <Label className="text-sm text-stone-600 mb-2 block">Insight frequency</Label>
                   <div className="flex gap-2">
                     {(['weekly', 'monthly', 'off'] as const).map(freq => (
                       <Button
@@ -127,7 +127,7 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <Label htmlFor="language-analysis">Language pattern analysis</Label>
-                    <p className="text-sm text-slate-500">Detect writing patterns</p>
+                    <p className="text-sm text-stone-500">Detect writing patterns</p>
                   </div>
                   <Switch
                     id="language-analysis"
@@ -138,10 +138,10 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
               </motion.div>
             )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-2 border-t border-stone-200/60">
               <div className="flex-1">
                 <Label htmlFor="memory-reminders">Memory surfacing</Label>
-                <p className="text-sm text-slate-500">Show related past entries</p>
+                <p className="text-sm text-stone-500">Show related past entries</p>
               </div>
               <Switch
                 id="memory-reminders"
@@ -155,10 +155,10 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
         {/* Data Export */}
         <Card className="p-6">
           <div className="flex items-start gap-4 mb-6">
-            <Download className="size-5 text-slate-600 mt-1" />
+            <Download className="size-5 text-stone-600 mt-1" />
             <div className="flex-1">
               <h3 className="font-medium mb-1">Export Your Data</h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-stone-600">
                 Download all your journal entries
               </p>
             </div>
@@ -189,10 +189,10 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
         {/* Data Import */}
         <Card className="p-6">
           <div className="flex items-start gap-4 mb-6">
-            <Upload className="size-5 text-slate-600 mt-1" />
+            <Upload className="size-5 text-stone-600 mt-1" />
             <div className="flex-1">
               <h3 className="font-medium mb-1">Import Data</h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-stone-600">
                 Restore from a previous export
               </p>
             </div>
@@ -239,9 +239,9 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
         </Card>
       </div>
 
-      <div className="mt-8 p-6 bg-slate-50 rounded-lg">
+      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
         <h3 className="font-medium mb-2">Privacy Guarantee</h3>
-        <ul className="text-sm text-slate-600 space-y-2">
+        <ul className="text-sm text-stone-600 space-y-2">
           <li>• All data is stored locally in your browser</li>
           <li>• Nothing is sent to external servers</li>
           <li>• No analytics or tracking</li>

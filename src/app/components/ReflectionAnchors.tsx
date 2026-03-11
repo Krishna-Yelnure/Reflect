@@ -45,7 +45,7 @@ export function ReflectionAnchors() {
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Reflection Anchors</h2>
-        <p className="text-slate-600">
+        <p className="text-stone-600">
           Values, questions, or intentions you want to track over time
         </p>
       </div>
@@ -65,20 +65,20 @@ export function ReflectionAnchors() {
               >
                 <Card className="p-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-2 bg-slate-100 rounded-lg">
-                      <Icon className="size-5 text-slate-600" />
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: '#DDD8CE' }}>
+                      <Icon className="size-5 text-stone-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-slate-500 mb-1 capitalize">
+                      <p className="text-xs text-stone-500 mb-1 capitalize">
                         {anchorLabels[anchor.type]}
                       </p>
-                      <p className="text-slate-900">{anchor.text}</p>
+                      <p className="text-stone-800">{anchor.text}</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemove(anchor.id)}
-                      className="text-slate-400 hover:text-red-600"
+                      className="text-stone-400 hover:text-red-600"
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -96,7 +96,7 @@ export function ReflectionAnchors() {
           >
             <Card className="p-4 space-y-4">
               <div>
-                <p className="text-sm text-slate-600 mb-2">Type</p>
+                <p className="text-sm text-stone-600 mb-2">Type</p>
                 <div className="flex gap-2">
                   {(['value', 'question', 'intention'] as const).map(type => (
                     <Button
@@ -112,7 +112,7 @@ export function ReflectionAnchors() {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-slate-600 mb-2">
+                <p className="text-sm text-stone-600 mb-2">
                   {newAnchor.type === 'value' && 'What value matters to you?'}
                   {newAnchor.type === 'question' && 'What question are you exploring?'}
                   {newAnchor.type === 'intention' && 'What intention are you holding?'}
@@ -152,15 +152,15 @@ export function ReflectionAnchors() {
 
       {anchors.length === 0 && !isAdding && (
         <div className="text-center py-12">
-          <p className="text-slate-400">
+          <p className="text-stone-400">
             No anchors yet. Add values, questions, or intentions to track.
           </p>
         </div>
       )}
 
-      <div className="mt-8 p-6 bg-slate-50 rounded-lg">
+      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
         <h3 className="font-medium mb-2">About Anchors</h3>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-stone-600">
           Reflection anchors are personal reference points. The app may gently surface when
           your journal entries relate to these anchors, helping you notice patterns and
           continuity over time.

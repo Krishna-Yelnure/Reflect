@@ -13,43 +13,57 @@
   --amber-accent-light: #fef3c7;
   --amber-accent-muted: #fbbf24;
 
-  --background: #fafafa;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+  /* ── A5c+ Readability Pass ──────────────────────────────────────────────
+     Background stays warm parchment #EDE8DF — the soul of the app.
+     Ink scale deepened to pass WCAG AA on parchment while staying warm.
+
+     Decision 1 (agreed): #1C1C18 — meaningful lift, warm near-black.
+     Warm ink scale:
+       Primary    #1C1C18  — body text, nav labels         (was #3C3C38 — too light)
+       Secondary  #3A3834  — active states, subheadings
+       Tertiary   #5A5854  — secondary labels               (was #717182 — cold + too light)
+       Quaternary #787068  — group labels, timestamps, hints (was stone-400 — ghostly)
+  ─────────────────────────────────────────────────────────────────────── */
+
+  --background:         #EDE8DF;   /* warm parchment — never changes */
+  --foreground:         #1C1C18;   /* Decision 1: meaningful lift */
+  --card:               #E6E0D6;
+  --card-foreground:    #1C1C18;
+  --popover:            #F0EBE2;
+  --popover-foreground: #1C1C18;
+  --primary:            #1C1C18;
+  --primary-foreground: #F0EBE2;
+  --secondary:          #DAD4CA;
+  --secondary-foreground: #1C1C18;
+  --muted:              #DAD4CA;
+  --muted-foreground:   #5A5854;   /* warm mid-tone — was cold #717182 */
+  --accent:             #D4CEC4;
+  --accent-foreground:  #1C1C18;
+  --destructive:        #c0392b;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --border:             rgba(28, 28, 24, 0.16);
+  --input:              transparent;
+  --input-background:   #E2DCD2;
+  --switch-background:  #B4AFA4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
+  --ring:               #A4A09A;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* ── Sidebar — recedes into parchment, text is readable ── */
+  --sidebar:                    #EDE8DF;
+  --sidebar-foreground:         #1C1C18;
+  --sidebar-primary:            #1C1C18;
+  --sidebar-primary-foreground: #F0EBE2;
+  --sidebar-accent:             #DAD4CA;
+  --sidebar-accent-foreground:  #1C1C18;
+  --sidebar-border:             rgba(28, 28, 24, 0.12);
+  --sidebar-ring:               #A4A09A;
 }
 
 .dark {
@@ -147,11 +161,6 @@
     font-family: var(--font-body);
   }
 
-  /**
-   * Typography — display font for headings, body font for UI
-   * Tailwind utility classes override these as needed.
-   */
-
   h1, h2 {
     font-family: var(--font-display);
     font-weight: 300;
@@ -197,7 +206,6 @@
     line-height: 1.6;
   }
 
-  /* Dates, stats, labels — mono for precision */
   .font-mono {
     font-family: var(--font-mono);
   }
