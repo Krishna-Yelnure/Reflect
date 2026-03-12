@@ -108,7 +108,20 @@ export default function App() {
   })();
 
   const handleSaveEntry = () => { loadEntries(); setCurrentView("timeline"); };
+  const [activeQuestionId, setActiveQuestionId] = useState<string | undefined>(undefined);
+
+  const handleWriteAboutQuestion = (questionId: string) => {
+    // A8b — Question resolution lifecycle: wire this questionId into JournalEntry.
+    setActiveQuestionId(questionId);
+    setSelectedDate(format(new Date(), "yyyy-MM-dd"));
+    setPendingReflectionType('daily');
+    setCurrentView("write");
+  };
+
+  const handleNewEntry = () => { setActiveQuestionId(undefined); setSelectedDate(format(new Date(), "yyyy-MM-dd")); setPendingReflectionType('daily'); setCurrentView("write"); };
+  const handleSelectDate = (date: string) => { setActiveQuestionId(undefined); setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
   const handleEditEntry = (date: string) => {
+    setActiveQuestionId(undefined);
     // Infer reflection type from synthetic date key — prevents blank screen bug
     // when editing weekly/monthly/yearly reflections from Timeline
     let type: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily';
@@ -119,19 +132,11 @@ export default function App() {
     setPendingReflectionType(type);
     setCurrentView("write");
   };
-  const handleDeleteEntry = (id: string) => { storage.deleteEntry(id); loadEntries(); };
-  const handleNewEntry = () => { setSelectedDate(format(new Date(), "yyyy-MM-dd")); setPendingReflectionType('daily'); setCurrentView("write"); };
-  const handleSelectDate = (date: string) => { setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
   const handleReflectionEntry = (date: string, type: 'weekly' | 'monthly' | 'yearly') => {
+    setActiveQuestionId(undefined);
     setSelectedDate(date);
     setPendingReflectionType(type);
     setCurrentView("write");
-  };
-
-  const handleWriteAboutQuestion = (questionId: string) => {
-    // A8b — Question resolution lifecycle: wire this questionId into JournalEntry.
-    // For now, just navigate to Write mode.
-    handleNewEntry();
   };
 
   const navigate = (id: View) => {
@@ -199,7 +204,7 @@ export default function App() {
     <AnimatePresence mode="wait">
       {currentView === "write" && (
         <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} allEntries={entries} onViewEntry={handleEditEntry} initialReflectionType={pendingReflectionType} />
+          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} allEntries={entries} onViewEntry={handleEditEntry} initialReflectionType={pendingReflectionType} initialQuestionId={activeQuestionId} />
         </motion.div>
       )}
       {currentView === "timeline" && (

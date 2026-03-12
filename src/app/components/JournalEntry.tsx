@@ -9,8 +9,10 @@ import { getSmartPrompt } from '@/app/utils/prompts';
 import { getReflectionPrompt } from '@/app/utils/prompts-v2';
 import { findSimilarEntries, createMemorySurface } from '@/app/utils/memory-surface';
 import { preferences } from '@/app/utils/preferences';
+import { questionsStorage } from '@/app/utils/questions';
 import { Button } from '@/app/components/ui/button';
 import { Textarea } from '@/app/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Label } from '@/app/components/ui/label';
 import { TagManager } from '@/app/components/TagManager';
 import { MemorySurface } from '@/app/components/MemorySurface';
@@ -28,6 +30,7 @@ interface JournalEntryProps {
   allEntries: JournalEntryType[];
   onViewEntry?: (date: string) => void;
   initialReflectionType?: ReflectionType;   // set by Timeline for weekly/monthly/yearly
+  initialQuestionId?: string;               // A8b — set by App when navigating from Compass
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -446,6 +449,7 @@ export function JournalEntry({
   allEntries,
   onViewEntry,
   initialReflectionType = 'daily',
+  initialQuestionId,
 }: JournalEntryProps) {
   const [mode, setMode] = useState<WriteMode>('guided');
   const [entry, setEntry] = useState<Partial<JournalEntryType>>({
@@ -458,6 +462,7 @@ export function JournalEntry({
     energy: undefined,
     innerState: undefined,
     tags: [],
+    questionId: initialQuestionId,
     reflectionType: initialReflectionType,
     oneWord: '',
   });
@@ -471,6 +476,7 @@ export function JournalEntry({
 
   const prefs = preferences.get();
   const coreValues = preferences.getAnchors().filter(a => a.type === 'value' || a.type === 'intention');
+  const activeQuestions = questionsStorage.getActive();
 
   // Derived — is this a reflection entry (not daily)?
   const isReflection = initialReflectionType !== 'daily';
@@ -503,6 +509,7 @@ export function JournalEntry({
         energy: undefined,
         innerState: undefined,
         tags: [],
+        questionId: initialQuestionId,
         reflectionType: initialReflectionType,
         oneWord: '',
       });
@@ -515,7 +522,7 @@ export function JournalEntry({
       setMemoryDismissed(false);
       setHasUnsavedChanges(false);
     }
-  }, [selectedDate, initialReflectionType]);
+  }, [selectedDate, initialReflectionType, initialQuestionId]);
 
   // ── Memory surface (similar entries) ─────────────────────────────────────
 
@@ -892,6 +899,38 @@ export function JournalEntry({
             <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
               Your values: {coreValues.map(v => v.text).join(' · ')}
             </p>
+          </motion.div>
+        )}
+
+        {/* ── Optional Question Exploration ─────────────────────────────────── */}
+        {!isReflection && activeQuestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.10 }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Explore a question:</span>
+              <div className="w-80">
+                <Select
+                  value={entry.questionId || 'none'}
+                  onValueChange={val => updateField('questionId', val === 'none' ? undefined : val)}
+                >
+                  <SelectTrigger className="h-8 text-sm bg-transparent border-none shadow-none hover:bg-stone-200/50 focus:ring-0 px-2" style={{ color: entry.questionId ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                    <SelectValue placeholder="Select a question (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="italic text-stone-500">None</SelectItem>
+                    {activeQuestions.map(q => (
+                      <SelectItem key={q.id} value={q.id} className="py-2 pr-8">
+                        <span className="block truncate max-w-[280px]" title={q.text}>{q.text}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </motion.div>
         )}
 
