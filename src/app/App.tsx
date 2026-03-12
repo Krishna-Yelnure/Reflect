@@ -14,16 +14,16 @@ import {
   FileText,
   Target,
   ChevronLeft,
+  Compass,
 } from "lucide-react";
 import { Toaster } from "@/app/components/ui/sonner";
 import { JournalEntry } from "@/app/components/JournalEntry";
 import { TimelineView } from "@/app/components/TimelineView";
 import { Insights } from "@/app/components/Insights";
 import { MoodChart } from "@/app/components/MoodChart";
-import { ReflectionAnchors } from "@/app/components/ReflectionAnchors";
+import { InnerCompass } from "@/app/components/InnerCompass";
 import { PrivacySettings } from "@/app/components/PrivacySettings";
 import { ErasManager } from "@/app/components/ErasManager";
-import { PersistentQuestions } from "@/app/components/PersistentQuestions";
 import { MemoryThreads } from "@/app/components/MemoryThreads";
 import { DataLegacy } from "@/app/components/DataLegacy";
 import { WelcomeMessage } from "@/app/components/WelcomeMessage";
@@ -36,10 +36,9 @@ type View =
   | "timeline"
   | "insights"
   | "mood"
-  | "anchors"
+  | "compass"
   | "privacy"
   | "eras"
-  | "questions"
   | "threads"
   | "legacy"
   | "habits";
@@ -64,7 +63,7 @@ const NAV_GROUPS = [
     label: "Explore",
     items: [
       { id: "habits"    as View, label: "Habits",     icon: Target },
-      { id: "anchors"   as View, label: "Anchors",    icon: Heart },
+      { id: "compass"   as View, label: "Compass",    icon: Compass },
       { id: "eras"      as View, label: "Eras",       icon: Layers },
       { id: "threads"   as View, label: "Threads",    icon: FileText },
     ],
@@ -127,6 +126,12 @@ export default function App() {
     setSelectedDate(date);
     setPendingReflectionType(type);
     setCurrentView("write");
+  };
+
+  const handleWriteAboutQuestion = (questionId: string) => {
+    // A8b — Question resolution lifecycle: wire this questionId into JournalEntry.
+    // For now, just navigate to Write mode.
+    handleNewEntry();
   };
 
   const navigate = (id: View) => {
@@ -212,9 +217,9 @@ export default function App() {
           <Insights entries={entries} />
         </motion.div>
       )}
-      {currentView === "anchors" && (
-        <motion.div key="anchors" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <ReflectionAnchors />
+      {currentView === "compass" && (
+        <motion.div key="compass" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <InnerCompass onWriteAbout={handleWriteAboutQuestion} />
         </motion.div>
       )}
       {currentView === "privacy" && (
@@ -225,11 +230,6 @@ export default function App() {
       {currentView === "eras" && (
         <motion.div key="eras" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
           <ErasManager entries={entries} />
-        </motion.div>
-      )}
-      {currentView === "questions" && (
-        <motion.div key="questions" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <PersistentQuestions entries={entries} />
         </motion.div>
       )}
       {currentView === "threads" && (

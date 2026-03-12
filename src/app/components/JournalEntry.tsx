@@ -470,6 +470,7 @@ export function JournalEntry({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const prefs = preferences.get();
+  const coreValues = preferences.getAnchors().filter(a => a.type === 'value' || a.type === 'intention');
 
   // Derived — is this a reflection entry (not daily)?
   const isReflection = initialReflectionType !== 'daily';
@@ -879,6 +880,20 @@ export function JournalEntry({
             </button>
           </div>
         </motion.div>
+
+        {/* ── Core Values (North Star) ──────────────────────────────────────── */}
+        {coreValues.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.08 }}
+            className="mb-6"
+          >
+            <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
+              Your values: {coreValues.map(v => v.text).join(' · ')}
+            </p>
+          </motion.div>
+        )}
 
         {/* ── Contextual prompt (year ago > continuity > daily prompt) ────── */}
         <motion.div
