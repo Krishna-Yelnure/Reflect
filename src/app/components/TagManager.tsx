@@ -73,11 +73,11 @@ export function TagManager({ selectedTags, onChange, allEntries }: TagManagerPro
     <div className="relative">
       {/* Tag pills + input — all inline */}
       <div
-        className={`
-          flex flex-wrap items-center gap-1.5 min-h-[38px] px-3 py-2 rounded-lg border bg-white
-          transition-colors cursor-text
-          ${focused ? 'border-slate-400' : 'border-slate-200'}
-        `}
+        className="flex flex-wrap items-center gap-1.5 min-h-[38px] px-3 py-2 rounded-lg transition-colors cursor-text"
+        style={{
+          backgroundColor: 'var(--card)',
+          border: focused ? '1px solid rgba(0,0,0,0.20)' : '1px solid rgba(0,0,0,0.10)',
+        }}
         onClick={() => inputRef.current?.focus()}
       >
         <AnimatePresence mode="popLayout">
@@ -89,12 +89,13 @@ export function TagManager({ selectedTags, onChange, allEntries }: TagManagerPro
               exit={{ opacity: 0, scale: 0.85 }}
               transition={{ duration: 0.12 }}
               layout
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md"
+              style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: '#525252' }}
             >
               {tag}
               <button
                 onClick={e => { e.stopPropagation(); removeTag(tag); }}
-                className="text-slate-400 hover:text-slate-600 transition-colors ml-0.5"
+                className="text-stone-400 hover:text-stone-600 transition-colors ml-0.5"
                 aria-label={`Remove ${tag}`}
               >
                 <X className="size-2.5" />
@@ -111,13 +112,14 @@ export function TagManager({ selectedTags, onChange, allEntries }: TagManagerPro
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 150)}
           placeholder={selectedTags.length === 0 ? 'Add tags…' : ''}
-          className="flex-1 min-w-[80px] text-sm text-slate-700 placeholder:text-slate-300 outline-none bg-transparent"
+          className="flex-1 min-w-[80px] text-sm outline-none bg-transparent"
+          style={{ color: '#2B2B2B' }}
         />
       </div>
 
       {/* Helper text */}
       {focused && (
-        <p className="text-[10px] text-slate-400 mt-1 ml-0.5">
+        <p className="text-[10px] text-stone-400 mt-1 ml-0.5">
           Press Enter or comma to add · Backspace to remove last
         </p>
       )}
@@ -130,15 +132,16 @@ export function TagManager({ selectedTags, onChange, allEntries }: TagManagerPro
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-sm z-20 overflow-hidden"
+            className="absolute left-0 right-0 top-full mt-1 rounded-lg shadow-sm z-20 overflow-hidden"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.10)' }}
           >
             {suggestions.map(tag => (
               <button
                 key={tag}
                 onMouseDown={e => { e.preventDefault(); addTag(tag); }}
-                className="w-full text-left px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2"
+                className="w-full text-left px-3 py-2 text-sm text-stone-500 hover:bg-stone-50 transition-colors flex items-center gap-2"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-300 shrink-0" />
                 {tag}
               </button>
             ))}

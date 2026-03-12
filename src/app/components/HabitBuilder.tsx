@@ -135,10 +135,10 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
       </div>
 
       {habits.length === 0 && !isAdding && (
-        <Card className="p-8 text-center mb-6 bg-stone-50">
+        <Card className="p-8 text-center mb-6" style={{ backgroundColor: 'var(--card)' }}>
           <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
-              <Target className="size-8 text-emerald-600" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
+              <Target className="size-8 text-amber-700" />
             </div>
           </div>
           <h3 className="text-lg font-medium mb-3">Welcome to Habit Builder</h3>
@@ -212,7 +212,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                         <h3 className="font-medium text-lg mb-1">{habit.name}</h3>
                         <p className="text-sm text-stone-600 mb-3">{habit.why}</p>
                         {gentleStart && (
-                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
                             21-Day Gentle Start
                           </Badge>
                         )}
@@ -457,7 +457,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
   };
 
   return (
-    <div className="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+    <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: "var(--habit-track-bg, #F0E8D8)", borderColor: "var(--habit-track-border, #C8A87A)" }}>
       {/* Progress Tiles - No numbers, purely visual */}
       <div className="grid grid-cols-7 gap-2 mb-4">
         {days.map((day) => {
@@ -472,8 +472,8 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
               className={`
                 aspect-square rounded-full flex items-center justify-center
                 transition-all duration-300
-                ${isEngaged ? 'bg-emerald-500' : 'bg-transparent border-2 border-emerald-200'}
-                ${isToday && !isEngaged ? 'border-emerald-400 border-dashed scale-110' : ''}
+                ${isEngaged ? 'bg-stone-700' : 'bg-transparent border-2 border-stone-300'}
+                ${isToday && !isEngaged ? 'border-amber-500 border-dashed scale-110' : ''}
                 ${!isPast && !isToday ? 'opacity-40' : ''}
               `}
               title={format(day, 'MMM d')}
@@ -484,19 +484,19 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
 
       {/* Orientation Copy - Phase-based, gentle */}
       {!isComplete && (
-        <p className="text-sm text-emerald-800 mb-3 text-center italic">
+        <p className="text-sm text-stone-700 mb-3 text-center italic">
           {getOrientationCopy()}
         </p>
       )}
 
       {/* Reflection Tie-In */}
       {!isComplete && (
-        <div className="space-y-2 mt-4 pt-4 border-t border-emerald-200">
-          <p className="text-sm text-emerald-900 font-medium">
+        <div className="space-y-2 mt-4 pt-4 border-t border-stone-300">
+          <p className="text-sm text-stone-800 font-medium">
             What are you noticing so far?
           </p>
           {engagements.length > 0 && (
-            <p className="text-xs text-emerald-700 mb-2">
+            <p className="text-xs text-stone-600 mb-2">
               You've engaged {engagements.length} {engagements.length === 1 ? 'time' : 'times'} during this window
             </p>
           )}
@@ -504,7 +504,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
             size="sm"
             variant="outline"
             onClick={onReflect}
-            className="w-full text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+            className="w-full text-stone-600 border-stone-300 hover:bg-stone-100"
           >
             Write a reflection
           </Button>
@@ -513,9 +513,9 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
 
       {/* Completion State */}
       {isComplete && !gentleStart.completed && (
-        <div className="space-y-3 mt-4 pt-4 border-t border-emerald-300">
+        <div className="space-y-3 mt-4 pt-4 border-t border-stone-300">
           <div style={{ backgroundColor: '#F0EBE2' }} className="p-4 rounded-lg">
-            <p className="font-medium text-emerald-900 mb-2">
+            <p className="font-medium text-stone-800 mb-2">
               This 21-day Gentle Start is complete.
             </p>
             <p className="text-sm text-stone-700 mb-1">
@@ -526,7 +526,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
             </p>
           </div>
           <div className="space-y-2">
-            <p className="text-xs text-emerald-800 font-medium uppercase tracking-wide">
+            <p className="text-xs text-stone-700 font-medium uppercase tracking-wide">
               What next?
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -534,7 +534,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
                 size="sm"
                 variant="outline"
                 onClick={onComplete}
-                className="text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                className="text-stone-600 border-stone-300 hover:bg-stone-100"
               >
                 Complete & Continue
               </Button>
@@ -553,8 +553,8 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
 
       {/* Completed State */}
       {gentleStart.completed && (
-        <div className="mt-4 pt-4 border-t border-emerald-300">
-          <p className="text-sm text-emerald-700 font-medium text-center">
+        <div className="mt-4 pt-4 border-t border-stone-300">
+          <p className="text-sm text-stone-600 font-medium text-center">
             Practice window completed ✓
           </p>
         </div>

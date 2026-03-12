@@ -4,50 +4,114 @@
   --font-size: 16px;
 
   /* ── Typefaces ── */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
-  --font-mono:    'DM Mono', 'Fira Code', monospace;
+  --font-display: 'Lora', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* ── Amber accent (one accent, applied consistently) ── */
-  --amber-accent:       #f59e0b;
-  --amber-accent-light: #fef3c7;
-  --amber-accent-muted: #fbbf24;
+  --amber-accent:       #B8860B;   /* Dark Gold */
+  --amber-accent-light: #FEF9E7;
+  --amber-accent-muted: #9A7209;
 
-  /* ── A5c+ Readability Pass ──────────────────────────────────────────────
-     Background stays warm parchment #EDE8DF — the soul of the app.
-     Ink scale deepened to pass WCAG AA on parchment while staying warm.
+  /* ── Warm semantic tokens — replaces all rogue cool colors ── */
+  /* Use these instead of any blue/violet/sky/teal/emerald classes */
 
-     Decision 1 (agreed): #1C1C18 — meaningful lift, warm near-black.
-     Warm ink scale:
-       Primary    #1C1C18  — body text, nav labels         (was #3C3C38 — too light)
-       Secondary  #3A3834  — active states, subheadings
-       Tertiary   #5A5854  — secondary labels               (was #717182 — cold + too light)
-       Quaternary #787068  — group labels, timestamps, hints (was stone-400 — ghostly)
+  /* Weekly reflection: warm amber-rose */
+  --reflection-weekly-bg:     #F5EAD8;
+  --reflection-weekly-border: #D4A574;
+  --reflection-weekly-text:   #7A4A1E;
+  --reflection-weekly-dot:    #C4762A;
+  --reflection-weekly-accent: #A05A28;
+
+  /* Monthly reflection: warm sage-green (earthy, not clinical) */
+  --reflection-monthly-bg:     #E8EEE4;
+  --reflection-monthly-border: #A8BEA0;
+  --reflection-monthly-text:   #3D5C38;
+  --reflection-monthly-dot:    #6A9B62;
+  --reflection-monthly-accent: #4E7848;
+
+  /* Habit tracker: warm terracotta tones */
+  --habit-engaged-bg:       #3D2C1E;   /* deep espresso — replaces navy */
+  --habit-engaged-text:     #F0EBE2;
+  --habit-card-bg:          #EAE3D8;   /* warm parchment card */
+  --habit-card-border:      #C8B89A;
+  --habit-track-bg:         #F0E8D8;   /* replaces emerald-50 */
+  --habit-track-border:     #C8A87A;
+  --habit-track-text:       #5C3D1E;
+  --habit-milestone-dot:    #C4762A;
+  --habit-today-border:     #C4762A;
+  --habit-badge-bg:         #E8D5B8;   /* replaces emerald-100 badge */
+  --habit-badge-text:       #6B3D12;
+  --habit-badge-border:     #C4905A;
+
+  /* Memory surface: warm amber instead of blue */
+  --memory-bg:     #FBF2E4;
+  --memory-border: #D4B07A;
+  --memory-dot:    #C4762A;
+  --memory-text:   #5C3820;
+  --memory-link:   #8B5E3C;
+
+  /* Low mood: warm muted slate instead of blue */
+  --mood-low-bg:     #E8E4DC;
+  --mood-low-border: #B8B0A4;
+  --mood-low-text:   #4A4440;
+  --mood-low-dot:    #8A8078;
+
+  /* Mood dot colors — Data-legible, Richer not pastel */
+  --mood-dot-great:     #F59E0B;   /* Vibrant gold */
+  --mood-dot-good:      #10B981;   /* Emerald */
+  --mood-dot-okay:      #6B7280;   /* Gray-500 neutral */
+  --mood-dot-low:       #3B82F6;   /* Blue-500 */
+  --mood-dot-difficult: #8B5CF6;   /* Violet-500 */
+  --mood-dot-none:      rgba(0,0,0,0.03);
+
+  /* ── A5c+ Readability Pass → Warm/Cool Balance System ───────────────
+     Background: #FAF7F2 (Warm white, barely cream)
+     Text: #677382 (Blue-gray for tension and balance)
+     Accent: #6B5B4A (Dark warm brown for primary actions only)
   ─────────────────────────────────────────────────────────────────────── */
 
-  --background:         #EDE8DF;   /* warm parchment — never changes */
-  --foreground:         #1C1C18;   /* Decision 1: meaningful lift */
-  --card:               #E6E0D6;
-  --card-foreground:    #1C1C18;
-  --popover:            #F0EBE2;
-  --popover-foreground: #1C1C18;
-  --primary:            #1C1C18;
-  --primary-foreground: #F0EBE2;
-  --secondary:          #DAD4CA;
-  --secondary-foreground: #1C1C18;
-  --muted:              #DAD4CA;
-  --muted-foreground:   #5A5854;   /* warm mid-tone — was cold #717182 */
-  --accent:             #D4CEC4;
-  --accent-foreground:  #1C1C18;
+  /* FOUNDATIONS */
+  --bg-main:            #FAF7F2;   /* Main canvas */
+  --bg-surface:         #EDE8DF;   /* Input fields, subtle cards */
+  --bg-elevated:        #FEFDFB;   /* Pure white cards with hint of warmth */
+
+  /* TEXT (Cool-toned) */
+  --text-primary:       #677382;   /* Headings, labels, nav — blue-gray */
+  --text-secondary:     #8A94A0;   /* Secondary text — lighter blue-gray */
+  --text-muted:         #A8998B;   /* Placeholders, disabled — warm taupe */
+  --text-body:          #3C3C38;   /* Long-form content */
+
+  /* ACCENT (Warm brown — strategic) */
+  --accent-brown:       #6B5B4A;   /* Primary buttons, active states */
+  --accent-brown-dark:  #5C4A3A;   /* Hover states, emphasis */
+  --accent-brown-light: #8A7969;   /* Subtle highlights */
+
+  /* SHADCN UI MAPPING */
+  --background:         var(--bg-main);
+  --foreground:         var(--text-body);
+  --card:               var(--bg-elevated);
+  --card-foreground:    var(--text-body);
+  --popover:            var(--bg-elevated);
+  --popover-foreground: var(--text-body);
+  
+  --primary:            var(--accent-brown);
+  --primary-foreground: #FFFFFF;
+  --secondary:          transparent;
+  --secondary-foreground: var(--text-primary);
+  
+  --muted:              var(--bg-surface);
+  --muted-foreground:   var(--text-muted);
+  --accent:             rgba(103, 115, 130, 0.06); /* subtle cool hover */
+  --accent-foreground:  #5B6B7C;
   --destructive:        #c0392b;
   --destructive-foreground: #ffffff;
-  --border:             rgba(28, 28, 24, 0.16);
-  --input:              transparent;
-  --input-background:   #E2DCD2;
-  --switch-background:  #B4AFA4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring:               #A4A09A;
+  
+  --border:             rgba(104, 92, 74, 0.12);
+  --input:              rgba(104, 92, 74, 0.20);
+  --input-background:   var(--bg-surface);
+  --switch-background:  #E5E5E5;
+  --ring:               rgba(104, 92, 74, 0.20);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -55,15 +119,15 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
 
-  /* ── Sidebar — recedes into parchment, text is readable ── */
-  --sidebar:                    #EDE8DF;
-  --sidebar-foreground:         #1C1C18;
-  --sidebar-primary:            #1C1C18;
-  --sidebar-primary-foreground: #F0EBE2;
-  --sidebar-accent:             #DAD4CA;
-  --sidebar-accent-foreground:  #1C1C18;
-  --sidebar-border:             rgba(28, 28, 24, 0.12);
-  --sidebar-ring:               #A4A09A;
+  /* ── Sidebar ── */
+  --sidebar:                    var(--bg-main);
+  --sidebar-foreground:         var(--text-primary);
+  --sidebar-primary:            var(--text-primary);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:             rgba(103, 115, 130, 0.06);
+  --sidebar-accent-foreground:  #5B6B7C;
+  --sidebar-border:             rgba(104, 92, 74, 0.08);
+  --sidebar-ring:               rgba(104, 92, 74, 0.20);
 }
 
 .dark {

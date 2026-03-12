@@ -51,7 +51,7 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Persistent Questions</h2>
-        <p className="text-slate-600">
+        <p className="text-stone-600">
           Questions you're exploring over time—no answers required
         </p>
       </div>
@@ -74,19 +74,19 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {question.isActive ? (
-                          <Badge variant="default" className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                          <Badge variant="default" className="bg-amber-100 text-amber-700 border-amber-200">
                             Active
                           </Badge>
                         ) : (
                           <Badge variant="secondary">Paused</Badge>
                         )}
                       </div>
-                      <p className="text-lg text-slate-900 mb-2">{question.question}</p>
+                      <p className="text-lg text-stone-800 mb-2">{question.question}</p>
                       {question.notes && (
-                        <p className="text-sm text-slate-600 mb-3">{question.notes}</p>
+                        <p className="text-sm text-stone-600 mb-3">{question.notes}</p>
                       )}
                       {question.lastReflectedAt && (
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-stone-400">
                           Last reflected{' '}
                           {formatDistanceToNow(new Date(question.lastReflectedAt), {
                             addSuffix: true,
@@ -100,7 +100,7 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
                           variant="ghost"
                           size="sm"
                           onClick={() => onWriteAbout(question.id)}
-                          className="gap-2 text-slate-600 hover:text-slate-900"
+                          className="gap-2 text-stone-600 hover:text-stone-800"
                         >
                           <FileText className="size-4" />
                           Write
@@ -110,7 +110,7 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleActive(question.id, question.isActive)}
-                        className="text-slate-400 hover:text-slate-700"
+                        className="text-stone-400 hover:text-stone-700"
                       >
                         {question.isActive ? (
                           <Pause className="size-4" />
@@ -122,7 +122,7 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(question.id)}
-                        className="text-slate-400 hover:text-red-600"
+                        className="text-stone-400 hover:text-red-600"
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -138,7 +138,7 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="p-6 space-y-4 border-2 border-slate-300">
+            <Card className="p-6 space-y-4 border-2 border-stone-300">
               <div>
                 <Input
                   value={formData.question}
@@ -146,7 +146,7 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
                   placeholder="What question are you exploring?"
                   autoFocus
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-stone-500 mt-1">
                   Examples: "What does a good life mean to me?" "What am I avoiding?"
                 </p>
               </div>
@@ -186,19 +186,19 @@ export function PersistentQuestions({ entries, onWriteAbout }: PersistentQuestio
 
       {questions.length === 0 && !isAdding && (
         <div className="text-center py-12">
-          <p className="text-slate-400">
+          <p className="text-stone-400">
             No questions yet. Add one to explore over time.
           </p>
         </div>
       )}
 
-      <div className="mt-8 p-6 bg-slate-50 rounded-lg">
+      <div className="mt-8 p-6 bg-stone-50 rounded-lg">
         <h3 className="font-medium mb-2">About Persistent Questions</h3>
-        <p className="text-sm text-slate-600 mb-3">
+        <p className="text-sm text-stone-600 mb-3">
           These are questions you return to over months or years. The app doesn't expect
           answers—it just helps you notice how your thinking shifts.
         </p>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           Pause questions when they no longer feel relevant. You can always reactivate them later.
         </p>
       </div>

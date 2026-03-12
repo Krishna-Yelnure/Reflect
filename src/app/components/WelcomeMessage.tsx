@@ -71,7 +71,7 @@ export function WelcomeMessage({ entries }: WelcomeMessageProps) {
       className="mb-8 text-center"
     >
       <h1 className="text-3xl mb-2">{message.title}</h1>
-      <p className="text-slate-500">{message.subtitle}</p>
+      <p className="text-stone-500">{message.subtitle}</p>
     </motion.div>
   );
 }

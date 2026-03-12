@@ -97,14 +97,14 @@ export function ArchiveView({ entries, onSelectEntry }: ArchiveViewProps) {
     <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">Archive</h2>
-        <p className="text-slate-600">
-          Your journal organized by time—a library, not a feed
+        <p className="text-stone-500">
+          Your journal organized by time — a library, not a feed.
         </p>
       </div>
 
       {archiveData.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-slate-400">Your archive is empty. Start writing to build it.</p>
+          <p className="text-stone-400" style={{ fontFamily: 'var(--font-display)' }}>Your archive is empty. Begin writing to fill it.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -115,17 +115,17 @@ export function ArchiveView({ entries, onSelectEntry }: ArchiveViewProps) {
               <Card key={yearData.year} className="overflow-hidden">
                 <button
                   onClick={() => toggleYear(yearData.year)}
-                  className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                  className="w-full p-6 flex items-center justify-between hover:bg-stone-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {isYearExpanded ? (
-                      <ChevronDown className="size-5 text-slate-400" />
+                      <ChevronDown className="size-5 text-stone-400" />
                     ) : (
-                      <ChevronRight className="size-5 text-slate-400" />
+                      <ChevronRight className="size-5 text-stone-400" />
                     )}
                     <h3 className="text-xl font-medium">{yearData.year}</h3>
                   </div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-stone-400">
                     {yearData.totalEntries} {yearData.totalEntries === 1 ? 'entry' : 'entries'}
                   </p>
                 </button>
@@ -134,29 +134,29 @@ export function ArchiveView({ entries, onSelectEntry }: ArchiveViewProps) {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="border-t border-slate-200"
+                    style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}
                   >
                     {yearData.months.map(monthData => {
                       const yearMonth = `${yearData.year}-${monthData.month}`;
                       const isMonthExpanded = expandedMonths.has(yearMonth);
 
                       return (
-                        <div key={yearMonth} className="border-b border-slate-100 last:border-b-0">
+                        <div key={yearMonth} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }} className="last:border-b-0">
                           <button
                             onClick={() => toggleMonth(yearMonth)}
-                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-stone-50 transition-colors"
                           >
                             <div className="flex items-center gap-3">
                               {isMonthExpanded ? (
-                                <ChevronDown className="size-4 text-slate-400" />
+                                <ChevronDown className="size-4 text-stone-400" />
                               ) : (
-                                <ChevronRight className="size-4 text-slate-400" />
+                                <ChevronRight className="size-4 text-stone-400" />
                               )}
-                              <p className="font-medium text-slate-700">
+                              <p className="font-medium text-stone-600">
                                 {monthNames[monthData.month]}
                               </p>
                             </div>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-stone-400">
                               {monthData.entries.length}
                             </p>
                           </button>
@@ -178,19 +178,19 @@ export function ArchiveView({ entries, onSelectEntry }: ArchiveViewProps) {
                                   <button
                                     key={entry.id}
                                     onClick={() => onSelectEntry(entry.date)}
-                                    className="w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors group"
+                                    className="w-full text-left p-3 rounded-lg hover:bg-stone-50 transition-colors group"
                                   >
                                     <div className="flex items-start gap-3">
-                                      <FileText className="size-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                                      <FileText className="size-4 text-stone-400 mt-0.5 flex-shrink-0" />
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-slate-600 mb-1">
+                                        <p className="text-sm text-stone-500 mb-1">
                                           {format(parseISO(entry.date), 'EEEE, MMM d')}
                                         </p>
-                                        <p className="text-sm text-slate-700 line-clamp-2">
+                                        <p className="text-sm text-stone-600 line-clamp-2">
                                           {preview}
                                         </p>
                                         {entry.mood && (
-                                          <p className="text-xs text-slate-500 mt-1">
+                                          <p className="text-xs text-stone-400 mt-1">
                                             Mood: {entry.mood}
                                           </p>
                                         )}
@@ -212,11 +212,11 @@ export function ArchiveView({ entries, onSelectEntry }: ArchiveViewProps) {
         </div>
       )}
 
-      <div className="mt-8 p-6 bg-slate-50 rounded-lg">
+      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
         <h3 className="font-medium mb-2">About the Archive</h3>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-stone-500">
           This view organizes your writing by year and month, letting you browse your life
-          without opening every entry. Think of it as a library—structured, quiet, and yours.
+          without opening every entry. Think of it as a library — structured, quiet, and yours.
         </p>
       </div>
     </div>

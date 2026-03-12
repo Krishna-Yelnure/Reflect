@@ -47,11 +47,11 @@ const moods = [
     value: 'good',
     label: 'Good',
     emoji: '😊',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-300',
-    glow: 'shadow-emerald-200/60',
-    ring: 'ring-emerald-300',
-    text: 'text-emerald-700',
+    bg: 'bg-stone-50',
+    border: 'border-stone-300',
+    glow: 'shadow-stone-200/60',
+    ring: 'ring-stone-300',
+    text: 'text-stone-600',
   },
   {
     value: 'okay',
@@ -59,19 +59,19 @@ const moods = [
     emoji: '😐',
     bg: 'bg-stone-50',
     border: 'border-stone-300',
-    glow: 'shadow-slate-200/60',
-    ring: 'ring-slate-300',
+    glow: 'shadow-stone-200/60',
+    ring: 'ring-stone-300',
     text: 'text-stone-600',
   },
   {
     value: 'low',
     label: 'Low',
     emoji: '😔',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    glow: 'shadow-blue-200/60',
-    ring: 'ring-blue-200',
-    text: 'text-blue-600',
+    bg: 'bg-stone-100',
+    border: 'border-stone-300',
+    glow: 'shadow-stone-200/60',
+    ring: 'ring-stone-300',
+    text: 'text-stone-500',
   },
   {
     value: 'difficult',
@@ -97,7 +97,7 @@ const REFLECTION_META: Record<string, {
   weekly: {
     label: 'Weekly reflection',
     badge: 'This week',
-    badgeCls: 'bg-violet-100 text-violet-700',
+    badgeCls: 'bg-amber-100 text-amber-700',
     fields: [
       { key: 'whatHappened', label: 'What happened this week?',     placeholder: 'The events, moments, conversations…' },
       { key: 'feelings',     label: 'How did the week feel?',       placeholder: 'The emotional texture of the week…' },
@@ -109,7 +109,7 @@ const REFLECTION_META: Record<string, {
   monthly: {
     label: 'Monthly reflection',
     badge: 'This month',
-    badgeCls: 'bg-sky-100 text-sky-700',
+    badgeCls: 'bg-stone-200 text-stone-600',
     fields: [
       { key: 'whatHappened', label: 'What defined this month?',     placeholder: 'The chapters, the turning points…' },
       { key: 'feelings',     label: 'What shifted emotionally?',    placeholder: 'How you changed, what softened or hardened…' },
@@ -366,10 +366,10 @@ function ContextualPrompt({
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-3 p-4 bg-violet-50 border border-violet-100 rounded-xl"
+        className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl"
       >
         <span className="text-lg mt-0.5 flex-shrink-0">🔁</span>
-        <p className="text-sm text-violet-800 italic leading-relaxed">{previousIntention}</p>
+        <p className="text-sm text-amber-900 italic leading-relaxed">{previousIntention}</p>
       </motion.div>
     );
   }
@@ -658,19 +658,18 @@ export function JournalEntry({
           <div className="flex items-center justify-between px-8 py-4 border-b border-stone-200/60">
             <button
               onClick={() => handleModeChange('guided')}
-              className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-600 transition-colors"
+              className="flex items-center gap-1.5 text-sm transition-colors text-stone-500 hover:text-stone-700"
             >
               <ChevronLeft className="size-4" />
               Back to Guided
             </button>
-            <p className="text-sm text-stone-400">
+            <p className="text-sm font-medium" style={{ color: '#1A1A1A' }}>
               {formatEntryDate(selectedDate)}
             </p>
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-colors"
-              style={{ backgroundColor: '#3C3C38', color: '#EDE8DF' }}
+              className="button-primary"
             >
               <Save className="size-3.5" />
               {isSaving ? 'Saving…' : 'Save'}
@@ -688,15 +687,15 @@ export function JournalEntry({
                 value={entry.whatMatters || ''}
                 onChange={e => updateField('whatMatters', e.target.value)}
                 placeholder="A title, if you want one…"
-                className="w-full text-2xl font-light placeholder:text-stone-300 border-none outline-none bg-transparent mb-8"
-                style={{ fontFamily: 'var(--font-display)', color: '#1C1C18', caretColor: '#f59e0b' }}
+                className="w-full h2 mb-8 bg-transparent border-none outline-none parchment-input"
+                style={{ fontFamily: 'var(--font-display)', caretColor: '#B8860B' }}
               />
               <textarea
                 value={entry.freeWrite || ''}
                 onChange={e => updateField('freeWrite', e.target.value)}
                 placeholder="Write freely. No prompts, no fields. Just you and the page."
-                className="w-full text-base leading-[2] placeholder:text-stone-300 border-none outline-none bg-transparent resize-none"
-                style={{ minHeight: '60vh', caretColor: '#f59e0b', color: '#1C1C18' }}
+                className="w-full deep-write-textarea p"
+                style={{ minHeight: '60vh', fontFamily: 'var(--font-body)' }}
                 autoFocus
                 onKeyDown={e => {
                   // On Enter, scroll caret into vertical centre
@@ -1012,7 +1011,7 @@ export function JournalEntry({
             ).map(state => {
               const selected = entry.innerState === state.value;
               const colours: Record<string, string> = {
-                clear:    selected ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
+                clear:    selected ? 'bg-stone-100 border-stone-400 text-stone-700' : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
                 restless: selected ? 'bg-amber-50 border-amber-300 text-amber-700'      : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
                 heavy:    selected ? 'bg-stone-200 border-stone-400 text-stone-700'     : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
               };
@@ -1062,19 +1061,10 @@ export function JournalEntry({
                       value={(entry[key as keyof JournalEntryType] as string) || ''}
                       onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
                       placeholder={placeholder}
-                      className={`${minHeights[key] ?? 'min-h-[100px]'} resize-none transition-colors placeholder:text-stone-400`}
+                      className={`${minHeights[key] ?? 'min-h-[100px]'} w-full parchment-input`}
                       style={{
-                        border: 'none',
-                        borderBottom: '1px solid #c8c2b6',
-                        borderRadius: 0,
-                        background: 'transparent',
-                        outline: 'none',
-                        boxShadow: 'none',
-                        caretColor: '#f59e0b',
-                        color: '#1C1C18',
+                        borderRadius: 8,
                       }}
-                      onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
-                      onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
                     />
                   </motion.div>
                 );
@@ -1111,19 +1101,10 @@ export function JournalEntry({
                     value={(entry.intention as string) || ''}
                     onChange={e => updateField('intention', e.target.value)}
                     placeholder={meta.placeholder}
-                    className="min-h-[80px] resize-none transition-colors placeholder:text-stone-400"
+                    className="min-h-[80px] w-full parchment-input"
                     style={{
-                      border: 'none',
-                      borderBottom: '1px solid #c8c2b6',
-                      borderRadius: 0,
-                      background: 'transparent',
-                      outline: 'none',
-                      boxShadow: 'none',
-                      caretColor: '#f59e0b',
-                      color: '#1C1C18',
+                      borderRadius: 8,
                     }}
-                    onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
-                    onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
                   />
                 </>
               );
@@ -1214,10 +1195,10 @@ export function JournalEntry({
           transition={{ duration: 0.3, delay: 0.4 }}
           className="flex gap-3 justify-end"
         >
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outline" onClick={handleCancel} className="button-secondary">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+          <Button onClick={handleSave} disabled={isSaving} className="button-primary gap-2">
             <Save className="size-4" />
             {isSaving ? 'Saving…' : 'Save Entry'}
           </Button>

@@ -26,7 +26,7 @@ function InnerStateChart({ entries }: { entries: JournalEntry[] }) {
   if (dist.total < 3) return null;
 
   const bars: { key: 'clear' | 'restless' | 'heavy'; label: string; colour: string; bg: string }[] = [
-    { key: 'clear',    label: 'Clear',    colour: 'bg-emerald-300', bg: 'bg-emerald-50' },
+    { key: 'clear',    label: 'Clear',    colour: 'bg-stone-300', bg: 'bg-stone-50' },
     { key: 'restless', label: 'Restless', colour: 'bg-amber-300',   bg: 'bg-amber-50'   },
     { key: 'heavy',    label: 'Heavy',    colour: 'bg-stone-300',   bg: 'bg-stone-100'  },
   ];
@@ -128,7 +128,7 @@ export function Insights({ entries }: InsightsProps) {
                   >
                     <Card
                       className="p-6"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.06)' }}
+                      style={{ backgroundColor: 'rgba(253,252,248,0.7)', border: '1px solid rgba(0,0,0,0.06)' }}
                     >
                       <div className="flex items-start gap-4">
                         <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.04)' }}>

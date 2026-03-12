@@ -37,7 +37,7 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
   if (entries.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16 text-center">
-        <p className="text-slate-400 text-lg">No entries yet. Start writing to build your journal.</p>
+        <p className="text-stone-400 text-lg" style={{ fontFamily: 'var(--font-display)' }}>Your story is waiting to begin.</p>
       </div>
     );
   }
@@ -55,7 +55,7 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-slate-300 transition-colors"
+              className="rounded-lg overflow-hidden transition-colors" style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.08)' }}
             >
               <button
                 onClick={() => toggleExpand(entry.id)}
@@ -70,18 +70,18 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
                       <span className="text-lg">{moodEmojis[entry.mood]}</span>
                     )}
                     {entry.energy && (
-                      <span className="text-sm text-slate-500">Energy: {entry.energy}/5</span>
+                      <span className="text-sm text-stone-400">Energy: {entry.energy}/5</span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-600 line-clamp-2">
+                  <p className="text-sm text-stone-500 line-clamp-2">
                     {entry.whatHappened || entry.feelings || entry.freeWrite || 'No content'}
                   </p>
                 </div>
                 <div className="ml-4">
                   {expandedId === entry.id ? (
-                    <ChevronUp className="size-5 text-slate-400" />
+                    <ChevronUp className="size-5 text-stone-400" />
                   ) : (
-                    <ChevronDown className="size-5 text-slate-400" />
+                    <ChevronDown className="size-5 text-stone-400" />
                   )}
                 </div>
               </button>
@@ -93,41 +93,41 @@ export function EntriesList({ entries, onEdit, onDelete }: EntriesListProps) {
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="border-t border-slate-200"
+                    className="border-t" style={{ borderColor: 'rgba(0,0,0,0.06)' }}
                   >
                     <div className="px-6 py-4 space-y-4">
                       {entry.whatHappened && (
                         <div>
-                          <h4 className="text-xs text-slate-500 mb-1">What happened today?</h4>
-                          <p className="text-slate-700 whitespace-pre-wrap">{entry.whatHappened}</p>
+                          <h4 className="text-xs text-stone-400 mb-1">What happened today?</h4>
+                          <p className="text-stone-700 whitespace-pre-wrap">{entry.whatHappened}</p>
                         </div>
                       )}
                       {entry.feelings && (
                         <div>
-                          <h4 className="text-xs text-slate-500 mb-1">How did it make you feel?</h4>
-                          <p className="text-slate-700 whitespace-pre-wrap">{entry.feelings}</p>
+                          <h4 className="text-xs text-stone-400 mb-1">How did it make you feel?</h4>
+                          <p className="text-stone-700 whitespace-pre-wrap">{entry.feelings}</p>
                         </div>
                       )}
                       {entry.whatMatters && (
                         <div>
-                          <h4 className="text-xs text-slate-500 mb-1">What mattered most?</h4>
-                          <p className="text-slate-700 whitespace-pre-wrap">{entry.whatMatters}</p>
+                          <h4 className="text-xs text-stone-400 mb-1">What mattered most?</h4>
+                          <p className="text-stone-700 whitespace-pre-wrap">{entry.whatMatters}</p>
                         </div>
                       )}
                       {entry.insight && (
                         <div>
-                          <h4 className="text-xs text-slate-500 mb-1">Insight</h4>
-                          <p className="text-slate-700 whitespace-pre-wrap">{entry.insight}</p>
+                          <h4 className="text-xs text-stone-400 mb-1">Insight</h4>
+                          <p className="text-stone-700 whitespace-pre-wrap">{entry.insight}</p>
                         </div>
                       )}
                       {entry.freeWrite && (
                         <div>
-                          <h4 className="text-xs text-slate-500 mb-1">Free write</h4>
-                          <p className="text-slate-700 whitespace-pre-wrap">{entry.freeWrite}</p>
+                          <h4 className="text-xs text-stone-400 mb-1">Free write</h4>
+                          <p className="text-stone-700 whitespace-pre-wrap">{entry.freeWrite}</p>
                         </div>
                       )}
 
-                      <div className="flex gap-2 pt-2 border-t border-slate-100">
+                      <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
                         <Button
                           variant="outline"
                           size="sm"

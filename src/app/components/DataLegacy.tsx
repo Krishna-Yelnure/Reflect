@@ -42,8 +42,8 @@ export function DataLegacy({ entries }: DataLegacyProps) {
         {/* Export regularly */}
         <Card className="p-6">
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Download className="size-5 text-blue-600" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: "#F5EAD8" }}>
+              <Download className="size-5" style={{ color: "#C4762A" }} />
             </div>
             <div className="flex-1">
               <h3 className="font-medium mb-2">Export Regularly</h3>

@@ -210,7 +210,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
           />
         </div>
         <div>
-          <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-1.5">Ended <span className="normal-case not-italic text-stone-300">(leave empty if ongoing)</span></p>
+          <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-1.5">Ended <span className="normal-case not-italic text-stone-400">(leave empty if ongoing)</span></p>
           <input
             type="date"
             value={form.endDate}
@@ -371,7 +371,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
                       {era.startDate && (
                         <span>{format(parseISO(era.startDate), 'MMM yyyy')}</span>
                       )}
-                      {era.startDate && <span className="text-stone-300">→</span>}
+                      {era.startDate && <span className="text-stone-400">→</span>}
                       {era.endDate ? (
                         <span>{format(parseISO(era.endDate), 'MMM yyyy')}</span>
                       ) : era.startDate ? (

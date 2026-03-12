@@ -20,25 +20,26 @@ export function MemorySurface({ memory, relatedEntry, onDismiss, onViewEntry }: 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+      className="rounded-lg p-4 mb-6"
+      style={{ backgroundColor: 'var(--memory-bg)', border: '1px solid var(--memory-border)' }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-blue-400" />
-            <p className="text-sm text-blue-900">{memory.reason}</p>
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--memory-dot)' }} />
+            <p className="text-sm" style={{ color: 'var(--memory-text)' }}>{memory.reason}</p>
           </div>
-          <p className="text-sm text-slate-600 mb-1">
+          <p className="text-sm mb-1" style={{ color: 'var(--muted-foreground)' }}>
             {format(parseISO(relatedEntry.date), 'MMMM d, yyyy')}
           </p>
-          <p className="text-sm text-slate-700 italic">{truncated}</p>
+          <p className="text-sm italic" style={{ color: 'var(--foreground)' }}>{truncated}</p>
         </div>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={onViewEntry}
-            className="text-blue-700 hover:text-blue-800"
+            style={{ color: 'var(--memory-link)' }}
           >
             <ExternalLink className="size-4" />
           </Button>
@@ -46,7 +47,7 @@ export function MemorySurface({ memory, relatedEntry, onDismiss, onViewEntry }: 
             variant="ghost"
             size="sm"
             onClick={onDismiss}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X className="size-4" />
           </Button>

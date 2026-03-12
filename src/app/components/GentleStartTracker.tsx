@@ -57,14 +57,15 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
   const rows = [days.slice(0, 7), days.slice(7, 14), days.slice(14, 21)];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 mt-4">
+    <div className="rounded-xl p-5 mt-4"
+         style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.08)' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-medium text-slate-700">
+          <p className="text-sm font-medium" style={{ color: '#2B2B2B' }}>
             {isComplete ? '21-day exploration complete' : `Day ${currentDay} of 21`}
           </p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-stone-400 mt-0.5">
             {isComplete
               ? `You showed up ${engagedCount} times. What did you learn?`
               : `${engagedCount} day${engagedCount !== 1 ? 's' : ''} engaged so far`}
@@ -73,16 +74,16 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
 
         {/* Progress fraction */}
         <div className="text-right">
-          <span className="text-2xl font-light text-slate-600">{engagedCount}</span>
-          <span className="text-sm text-slate-400"> / 21</span>
+          <span className="text-2xl font-light text-stone-500">{engagedCount}</span>
+          <span className="text-sm text-stone-400"> / 21</span>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="w-full h-1 bg-slate-200 rounded-full mb-5 overflow-hidden">
+      <div className="w-full h-1 rounded-full mb-5 overflow-hidden" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
         <div
-          className="h-full bg-slate-400 rounded-full transition-all duration-500"
-          style={{ width: `${(currentDay / 21) * 100}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${(currentDay / 21) * 100}%`, backgroundColor: '#B8860B' }}
         />
       </div>
 
@@ -104,18 +105,16 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
                   {/* Cell */}
                   <div
                     title={`Day ${dayNum} — ${format(day, 'MMM d')}${isEngaged ? ' (engaged)' : ''}`}
-                    className={`
-                      w-full aspect-square rounded-md flex items-center justify-center
-                      text-xs font-medium transition-all duration-200 relative
-                      ${isEngaged
-                        ? 'bg-slate-700 text-white shadow-sm'
+                    className="w-full aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-all duration-200 relative"
+                    style={
+                      isEngaged
+                        ? { backgroundColor: '#3C3C38', color: '#FFFEF9', boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }
                         : isDayToday
-                          ? 'bg-white border-2 border-slate-400 text-slate-600'
+                          ? { backgroundColor: 'var(--card)', border: '2px solid #B8860B', color: '#525252' }
                           : isPast
-                            ? 'bg-white border border-slate-200 text-slate-300'
-                            : 'bg-white border border-slate-100 text-slate-200'
-                      }
-                    `}
+                            ? { backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.10)', color: '#A3A3A3' }
+                            : { backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.05)', color: '#D4D4D4' }
+                    }
                   >
                     {dayNum}
                     {/* Milestone dot */}
@@ -126,7 +125,7 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
 
                   {/* Day label on bottom row */}
                   {rowIndex === 2 && (
-                    <span className="text-[9px] text-slate-300">
+                    <span className="text-[9px] text-stone-400">
                       {format(day, 'MMM d')}
                     </span>
                   )}
@@ -138,25 +137,25 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
       </div>
 
       {/* Milestone legend */}
-      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-200">
+      <div className="flex items-center gap-4 mt-4 pt-3" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-          <span className="text-xs text-slate-400">Milestone (day 7, 14, 21)</span>
+          <span className="text-xs text-stone-400">Milestone (day 7, 14, 21)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-slate-700 inline-block" />
-          <span className="text-xs text-slate-400">Engaged</span>
+          <span className="w-3 h-3 rounded inline-block" style={{ backgroundColor: '#3C3C38' }} />
+          <span className="text-xs text-stone-400">Engaged</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-white border border-slate-200 inline-block" />
-          <span className="text-xs text-slate-400">Not yet</span>
+          <span className="w-3 h-3 rounded inline-block" style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.10)' }} />
+          <span className="text-xs text-stone-400">Not yet</span>
         </div>
       </div>
 
       {/* Re-engagement — shown the day a user returns after a gap */}
       {isReturning && !isComplete && (
-        <div className="mt-4 p-3 rounded-lg bg-white border border-slate-100 text-center">
-          <p className="text-sm text-slate-500 italic" style={{ fontFamily: 'var(--font-display)' }}>
+        <div className="mt-4 p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.06)' }}>
+          <p className="text-sm text-stone-500 italic" style={{ fontFamily: 'var(--font-display)' }}>
             Returning is the practice.
           </p>
         </div>
@@ -164,9 +163,9 @@ export function GentleStartTracker({ gentleStart, engagements }: GentleStartTrac
 
       {/* Celebration state */}
       {isComplete && (
-        <div className="mt-4 p-3 rounded-lg bg-white border border-slate-200 text-center">
-          <p className="text-sm text-slate-600 font-medium">21 days explored ✦</p>
-          <p className="text-xs text-slate-400 mt-1">
+        <div className="mt-4 p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(0,0,0,0.08)' }}>
+          <p className="text-sm font-medium" style={{ color: '#2B2B2B' }}>21 days explored ✦</p>
+          <p className="text-xs text-stone-400 mt-1">
             Whether you showed up every day or a few times, you gave this a real try.
             What did you discover about yourself?
           </p>

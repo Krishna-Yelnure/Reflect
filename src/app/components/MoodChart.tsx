@@ -19,11 +19,11 @@ const moodValues: Record<string, number> = {
 };
 
 const moodColors: Record<string, string> = {
-  great: '#10b981',
-  good: '#3b82f6',
-  okay: '#7A7060',
-  low: '#f59e0b',
-  difficult: '#ef4444',
+  great: '#B8860B',    /* Dark Gold — warm, premium */
+  good: '#7c9a7e',     /* Sage — earthy, not clinical */
+  okay: '#7A7060',     /* Warm stone — neutral */
+  low: '#c49a3c',      /* Ochre — warm amber */
+  difficult: '#b87d8a', /* Dusty rose — warm, not alarming */
 };
 
 export function MoodChart({ entries }: MoodChartProps) {
@@ -205,8 +205,8 @@ export function MoodChart({ entries }: MoodChartProps) {
                 <AreaChart data={moodData}>
                   <defs>
                     <linearGradient id="energyGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#B8860B" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#B8860B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(60,58,52,0.12)" />
@@ -240,7 +240,7 @@ export function MoodChart({ entries }: MoodChartProps) {
                   <Area
                     type="monotone"
                     dataKey="energy"
-                    stroke="#3b82f6"
+                    stroke="#B8860B"
                     strokeWidth={2}
                     fill="url(#energyGradient)"
                     connectNulls

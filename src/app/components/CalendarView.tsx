@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from 'date-fns';
 import type { JournalEntry } from '@/app/types';
 
 interface CalendarViewProps {
@@ -9,12 +9,13 @@ interface CalendarViewProps {
   selectedMonth: Date;
 }
 
+// Warm mood palette — all CSS variables from theme.css
 const moodColors: Record<string, string> = {
-  great: 'bg-emerald-400',
-  good: 'bg-blue-400',
-  okay: 'bg-slate-400',
-  low: 'bg-amber-400',
-  difficult: 'bg-red-400',
+  great:     'var(--mood-dot-great)',
+  good:      'var(--mood-dot-good)',
+  okay:      'var(--mood-dot-okay)',
+  low:       'var(--mood-dot-low)',
+  difficult: 'var(--mood-dot-difficult)',
 };
 
 export function CalendarView({ entries, onSelectDate, selectedMonth }: CalendarViewProps) {
@@ -22,19 +23,13 @@ export function CalendarView({ entries, onSelectDate, selectedMonth }: CalendarV
     const start = startOfMonth(selectedMonth);
     const end = endOfMonth(selectedMonth);
     const days = eachDayOfInterval({ start, end });
-    
-    // Pad the beginning with empty slots for proper day alignment
     const startDay = start.getDay();
-    const paddedDays = Array(startDay).fill(null).concat(days);
-    
-    return paddedDays;
+    return Array(startDay).fill(null).concat(days);
   }, [selectedMonth]);
 
   const entryMap = useMemo(() => {
     const map = new Map<string, JournalEntry>();
-    entries.forEach(entry => {
-      map.set(entry.date, entry);
-    });
+    entries.forEach(entry => map.set(entry.date, entry));
     return map;
   }, [entries]);
 
@@ -42,23 +37,26 @@ export function CalendarView({ entries, onSelectDate, selectedMonth }: CalendarV
     <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h2 className="text-2xl mb-2">{format(selectedMonth, 'MMMM yyyy')}</h2>
-        <p className="text-slate-600">Your journaling calendar</p>
+        <p className="text-muted-foreground">Your journaling calendar</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div
+        className="rounded-lg p-6"
+        style={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)' }}
+      >
+        {/* Day headers */}
         <div className="grid grid-cols-7 gap-2 mb-4">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-sm text-slate-500 font-medium py-2">
+            <div key={day} className="text-center text-sm font-medium py-2 text-muted-foreground">
               {day}
             </div>
           ))}
         </div>
 
+        {/* Day cells */}
         <div className="grid grid-cols-7 gap-2">
           {calendarDays.map((day, index) => {
-            if (!day) {
-              return <div key={`empty-${index}`} className="aspect-square" />;
-            }
+            if (!day) return <div key={`empty-${index}`} className="aspect-square" />;
 
             const dateStr = format(day, 'yyyy-MM-dd');
             const entry = entryMap.get(dateStr);
@@ -71,24 +69,35 @@ export function CalendarView({ entries, onSelectDate, selectedMonth }: CalendarV
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onSelectDate(dateStr)}
-                className={`
-                  aspect-square rounded-lg border transition-all relative
-                  ${isCurrentMonth ? 'text-slate-900' : 'text-slate-300'}
-                  ${entry ? 'border-slate-300 bg-slate-50' : 'border-slate-200'}
-                  ${isTodayDate ? 'ring-2 ring-slate-900 ring-offset-2' : ''}
-                  hover:border-slate-400
-                `}
+                className="aspect-square rounded-lg border transition-all relative"
+                style={{
+                  color: isCurrentMonth ? 'var(--foreground)' : 'var(--ring)',
+                  backgroundColor: entry ? 'var(--card)' : 'transparent',
+                  borderColor: isTodayDate
+                    ? 'var(--amber-accent)'
+                    : entry
+                      ? 'var(--border)'
+                      : 'rgba(28,28,24,0.1)',
+                  outline: isTodayDate ? '2px solid var(--amber-accent)' : undefined,
+                  outlineOffset: isTodayDate ? '2px' : undefined,
+                }}
               >
-                <div className="absolute top-1 left-0 right-0 text-sm">
+                <div className="absolute top-1 left-0 right-0 text-sm text-center">
                   {format(day, 'd')}
                 </div>
                 {entry && (
                   <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-0.5">
                     {entry.mood && (
-                      <div className={`w-2 h-2 rounded-full ${moodColors[entry.mood]}`} />
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: moodColors[entry.mood] }}
+                      />
                     )}
                     {entry.energy && (
-                      <div className="w-1 h-1 rounded-full bg-slate-400 self-center" />
+                      <div
+                        className="w-1 h-1 rounded-full self-center"
+                        style={{ backgroundColor: 'var(--muted-foreground)' }}
+                      />
                     )}
                   </div>
                 )}
@@ -98,15 +107,22 @@ export function CalendarView({ entries, onSelectDate, selectedMonth }: CalendarV
         </div>
       </div>
 
-      <div className="mt-6 flex items-center gap-6 text-sm text-slate-600">
+      {/* Legend */}
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-slate-50 border border-slate-300" />
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
           <span>Has entry</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full ring-2 ring-slate-900" />
+          <div className="w-3 h-3 rounded-full" style={{ outline: '2px solid var(--amber-accent)', outlineOffset: '1px' }} />
           <span>Today</span>
         </div>
+        {Object.entries(moodColors).map(([mood, color]) => (
+          <div key={mood} className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+            <span className="capitalize">{mood}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

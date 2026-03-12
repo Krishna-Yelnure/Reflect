@@ -36,7 +36,7 @@ const modes = [
 export function ReflectionModeSelector({ selectedMode, onChange }: ReflectionModeSelectorProps) {
   return (
     <div className="space-y-2">
-      <p className="text-xs text-slate-500">Reflection type</p>
+      <p className="text-xs text-stone-400">Reflection type</p>
       <div className="grid grid-cols-4 gap-2">
         {modes.map(mode => {
           const Icon = mode.icon;

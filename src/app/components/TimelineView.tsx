@@ -19,8 +19,9 @@ import {
   getWeek,
 } from 'date-fns';
 import { ChevronLeft, Edit } from 'lucide-react';
-import type { JournalEntry } from '@/app/types';
+import type { JournalEntry, Era } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
+import { erasStorage } from '@/app/utils/eras';
 import { getSmartPrompt } from '@/app/utils/prompts';
 import { getGitaDailyPrompt } from '@/app/utils/prompts-v2';
 
@@ -37,26 +38,35 @@ interface TimelineViewProps {
 // ── Mood colour system ─────────────────────────────────────────────────────
 // Decision 3 (agreed): faint dot colours deepened so they're visible on parchment.
 // okay: slate-300 → slate-400 (was ghostly), difficult: slate-400 → slate-500
+// Decision 3 (agreed): faint dot colours deepened so they're visible on parchment.
 const MOOD_CELL: Record<string, string> = {
   great:     'bg-amber-400',
-  good:      'bg-emerald-400',
-  okay:      'bg-slate-400',
-  low:       'bg-blue-400',
-  difficult: 'bg-slate-500',
+  good:      'bg-stone-400',
+  okay:      'bg-stone-300',
+  low:       'bg-stone-400',
+  difficult: 'bg-stone-500',
+};
+// Inline styles for mood cells that need exact warm palette colors
+const MOOD_CELL_STYLE: Record<string, string> = {
+  great:     '#C4762A',
+  good:      '#6A9B62',
+  okay:      '#8A9BAA',
+  low:       '#8A8078',
+  difficult: '#6B5C4E',
 };
 const MOOD_LABEL: Record<string, string> = {
   great: 'Great', good: 'Good', okay: 'Okay', low: 'Low', difficult: 'Hard',
 };
 const MOOD_BG: Record<string, string> = {
   great:     'bg-amber-50 border-amber-200',
-  good:      'bg-emerald-50 border-emerald-200',
-  okay:      'bg-slate-50 border-slate-200',
-  low:       'bg-blue-50 border-blue-200',
-  difficult: 'bg-slate-100 border-slate-300',
+  good:      'bg-stone-50 border-stone-200',
+  okay:      'bg-stone-50 border-stone-200',
+  low:       'bg-stone-100 border-stone-200',
+  difficult: 'bg-stone-100 border-stone-300',
 };
 const MOOD_TEXT: Record<string, string> = {
-  great: 'text-amber-700', good: 'text-emerald-700', okay: 'text-slate-600',
-  low: 'text-blue-700', difficult: 'text-slate-600',
+  great: 'text-amber-700', good: 'text-stone-600', okay: 'text-stone-500',
+  low: 'text-stone-500', difficult: 'text-stone-600',
 };
 const MOOD_EMOJI: Record<string, string> = {
   great: '✨', good: '🌿', okay: '○', low: '◌', difficult: '·',
@@ -92,8 +102,8 @@ function findReflectionEntry(
 /** Small badge shown on month label / week number when a reflection entry exists */
 function ReflectionDot({ type }: { type: ReflectionEntryType }) {
   const colours: Record<ReflectionEntryType, string> = {
-    weekly:  'bg-violet-400',
-    monthly: 'bg-sky-400',
+    weekly:  'bg-amber-500',
+    monthly: 'bg-stone-400',
     yearly:  'bg-amber-400',
   };
   return (
@@ -151,6 +161,23 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
   const [focusWeek, setFocusW]  = useState<Date>(startOfWeek(new Date()));
   const [focusDay, setFocusDay] = useState<string | null>(null);
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
+  const [activeEraFilter, setActiveEraFilter] = useState<string | null>(null);
+  const [eras, setEras] = useState<Era[]>([]);
+
+  useEffect(() => {
+    setEras(erasStorage.getAll());
+  }, []);
+
+  const activeErasThisYear = useMemo(() => {
+    const ys = startOfYear(new Date(year, 0, 1)).getTime();
+    const ye = endOfYear(new Date(year, 0, 1)).getTime();
+    return eras.filter(era => {
+      if (!era.startDate) return false;
+      const st = parseISO(era.startDate).getTime();
+      const en = era.endDate ? parseISO(era.endDate).getTime() : Infinity;
+      return st <= ye && en >= ys;
+    });
+  }, [eras, year]);
 
   // ── First-run empty state ──────────────────────────────────────────────
   const dailyEntries = useMemo(() => entries.filter(e => !e.date.startsWith('reflection-')), [entries]);
@@ -193,6 +220,25 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     entries.filter(e => getYear(parseISO(e.date)) === year),
     [entries, year]
   );
+
+  // ── Active Era per Drill-down Context ──────────────────────────────────
+  const activeFocusDay = useMemo(() => {
+    if (level === 'day' && focusDay) return parseISO(focusDay);
+    if (level === 'week') return focusWeek;
+    if (level === 'month') return new Date(year, focusMonth, 1);
+    return null;
+  }, [level, focusDay, focusWeek, year, focusMonth]);
+
+  const activeFocusEra = useMemo(() => {
+    if (!activeFocusDay) return null;
+    const t = activeFocusDay.getTime();
+    return eras.find(era => {
+      if (!era.startDate) return false;
+      const st = parseISO(era.startDate).getTime();
+      const en = era.endDate ? parseISO(era.endDate).getTime() : Infinity;
+      return t >= st && t <= en;
+    });
+  }, [activeFocusDay, eras]);
 
   // ── Breadcrumb nav ─────────────────────────────────────────────────────
   const YearNav = () => (
@@ -262,6 +308,14 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             {format(parseISO(focusDay), 'EEE d')}
           </span>
         </>
+      )}
+
+      {/* Chapter Label */}
+      {activeFocusEra && level !== 'year' && (
+        <span className="ml-3 px-2 py-0.5 mt-0.5 text-[11px] rounded-md font-medium tracking-wide border" 
+              style={{ backgroundColor: (activeFocusEra.colour || '#c2714f') + '15', color: '#5a5550', borderColor: (activeFocusEra.colour || '#c2714f') + '25' }}>
+          Chapter: {activeFocusEra.name}
+        </span>
       )}
 
       {level !== 'day' && (
@@ -338,7 +392,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               </button>
               <div className="grid grid-cols-7 gap-0.5">
                 {DAY_LABELS.map((d, i) => (
-                  <div key={i} className="text-[7px] text-stone-300 text-center pb-0.5 font-medium">{d}</div>
+                  <div key={i} className="text-[7px] text-stone-400 text-center pb-0.5 font-medium">{d}</div>
                 ))}
                 {Array(paddingBefore).fill(null).map((_, i) => (
                   <div key={`pad-${i}`} />
@@ -348,30 +402,45 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   const entry = entryMap.get(ds);
                   const todayC = isToday(day);
                   const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
+                  
+                  const activeEras = eras.filter(era => {
+                    if (!era.startDate) return false;
+                    const t = day.getTime();
+                    const st = parseISO(era.startDate).getTime();
+                    const en = era.endDate ? parseISO(era.endDate).getTime() : Infinity;
+                    return t >= st && t <= en;
+                  });
+                  const activeEra = activeEras[0]; // Primary era
+                  const eraMatch = !activeEraFilter || (activeEra?.id === activeEraFilter);
+                  
                   return (
-                    <motion.button
-                      key={ds}
-                      whileHover={{ scale: 1.4 }}
-                      whileTap={{ scale: 0.85 }}
-                      onClick={() => {
-                        setFocus(mi);
-                        setFocusW(startOfWeek(day));
-                        if (entry) { setFocusDay(ds); setLevel('day'); }
-                        else onSelectDate(ds);
-                      }}
-                      title={ds}
-                      className={`
-                        aspect-square rounded-sm transition-all
-                        ${entry?.mood
-                          ? MOOD_CELL[entry.mood]
-                          : entry
-                            ? 'bg-stone-400 ring-1 ring-stone-500 ring-offset-[1px] ring-dashed'
-                            : 'bg-stone-300/80 hover:bg-stone-400/60'
-                        }
-                        ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse' : todayC ? 'ring-1 ring-stone-500 ring-offset-1' : ''}
-                        ${activeTagFilter && !tagMatch ? 'opacity-20' : ''}
-                      `}
-                    />
+                    <div key={ds} className="relative aspect-square overflow-hidden rounded-sm" style={activeEra && eraMatch ? { backgroundColor: activeEra.colour + '33' } : undefined}>
+                      <motion.button
+                        whileHover={{ scale: 1.4 }}
+                        whileTap={{ scale: 0.85 }}
+                        onClick={() => {
+                          setFocus(mi);
+                          setFocusW(startOfWeek(day));
+                          if (entry) { setFocusDay(ds); setLevel('day'); }
+                          else onSelectDate(ds);
+                        }}
+                        title={ds}
+                        className={`
+                          w-full h-full transition-all flex items-center justify-center
+                          ${!entry?.mood
+                            ? entry
+                              ? 'bg-stone-400 ring-1 ring-stone-500 ring-offset-[1px] ring-dashed rounded-sm'
+                              : activeEra
+                                ? 'bg-transparent hover:bg-black/10 rounded-sm'
+                                : 'bg-stone-300/80 hover:bg-stone-400/60 rounded-sm'
+                            : 'rounded-sm'
+                          }
+                          ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse z-10 rounded-sm' : todayC ? 'ring-1 ring-stone-500 ring-offset-1 z-10 rounded-sm' : ''}
+                          ${(activeTagFilter && !tagMatch) || (activeEraFilter && !eraMatch) ? 'opacity-20' : ''}
+                        `}
+                        style={entry?.mood ? { backgroundColor: MOOD_CELL_STYLE[entry.mood] } : undefined}
+                      />
+                    </div>
                   );
                 })}
               </div>
@@ -379,6 +448,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           ))}
         </div>
         <MoodLegend />
+        <EraLegend />
       </div>
     );
   };
@@ -393,12 +463,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       className="mb-8 rounded-2xl bg-amber-50 border border-amber-100 px-6 py-6 max-w-xl"
     >
       <p
-        className="text-slate-700 text-xl font-light leading-snug mb-2"
+        className="text-stone-700 text-xl font-light leading-snug mb-2"
         style={{ fontFamily: 'var(--font-display)' }}
       >
         Every day you write, a dot lights up.
       </p>
-      <p className="text-slate-500 text-sm leading-relaxed mb-5">
+      <p className="text-stone-500 text-sm leading-relaxed mb-5">
         Over time this becomes a map of your emotional life — colours for how you felt, a record only you can read.
       </p>
       <div className="flex items-center gap-4">
@@ -411,7 +481,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         </Button>
         <button
           onClick={handleDismissWelcome}
-          className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
         >
           Got it
         </button>
@@ -481,9 +551,32 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     </div>
   );
 
-  // ── TAG FILTER STRIP — shown below YearNav when a filter is active ───
-  const TagFilterStrip = () => {
-    if (!activeTagFilter) return null;
+  // ── Era Legend ─────────────────────────────────────────────────────────
+  const EraLegend = () => {
+    if (activeErasThisYear.length === 0) return null;
+    return (
+      <div className="mt-3 flex items-center gap-x-4 gap-y-2 flex-wrap pt-3 border-t border-stone-200/50">
+        <span className="text-[10px] text-stone-400 uppercase tracking-widest pl-1">Chapters</span>
+        {activeErasThisYear.map(era => (
+          <button
+            key={era.id}
+            onClick={() => setActiveEraFilter(activeEraFilter === era.id ? null : era.id)}
+            className={`flex items-center gap-1.5 transition-opacity ${activeEraFilter && activeEraFilter !== era.id ? 'opacity-40' : 'hover:opacity-80'}`}
+          >
+            <div className="w-5 h-2 rounded-sm" style={{ backgroundColor: (era.colour || '#c2714f') + '40' }} />
+            <span className="text-[11px] font-medium" style={{ color: '#5a5550' }}>{era.name}</span>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // ── TAG & ERA FILTER STRIP ──────────────────────────────────────────────
+  const FilterStrip = () => {
+    if (!activeTagFilter && !activeEraFilter) return null;
+    
+    const activeEra = activeEraFilter ? eras.find(e => e.id === activeEraFilter) : null;
+    
     return (
       <motion.div
         initial={{ opacity: 0, y: -6 }}
@@ -493,22 +586,40 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         className="flex items-center gap-2 mb-6 -mt-2"
       >
         <span className="text-[11px] text-stone-400 uppercase tracking-widest">Filtered by</span>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium"
-          style={{ backgroundColor: '#3C3C38', color: '#EDE8DF' }}>
-          {activeTagFilter}
-          <button
-            onClick={() => setActiveTagFilter(null)}
-            className="text-slate-300 hover:text-white transition-colors ml-0.5"
-            aria-label="Clear tag filter"
-          >
-            ×
-          </button>
-        </span>
+        
+        {activeTagFilter && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium"
+            style={{ backgroundColor: '#3C3C38', color: '#EDE8DF' }}>
+            {activeTagFilter}
+            <button
+              onClick={() => setActiveTagFilter(null)}
+              className="text-stone-400 hover:text-white transition-colors ml-0.5"
+              aria-label="Clear tag filter"
+            >
+              ×
+            </button>
+          </span>
+        )}
+        
+        {activeEra && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium border"
+            style={{ backgroundColor: (activeEra.colour || '#c2714f') + '15', color: '#3C3C38', borderColor: (activeEra.colour || '#c2714f') + '40' }}>
+            Chapter: {activeEra.name}
+            <button
+              onClick={() => setActiveEraFilter(null)}
+              className="text-stone-500 hover:text-stone-800 transition-colors ml-0.5"
+              aria-label="Clear era filter"
+            >
+              ×
+            </button>
+          </span>
+        )}
+
         <button
-          onClick={() => setActiveTagFilter(null)}
-          className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+          onClick={() => { setActiveTagFilter(null); setActiveEraFilter(null); }}
+          className="text-xs text-stone-400 hover:text-stone-600 transition-colors ml-2"
         >
-          clear
+          clear {activeTagFilter && activeEraFilter ? 'all' : ''}
         </button>
       </motion.div>
     );
@@ -527,17 +638,17 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       label:        'Weekly reflection',
       emptyLabel:   'No weekly reflection yet',
       emptyPrompt:  'How did the week unfold? What mattered most?',
-      accentText:   'text-violet-600',
+      accentText:   'text-amber-700',
       accentButton: 'text-stone-500 hover:text-stone-700 border-stone-200 hover:border-stone-400',
-      dotCls:       'bg-violet-400',
+      dotCls:       'bg-amber-500',
     },
     monthly: {
       label:        'Monthly reflection',
       emptyLabel:   'No monthly reflection yet',
       emptyPrompt:  'What defined this month? What shifted?',
-      accentText:   'text-sky-600',
+      accentText:   'text-stone-600',
       accentButton: 'text-stone-500 hover:text-stone-700 border-stone-200 hover:border-stone-400',
-      dotCls:       'bg-sky-400',
+      dotCls:       'bg-stone-400',
     },
     yearly: {
       label:        'Yearly reflection',
@@ -579,8 +690,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-stone-200/60 px-5 py-4 mb-5"
-          style={{ backgroundColor: 'rgba(255,255,255,0.35)' }}
+          className="rounded-2xl px-5 py-4 mb-5"
+          style={{
+            backgroundColor: 'var(--card)',
+            border: '1.5px solid rgba(28,28,24,0.22)',
+            boxShadow: '0 2px 8px rgba(28,28,24,0.10)',
+          }}
         >
           <div className="flex items-center justify-between">
             <div>
@@ -613,8 +728,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-stone-200/60 px-5 py-4 mb-5"
-        style={{ backgroundColor: 'rgba(255,255,255,0.35)' }}
+        className="rounded-2xl px-5 py-4 mb-5"
+        style={{
+          backgroundColor: 'var(--card)',
+          border: '1.5px solid rgba(28,28,24,0.22)',
+          boxShadow: '0 2px 8px rgba(28,28,24,0.10)',
+        }}
       >
         {/* Header row */}
         <div className="flex items-center justify-between mb-3">
@@ -721,7 +840,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   return (
                     <button
                       onClick={() => { setFocusW(weekStart); setLevel('week'); }}
-                      className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-stone-300 hover:text-stone-500 transition-colors"
+                      className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-stone-400 hover:text-stone-500 transition-colors"
                       title="View this week"
                     >
                       W{getWeek(weekStart)}
@@ -749,18 +868,37 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                           else onSelectDate(ds);
                         }}
                         className={`
-                          aspect-square rounded-lg border transition-all flex flex-col items-center justify-center
+                          aspect-square rounded-lg transition-all flex flex-col items-center justify-center
                           text-sm relative
                           ${!inMonth ? 'opacity-20' : ''}
                           ${entry?.mood
-                            ? `${MOOD_CELL[entry.mood]} border-transparent text-stone-700 font-medium`
+                            ? 'text-stone-800 font-medium'
                             : entry
-                              ? 'bg-stone-200 border-stone-300 text-stone-600 ring-1 ring-stone-300 ring-dashed'
-                              : 'border-stone-200/60 hover:border-stone-300 text-stone-500'
+                              ? 'text-stone-600'
+                              : 'text-stone-400 hover:text-stone-500'
                           }
-                          ${todayC ? 'ring-2 ring-amber-400 ring-offset-1' : ''}
+                          ${todayC ? 'ring-2 ring-amber-500 ring-offset-1' : ''}
                           ${activeTagFilter && !tagMatch && inMonth ? 'opacity-20' : ''}
                         `}
+                        style={
+                          entry?.mood
+                            ? {
+                                backgroundColor: MOOD_CELL_STYLE[entry.mood] + 'AA',
+                                border: '1.5px solid rgba(28,28,24,0.18)',
+                                boxShadow: '0 1px 4px rgba(28,28,24,0.10)',
+                              }
+                            : entry
+                              ? {
+                                  backgroundColor: 'var(--card)',
+                                  border: '1.5px solid rgba(28,28,24,0.20)',
+                                  boxShadow: '0 1px 4px rgba(28,28,24,0.10)',
+                                }
+                              : {
+                                  backgroundColor: 'var(--card)',
+                                  border: '1px solid rgba(28,28,24,0.12)',
+                                  opacity: 0.5,
+                                }
+                        }
                       >
                         <span>{format(day, 'd')}</span>
                         {entry?.mood && (
@@ -831,7 +969,8 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               const ds    = format(day, 'yyyy-MM-dd');
               const entry = entryMap.get(ds);
               const today = isToday(day);
-              const dotCls = entry?.mood ? MOOD_CELL[entry.mood] : today ? 'bg-stone-400' : 'bg-stone-200';
+              const dotCls = entry?.mood ? '' : today ? 'bg-stone-400' : 'bg-stone-200';
+              const dotStyle = entry?.mood ? { backgroundColor: MOOD_CELL_STYLE[entry.mood] } : undefined;
               const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
 
               return (
@@ -847,16 +986,25 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                     }}
                     className={`
                       w-[10px] h-[10px] rounded-full mt-3 shrink-0 relative z-10 transition-all
-                      ${dotCls} ${entry ? 'scale-125 hover:scale-150' : 'hover:bg-slate-300'}
+                      ${dotCls} ${entry ? 'scale-125 hover:scale-150' : 'hover:bg-stone-300'}
                       ${today ? 'ring-2 ring-stone-500 ring-offset-1' : ''}
                     `}
+                    style={dotStyle}
                     title={ds}
                   />
 
                   {/* Day content */}
-                  <div className={`flex-1 rounded-xl border p-3 transition-all
-                    ${entry ? 'border-stone-200/60 shadow-sm' : 'bg-transparent border-dashed border-stone-200/60'}
-                  `}>
+                  <div
+                    className="flex-1 rounded-xl p-3 transition-all"
+                    style={{
+                      backgroundColor: 'var(--card)',
+                      border: entry
+                        ? '1px solid rgba(28,28,24,0.18)'
+                        : '1px solid rgba(28,28,24,0.10)',
+                      boxShadow: entry ? '0 1px 4px rgba(28,28,24,0.08)' : undefined,
+                      opacity: entry ? 1 : 0.6,
+                    }}
+                  >
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm font-medium ${today ? '' : 'text-stone-500'}`}
                         style={today ? { color: '#3C3C38' } : undefined}>
@@ -878,7 +1026,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                     ) : (
                       <button
                         onClick={() => onSelectDate(ds)}
-                        className="text-sm text-stone-300 hover:text-stone-400 transition-colors"
+                        className="text-sm text-stone-400 hover:text-stone-500 transition-colors"
                       >
                         {today ? "Write today's entry →" : 'Nothing written.'}
                       </button>
@@ -916,7 +1064,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     if (!entry) {
       return (
         <div className="max-w-lg py-16">
-          <p className="text-stone-300 text-sm mb-4">Nothing written for this day.</p>
+          <p className="text-stone-400 text-sm mb-4">Nothing written for this day.</p>
           <Button onClick={() => onSelectDate(focusDay)} variant="outline" size="sm">
             Write an entry →
           </Button>
@@ -924,12 +1072,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       );
     }
 
-    const moodStyle = entry.mood ? MOOD_BG[entry.mood] : 'bg-slate-50 border-slate-200';
-    const moodText  = entry.mood ? MOOD_TEXT[entry.mood] : 'text-slate-600';
+    const moodStyle = entry.mood ? MOOD_BG[entry.mood] : 'bg-stone-50 border-stone-200';
+    const moodText  = entry.mood ? MOOD_TEXT[entry.mood] : 'text-stone-500';
 
     const REFLECTION_BADGE: Record<string, { label: string; cls: string }> = {
-      weekly:  { label: 'Weekly reflection', cls: 'bg-violet-100 text-violet-600' },
-      monthly: { label: 'Monthly reflection', cls: 'bg-sky-100 text-sky-600' },
+      weekly:  { label: 'Weekly reflection', cls: 'bg-amber-100 text-amber-700' },
+      monthly: { label: 'Monthly reflection', cls: 'bg-stone-200 text-stone-600' },
       yearly:  { label: 'Yearly reflection',  cls: 'bg-amber-100 text-amber-700' },
     };
     const badge = entry.reflectionType && entry.reflectionType !== 'daily'
@@ -988,9 +1136,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         {/* Inner state — shown as a quiet pill when present */}
         {entry.innerState && (() => {
           const stateStyle: Record<string, string> = {
-            clear:    'bg-emerald-50 text-emerald-700 border-emerald-100',
+            clear:    'bg-stone-100 text-stone-600 border-stone-200',
             restless: 'bg-amber-50 text-amber-700 border-amber-100',
-            heavy:    'bg-slate-100 text-slate-500 border-slate-200',
+            heavy:    'bg-stone-100 text-stone-500 border-stone-200',
           };
           const stateLabel: Record<string, string> = {
             clear:    'Clear mind',
@@ -1078,7 +1226,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         <YearNav />
 
         <AnimatePresence>
-          <TagFilterStrip />
+          <FilterStrip />
         </AnimatePresence>
 
         <AnimatePresence mode="wait">
@@ -1151,7 +1299,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 <span>{y}</span>
                 {yearlyReflection && !isActive && <ReflectionDot type="yearly" />}
                 {mood && !isActive && !yearlyReflection && (
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`} title={MOOD_LABEL[mood]} />
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[mood] }} title={MOOD_LABEL[mood]} />
                 )}
               </button>
               <button
@@ -1162,7 +1310,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 className={`
                   absolute right-1 top-1/2 -translate-y-1/2 text-[10px] opacity-0 group-hover:opacity-100
                   transition-opacity px-1.5 py-0.5 rounded
-                  ${yearlyReflection ? 'text-amber-500 hover:text-amber-700' : 'text-slate-400 hover:text-slate-600'}
+                  ${yearlyReflection ? 'text-amber-500 hover:text-amber-700' : 'text-stone-400 hover:text-stone-600'}
                 `}
               >
                 {yearlyReflection ? '✎' : '+'}
@@ -1197,7 +1345,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               <span>{name}</span>
               {hasReflection && !isActive && <ReflectionDot type="monthly" />}
               {mood && !isActive && !hasReflection && (
-                <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[mood]}`} title={MOOD_LABEL[mood]} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[mood] }} title={MOOD_LABEL[mood]} />
               )}
             </button>
           );
@@ -1229,9 +1377,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               >
                 <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
                 {entry?.mood
-                  ? <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[entry.mood]}`} />
+                  ? <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[entry.mood] }} />
                   : entry
-                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-slate-400 ring-1 ring-slate-500 ring-dashed" />
+                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-stone-400 ring-1 ring-stone-500 ring-dashed" />
                     : null
                 }
               </button>
@@ -1267,9 +1415,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               >
                 <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
                 {entry?.mood
-                  ? <span className={`w-2 h-2 rounded-full shrink-0 ${MOOD_CELL[entry.mood]}`} />
+                  ? <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[entry.mood] }} />
                   : entry
-                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-slate-400 ring-1 ring-slate-500 ring-dashed" />
+                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-stone-400 ring-1 ring-stone-500 ring-dashed" />
                     : null
                 }
               </button>

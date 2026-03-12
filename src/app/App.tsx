@@ -144,14 +144,14 @@ export default function App() {
       {/* Logo */}
       <div className="px-5 py-6 border-b border-stone-200/60">
         <h1 className="text-base font-medium tracking-tight" style={{ color: '#3C3C38' }}>Journal</h1>
-        <p className="text-xs text-stone-400 mt-0.5">A quiet space to think clearly</p>
+        <p className="text-xs text-stone-500 mt-0.5">A quiet space to think clearly</p>
       </div>
 
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 px-3 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-500 px-3 mb-1">
               {group.label}
             </p>
             {group.items.map((item) => {
@@ -166,7 +166,7 @@ export default function App() {
                     transition-all duration-150 mb-0.5 rounded-r-md
                     ${isActive
                       ? "border-l-2 border-amber-500 text-stone-700 pl-[10px]"
-                      : "border-l-2 border-transparent text-stone-400 hover:text-stone-700 pl-[10px]"
+                      : "border-l-2 border-transparent text-stone-600 hover:text-stone-800 pl-[10px]"
                     }
                   `}
                   style={isActive ? { color: '#3C3C38' } : undefined}
@@ -182,7 +182,7 @@ export default function App() {
 
       {/* Footer */}
       <div className="px-5 py-4 border-t border-stone-200/60">
-        <p className="text-[10px] text-stone-400 leading-relaxed">
+        <p className="text-[10px] text-stone-500 leading-relaxed">
           Private. Secure. Always yours.
         </p>
       </div>
@@ -251,7 +251,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#EDE8DF', color: '#3C3C38' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: '#E8E2D8', color: '#3C3C38' }}>
       <Toaster position="top-center" />
 
       {/* ── Desktop Sidebar ── */}
@@ -270,7 +270,7 @@ export default function App() {
             {/* Collapse button */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="absolute top-4 right-3 p-1.5 rounded-md text-stone-400 hover:text-stone-600 transition-all"
+              className="absolute top-4 right-3 p-1.5 rounded-md text-stone-500 hover:text-stone-700 transition-all"
               title="Collapse sidebar"
             >
               <ChevronLeft className="size-4" />
@@ -282,7 +282,7 @@ export default function App() {
             {/* Expand button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-stone-400 hover:text-stone-700 mb-3"
+              className="p-2 rounded-lg text-stone-500 hover:text-stone-700 mb-3"
               title="Expand sidebar"
             >
               <Menu className="size-4" />
@@ -297,7 +297,7 @@ export default function App() {
                   title={item.label}
                   className={`
                     p-2 rounded-lg transition-all
-                    ${isActive ? "text-amber-600" : "text-stone-400 hover:text-stone-700"}
+                    ${isActive ? "text-amber-600" : "text-stone-600 hover:text-stone-800"}
                   `}
                 >
                   <Icon className="size-4" />
@@ -339,10 +339,10 @@ export default function App() {
                 exit={{ x: -280 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="fixed left-0 top-0 bottom-0 w-64 z-40 md:hidden shadow-xl"
-                style={{ backgroundColor: '#EDE8DF' }}
+                style={{ backgroundColor: '#E8E2D8' }}
               >
                 <div className="absolute top-3 right-3">
-                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-stone-400 hover:text-stone-600">
+                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-stone-500 hover:text-stone-700">
                     <X className="size-4" />
                   </button>
                 </div>
