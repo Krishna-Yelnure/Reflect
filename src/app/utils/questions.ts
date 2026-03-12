@@ -50,7 +50,19 @@ export const questionsStorage = {
     return this.getAll().filter(q => q.isActive);
   },
 
+  getResolved(): PersistentQuestion[] {
+    return this.getAll().filter(q => !q.isActive && q.resolvedAt);
+  },
+
   markReflected(id: string): void {
     this.update(id, { lastReflectedAt: new Date().toISOString() });
+  },
+
+  resolve(id: string, resolutionText: string): void {
+    this.update(id, { 
+      isActive: false, 
+      resolvedAt: new Date().toISOString(),
+      resolution: resolutionText
+    });
   },
 };

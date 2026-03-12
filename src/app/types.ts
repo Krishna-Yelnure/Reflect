@@ -111,7 +111,11 @@ export interface MemoryThread {
 export interface PersistentQuestion {
   id: string;
   text: string;
-  isOpen: boolean;
+  notes?: string;
+  isActive: boolean;
+  resolvedAt?: string;
+  resolution?: string;
+  lastReflectedAt?: string;
   createdAt: string;
 }
 

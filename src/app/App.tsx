@@ -224,7 +224,7 @@ export default function App() {
       )}
       {currentView === "compass" && (
         <motion.div key="compass" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <InnerCompass onWriteAbout={handleWriteAboutQuestion} />
+          <InnerCompass onWriteAbout={handleWriteAboutQuestion} entries={entries} onViewEntry={handleEditEntry} />
         </motion.div>
       )}
       {currentView === "privacy" && (

@@ -15,9 +15,11 @@ import { toast } from 'sonner';
 
 interface InnerCompassProps {
   onWriteAbout?: (questionId: string) => void;
+  entries?: any[]; // Using any to avoid importing JournalEntryType directly right now, or we can use JournalEntry from types
+  onViewEntry?: (date: string) => void;
 }
 
-export function InnerCompass({ onWriteAbout }: InnerCompassProps) {
+export function InnerCompass({ onWriteAbout, entries = [], onViewEntry }: InnerCompassProps) {
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="mb-8">
@@ -48,7 +50,7 @@ export function InnerCompass({ onWriteAbout }: InnerCompassProps) {
         </TabsContent>
 
         <TabsContent value="questions" className="mt-0 outline-none">
-          <QuestionsTab onWriteAbout={onWriteAbout} />
+          <QuestionsTab onWriteAbout={onWriteAbout} entries={entries} onViewEntry={onViewEntry} />
         </TabsContent>
       </Tabs>
     </div>
@@ -188,12 +190,17 @@ function ValuesTab() {
 
 interface QuestionsTabProps {
   onWriteAbout?: (questionId: string) => void;
+  entries: any[];
+  onViewEntry?: (date: string) => void;
 }
 
-function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
+function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps) {
   const [questions, setQuestions] = useState<PersistentQuestion[]>(questionsStorage.getAll());
   const [isAdding, setIsAdding] = useState(false);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ question: '', notes: '' });
+  const [resolutionText, setResolutionText] = useState('');
 
   const handleAdd = () => {
     if (!formData.question.trim()) return;
@@ -221,17 +228,43 @@ function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
     toast.success('Question deleted');
   };
 
+  const handleResolve = (id: string) => {
+    if (!resolutionText.trim()) return;
+    questionsStorage.resolve(id, resolutionText);
+    setQuestions(questionsStorage.getAll());
+    
+    // Ask to convert to value
+    if (window.confirm('Would you like to save this resolution as a Core Value in your Inner Compass?')) {
+      preferences.addAnchor({ type: 'value', text: resolutionText.trim() });
+      toast.success('Question resolved and added to Values');
+    } else {
+      toast.success('Question resolved');
+    }
+    
+    setResolvingId(null);
+    setResolutionText('');
+  };
+
+  const getEntriesForQuestion = (qId: string) => entries
+    .filter(e => e.questionId === qId)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const activeQuestions = questions.filter(q => q.isActive);
+  const pausedQuestions = questions.filter(q => !q.isActive && !q.resolvedAt);
+  const resolvedQuestions = questions.filter(q => !q.isActive && q.resolvedAt);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
+      {/* Active & Paused Section */}
+      <div className="space-y-4">
       <AnimatePresence mode="popLayout">
-        {questions
-          .sort((a, b) => {
-            const aActive = (a as any).isActive;
-            const bActive = (b as any).isActive;
-            return aActive === bActive ? 0 : aActive ? -1 : 1;
-          })
+        {[...activeQuestions, ...pausedQuestions]
           .map((question, index) => {
             const q = question as any;
+            const threadedEntries = getEntriesForQuestion(q.id);
+            const isExpanded = expandedId === q.id;
+            const isResolving = resolvingId === q.id;
+
             return (
               <motion.div
                 key={question.id}
@@ -243,7 +276,7 @@ function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
               >
                 <Card className={`p-6 ${!q.isActive ? 'opacity-60' : ''}`} style={{ backgroundColor: 'var(--card)' }}>
                   <div className="flex items-start gap-4">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {q.isActive ? (
                           <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none">
@@ -254,21 +287,89 @@ function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
                             Paused
                           </Badge>
                         )}
+                        <span className="text-xs text-stone-400">
+                          {threadedEntries.length} {threadedEntries.length === 1 ? 'entry' : 'entries'}
+                        </span>
                       </div>
-                      <p className="text-lg mb-2" style={{ color: 'var(--text-primary)' }}>{q.question || question.text}</p>
+                      
+                      <button onClick={() => setExpandedId(isExpanded ? null : q.id)} className="text-left w-full focus:outline-none">
+                        <p className="text-lg hover:text-amber-800 transition-colors" style={{ color: 'var(--text-primary)' }}>{q.question || question.text}</p>
+                      </button>
+
                       {q.notes && (
-                        <p className="text-sm mb-3" style={{ color: 'var(--text-body)' }}>{q.notes}</p>
+                        <p className="text-sm mt-2" style={{ color: 'var(--text-body)' }}>{q.notes}</p>
                       )}
                       {q.lastReflectedAt && (
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
                           Last returned to{' '}
                           {formatDistanceToNow(new Date(q.lastReflectedAt), {
                             addSuffix: true,
                           })}
                         </p>
                       )}
+
+                      {/* Resolving UI */}
+                      <AnimatePresence>
+                        {isResolving && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-4 p-4 rounded-xl border border-amber-200 bg-amber-50"
+                          >
+                            <p className="text-sm font-medium text-amber-900 mb-2">What clarity have you reached?</p>
+                            <Textarea
+                              value={resolutionText}
+                              onChange={e => setResolutionText(e.target.value)}
+                              placeholder="This question taught me..."
+                              className="mb-3 border-amber-200 bg-white/50 focus:bg-white"
+                              rows={3}
+                            />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => handleResolve(q.id)} disabled={!resolutionText.trim()} className="button-primary">
+                                Mark Resolved
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => { setResolvingId(null); setResolutionText(''); }} className="border-amber-200 text-amber-800 hover:bg-amber-100">
+                                Cancel
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Threaded Entries */}
+                      <AnimatePresence>
+                        {isExpanded && threadedEntries.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-6 space-y-4 pl-4 border-l-2 border-amber-200/50"
+                          >
+                            <h4 className="text-xs font-medium uppercase tracking-wider text-stone-400">Question Thread</h4>
+                            {threadedEntries.map(entry => (
+                              <div key={entry.id} className="group">
+                                <div className="flex items-center justify-between mb-1">
+                                  <p className="text-xs font-medium text-stone-500">
+                                    {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                  {onViewEntry && (
+                                    <Button variant="ghost" size="sm" onClick={() => onViewEntry(entry.date)} className="opacity-0 group-hover:opacity-100 transition-opacity h-6 px-2 text-stone-400 hover:text-amber-700">
+                                      Open
+                                    </Button>
+                                  )}
+                                </div>
+                                <p className="text-sm text-stone-600 italic">
+                                  "{entry.insight || entry.whatHappened || entry.freeWrite || 'Empty entry'}"
+                                </p>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
+
+                    <div className="flex flex-col items-end gap-1 shrink-0">
                       {onWriteAbout && q.isActive && (
                         <Button
                           variant="ghost"
@@ -278,6 +379,17 @@ function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
                         >
                           <FileText className="size-4" />
                           Write
+                        </Button>
+                       )}
+                      {q.isActive && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => { setResolvingId(q.id); setExpandedId(q.id); }}
+                          className="gap-2 text-amber-600 hover:text-amber-800 hover:bg-amber-50"
+                        >
+                          <Target className="size-4" />
+                          Resolve
                         </Button>
                       )}
                       <Button
@@ -362,7 +474,89 @@ function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
           </p>
         </div>
       )}
+      </div>
 
+      {/* Resolved Archive Section */}
+      {resolvedQuestions.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-stone-200/60">
+          <h3 className="font-medium text-stone-500 mb-4 px-2 tracking-wide uppercase text-xs">Resolved & Archived</h3>
+          <div className="space-y-4">
+            {resolvedQuestions.map(q => {
+              const threadedEntries = getEntriesForQuestion(q.id);
+              const isExpanded = expandedId === q.id;
+
+              return (
+                <Card key={q.id} className="p-5 opacity-75 hover:opacity-100 transition-opacity" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                         <Badge variant="outline" className="text-stone-500 border-stone-300">Resolved</Badge>
+                         {q.resolvedAt && (
+                           <span className="text-xs text-stone-400">
+                             {new Date(q.resolvedAt).toLocaleDateString()}
+                           </span>
+                         )}
+                      </div>
+                      <button onClick={() => setExpandedId(isExpanded ? null : q.id)} className="text-left w-full focus:outline-none">
+                        <p className="text-lg line-through text-stone-400 mb-2">{q.question || q.text}</p>
+                      </button>
+                      
+                      {q.resolution && (
+                        <div className="mt-2 p-3 bg-white/40 rounded-lg italic text-sm text-stone-600 border border-stone-200/50">
+                          {q.resolution}
+                        </div>
+                      )}
+
+                      {/* Threaded Entries */}
+                      <AnimatePresence>
+                        {isExpanded && threadedEntries.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mt-6 space-y-4 pl-4 border-l-2 border-stone-300"
+                          >
+                            <h4 className="text-xs font-medium uppercase tracking-wider text-stone-400">Question Thread</h4>
+                            {threadedEntries.map(entry => (
+                              <div key={entry.id} className="group">
+                                <div className="flex items-center justify-between mb-1">
+                                  <p className="text-xs font-medium text-stone-500">
+                                    {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                  {onViewEntry && (
+                                    <Button variant="ghost" size="sm" onClick={() => onViewEntry(entry.date)} className="opacity-0 group-hover:opacity-100 transition-opacity h-6 px-2 text-stone-400 hover:text-stone-700">
+                                      Open
+                                    </Button>
+                                  )}
+                                </div>
+                                <p className="text-sm text-stone-500 italic">
+                                  "{entry.insight || entry.whatHappened || entry.freeWrite || 'Empty entry'}"
+                                </p>
+                              </div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(q.id)}
+                        className="text-stone-400 hover:text-red-600"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Info Block */}
       {questions.length > 0 && (
         <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
           <h3 className="font-medium mb-2" style={{ color: 'var(--text-primary)' }}>About Persistent Questions</h3>
@@ -370,7 +564,7 @@ function QuestionsTab({ onWriteAbout }: QuestionsTabProps) {
             These are questions you return to over months or years. The app doesn't expect answers—it just helps you notice how your thinking shifts.
           </p>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            You can surface these questions while writing an entry to bring them into present focus.
+            You can surface these questions while writing an entry. When clarity naturally arrives, mark them resolved to complete the cycle.
           </p>
         </div>
       )}
