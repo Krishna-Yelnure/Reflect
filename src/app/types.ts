@@ -20,10 +20,22 @@ export interface JournalEntry {
   visibility?: 'private' | 'legacy';
   isLongForm?: boolean;
   questionId?: string;
-  intention?: string;                   // A4c — forward-looking, reflection entries only
+  intention?: string;                   // Legacy - to be migrated
+  intentionAction?: string;             // A9c - Specific action for next period
+  intentionRelease?: string;            // A9c - What to release/stop doing
+  whatIReleased?: string;               // A9c - Past-facing release (Yearly)
   oneWord?: string;                     // A5a — past-facing closing word, reflection entries only
   createdAt?: string;
   updatedAt?: string;
+
+  // ── Activation Energy Engine (AEE) fields ──
+  clarity?: number;
+  resistance?: number;
+  delay?: number;
+  activationScore?: number;
+  activationLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+  firstStep?: string;
+  startedAt?: string;
 }
 
 // ── Insight ───────────────────────────────────────────────────────────────────
@@ -61,6 +73,14 @@ export interface HabitEngagement {
   habitId: string;
   date: string;
   note?: string;
+  // ── AEE fields ──
+  clarity?: number;
+  resistance?: number;
+  delay?: number;
+  activationScore?: number;
+  activationLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+  firstStep?: string;
+  startedAt?: string;
   createdAt: string;
 }
 
@@ -116,6 +136,7 @@ export interface PersistentQuestion {
   resolvedAt?: string;
   resolution?: string;
   lastReflectedAt?: string;
+  isDeferred?: boolean;                 // A9c - For questions that aren't active but aren't resolved
   createdAt: string;
 }
 

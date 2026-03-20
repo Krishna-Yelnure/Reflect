@@ -489,6 +489,61 @@ const backup = {
   },
 
   /**
+   * Safely merge a JSON snapshot with existing data.
+   * New items are appended, existing ones (by ID) are kept.
+   * Returns metadata about the import.
+   */
+  mergeAll(json: string): { entriesAdded: number; erasAdded: number; habitsAdded: number; anchorsAdded: number; questionsAdded: number; threadsAdded: number } {
+    try {
+      const snapshot = JSON.parse(json);
+      if (!snapshot.data) throw new Error('[db] Invalid backup: missing data field.');
+      const d = snapshot.data;
+      
+      let newEntriesCount = 0;
+      let erasAdded = 0;
+      let habitsAdded = 0;
+      let anchorsAdded = 0;
+      let questionsAdded = 0;
+      let threadsAdded = 0;
+
+      // Entries merge
+      const importEntries = d.entries;
+      if (importEntries && Array.isArray(importEntries)) {
+        const existing = entries.getAll();
+        const existingIds = new Set(existing.map((e: JournalEntry) => e.id));
+        const newItems = importEntries.filter((e: JournalEntry) => !existingIds.has(e.id));
+        entries.save([...existing, ...newItems.map((e: JournalEntry) => ({ ...e, tags: normaliseTags(e.tags) }))]);
+        newEntriesCount = newItems.length;
+      }
+
+      const mergeArr = (dbLayer: any, importArr: any[]): number => {
+        if (!importArr || !Array.isArray(importArr)) return 0;
+        const existing = dbLayer.getAll();
+        const existingIds = new Set(existing.map((x: any) => x.id));
+        const newItems = importArr.filter((x: any) => !existingIds.has(x.id));
+        dbLayer.save([...existing, ...newItems]);
+        return newItems.length;
+      };
+
+      habitsAdded    = mergeArr(habits, d.habits);
+      mergeArr(gentleStarts, d.gentleStarts);
+      mergeArr(engagements, d.engagements);
+      anchorsAdded   = mergeArr(anchors, d.anchors);
+      erasAdded      = mergeArr(eras, d.eras);
+      threadsAdded   = mergeArr(threads, d.threads);
+      questionsAdded = mergeArr(questions, d.questions);
+      mergeArr(longform, d.longform);
+      // Preferences: merge only if current device has no prefs at all (first install)
+      if (d.preferences && !prefs.get().theme) prefs.save(d.preferences);
+
+      return { entriesAdded: newEntriesCount, erasAdded, habitsAdded, anchorsAdded, questionsAdded, threadsAdded };
+    } catch (error) {
+      console.error('[db] Merge failed:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Wipe all data. Irreversible.
    */
   deleteAll(): void {

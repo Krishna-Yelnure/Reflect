@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Lightbulb, TrendingUp, Eye } from 'lucide-react';
+import { Lightbulb, TrendingUp, Eye, Zap, Activity } from 'lucide-react';
 import type { JournalEntry } from '@/app/types';
 import { generateInsights, getInnerStateDistribution } from '@/app/utils/insights';
 import { LanguageInsights } from '@/app/components/LanguageInsights';
@@ -72,6 +72,62 @@ function InnerStateChart({ entries }: { entries: JournalEntry[] }) {
   );
 }
 
+// ── Activation Energy Metrics ──────────────────────────────────────────────────
+function ActivationEnergyMetrics({ entries }: { entries: JournalEntry[] }) {
+  const aeeEntries = entries.filter((e) => e.activationScore !== undefined);
+  if (aeeEntries.length === 0) return null;
+
+  const avgScore = Math.round(aeeEntries.reduce((sum, e) => sum + (e.activationScore || 0), 0) / aeeEntries.length * 10) / 10;
+  const avgDelay = Math.round(aeeEntries.reduce((sum, e) => sum + (e.delay || 0), 0) / aeeEntries.length * 10) / 10;
+  const clarityBlocks = aeeEntries.filter(e => (e.clarity || 5) <= 2).length;
+  const resistanceBlocks = aeeEntries.filter(e => (e.resistance || 0) >= 4).length;
+
+  let correlationText = "You usually start easily with minimal blockers.";
+  if (clarityBlocks > resistanceBlocks) {
+    correlationText = "Lack of clarity is your most common blocker. Try breaking tasks down more.";
+  } else if (resistanceBlocks > clarityBlocks) {
+    correlationText = "Emotional resistance is your most common blocker. Be gentle with yourself.";
+  } else if (clarityBlocks > 0) {
+    correlationText = "Both clarity and resistance occasionally block you.";
+  } else if (avgDelay >= 10) {
+    correlationText = "You expect long delays, even without severe resistance. Consider smaller first steps.";
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15 }}
+      className="mb-8"
+    >
+      <div className="mb-4">
+        <h3 className="text-sm font-medium mb-0.5 flex items-center gap-1.5" style={{ color: '#1C1C18' }}>
+          <Zap className="size-4 text-amber-500" /> Start Assist
+        </h3>
+        <p className="text-xs" style={{ color: '#787068' }}>
+          Based on {aeeEntries.length} {aeeEntries.length === 1 ? 'session' : 'sessions'}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mt-2">
+        <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-100">
+          <p className="text-xs text-amber-800 uppercase tracking-widest font-medium mb-1">Avg Friction</p>
+          <p className="text-2xl font-light text-amber-900">{avgScore}</p>
+        </div>
+        <div className="p-4 rounded-xl bg-stone-50 border border-stone-100">
+          <p className="text-xs text-stone-500 uppercase tracking-widest font-medium mb-1">Avg Delay</p>
+          <p className="text-2xl font-light text-stone-800">{avgDelay}<span className="text-sm text-stone-500 ml-1">min</span></p>
+        </div>
+      </div>
+      
+      <div className="mt-3 p-3 rounded-lg bg-stone-100/50 text-sm text-stone-700 flex items-start gap-2">
+        <Activity className="size-4 shrink-0 text-stone-400 mt-0.5" />
+        <p>{correlationText}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Tiered empty states ────────────────────────────────────────────────────────
 // Three states by data density — never a void, never alarming.
 
@@ -110,6 +166,9 @@ export function Insights({ entries }: InsightsProps) {
 
       {/* Inner state — shows whenever there's enough inner state data, regardless of threshold */}
       <InnerStateChart entries={entries} />
+
+      {/* Activation Energy — shows when there is AEE data */}
+      <ActivationEnergyMetrics entries={entries} />
 
       {!sufficientData ? (
         <BuildingState entryCount={entries.length} />

@@ -1,93 +1,160 @@
 @custom-variant dark (&:is(.dark *));
 
-:root {
+:root, .theme-morning-light {
   --font-size: 16px;
 
   /* ── Typefaces ── */
-  --font-display: 'Lora', Georgia, serif;
-  --font-body:    'Inter', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
   --font-mono:    'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* ── Amber accent (one accent, applied consistently) ── */
-  --amber-accent:       #B8860B;   /* Dark Gold */
-  --amber-accent-light: #FEF9E7;
-  --amber-accent-muted: #9A7209;
-
-  /* ── Warm semantic tokens — replaces all rogue cool colors ── */
-  /* Use these instead of any blue/violet/sky/teal/emerald classes */
-
-  /* Weekly reflection: warm amber-rose */
-  --reflection-weekly-bg:     #F5EAD8;
-  --reflection-weekly-border: #D4A574;
-  --reflection-weekly-text:   #7A4A1E;
-  --reflection-weekly-dot:    #C4762A;
-  --reflection-weekly-accent: #A05A28;
-
-  /* Monthly reflection: warm sage-green (earthy, not clinical) */
-  --reflection-monthly-bg:     #E8EEE4;
-  --reflection-monthly-border: #A8BEA0;
-  --reflection-monthly-text:   #3D5C38;
-  --reflection-monthly-dot:    #6A9B62;
-  --reflection-monthly-accent: #4E7848;
-
-  /* Habit tracker: warm terracotta tones */
-  --habit-engaged-bg:       #3D2C1E;   /* deep espresso — replaces navy */
-  --habit-engaged-text:     #F0EBE2;
-  --habit-card-bg:          #EAE3D8;   /* warm parchment card */
-  --habit-card-border:      #C8B89A;
-  --habit-track-bg:         #F0E8D8;   /* replaces emerald-50 */
-  --habit-track-border:     #C8A87A;
-  --habit-track-text:       #5C3D1E;
-  --habit-milestone-dot:    #C4762A;
-  --habit-today-border:     #C4762A;
-  --habit-badge-bg:         #E8D5B8;   /* replaces emerald-100 badge */
-  --habit-badge-text:       #6B3D12;
-  --habit-badge-border:     #C4905A;
-
-  /* Memory surface: warm amber instead of blue */
-  --memory-bg:     #FBF2E4;
-  --memory-border: #D4B07A;
-  --memory-dot:    #C4762A;
-  --memory-text:   #5C3820;
-  --memory-link:   #8B5E3C;
-
-  /* Low mood: warm muted slate instead of blue */
-  --mood-low-bg:     #E8E4DC;
-  --mood-low-border: #B8B0A4;
-  --mood-low-text:   #4A4440;
-  --mood-low-dot:    #8A8078;
-
-  /* Mood dot colors — Data-legible, Richer not pastel */
-  --mood-dot-great:     #F59E0B;   /* Vibrant gold */
-  --mood-dot-good:      #10B981;   /* Emerald */
-  --mood-dot-okay:      #6B7280;   /* Gray-500 neutral */
-  --mood-dot-low:       #3B82F6;   /* Blue-500 */
-  --mood-dot-difficult: #8B5CF6;   /* Violet-500 */
-  --mood-dot-none:      rgba(0,0,0,0.03);
-
-  /* ── A5c+ Readability Pass → Warm/Cool Balance System ───────────────
-     Background: #FAF7F2 (Warm white, barely cream)
-     Text: #677382 (Blue-gray for tension and balance)
-     Accent: #6B5B4A (Dark warm brown for primary actions only)
-  ─────────────────────────────────────────────────────────────────────── */
-
-  /* FOUNDATIONS */
-  --bg-main:            #FAF7F2;   /* Main canvas */
+  /* ── Morning Light (Default) ── */
+  --bg-main:            #FAF7F2;   /* Warm cream canvas */
   --bg-surface:         #EDE8DF;   /* Input fields, subtle cards */
   --bg-elevated:        #FEFDFB;   /* Pure white cards with hint of warmth */
-
-  /* TEXT (Cool-toned) */
+  
   --text-primary:       #677382;   /* Headings, labels, nav — blue-gray */
   --text-secondary:     #8A94A0;   /* Secondary text — lighter blue-gray */
   --text-muted:         #A8998B;   /* Placeholders, disabled — warm taupe */
   --text-body:          #3C3C38;   /* Long-form content */
 
-  /* ACCENT (Warm brown — strategic) */
-  --accent-brown:       #6B5B4A;   /* Primary buttons, active states */
-  --accent-brown-dark:  #5C4A3A;   /* Hover states, emphasis */
-  --accent-brown-light: #8A7969;   /* Subtle highlights */
+  --accent-brown:       #6B5B4A;
+  --accent-brown-dark:  #5C4A3A;
+  --accent-brown-light: #8A7969;
+  
+  /* Moods (optimistic, bright) */
+  --mood-dot-great:     #F59E0B;   /* Vibrant gold */
+  --mood-dot-good:      #10B981;   /* Emerald */
+  --mood-dot-okay:      #6B7280;   /* Gray-500 neutral */
+  --mood-dot-difficult: #8B5CF6;   /* Violet-500 */
+  --mood-dot-low:       #3B82F6;   /* Blue-500 */
+  --mood-dot-none:      rgba(0,0,0,0.03);
 
-  /* SHADCN UI MAPPING */
+  /* Specific UI (inherited by components) */
+  --border-light: rgba(104, 92, 74, 0.05);
+  --border-medium: rgba(104, 92, 74, 0.12);
+  --border-heavy: rgba(104, 92, 74, 0.20);
+  --selection-bg: rgba(107, 91, 74, 0.15);
+}
+
+.theme-midnight {
+  /* ── Midnight ── */
+  --bg-main:            #0B101A;   /* Deep navy canvas */
+  --bg-surface:         #141D2C;   /* Depth elements */
+  --bg-elevated:        #1A2536;   /* Cards */
+  
+  --text-primary:       #E2E8F0;   /* Bright white-grey */
+  --text-secondary:     #94A3B8;   /* Muted blue-grey */
+  --text-muted:         #64748B;   /* Placeholders */
+  --text-body:          #CBD5E1;   /* Long-form content */
+
+  --accent-brown:       #475569;   /* Muted grey-blue accents instead of brown */
+  --accent-brown-dark:  #334155;
+  --accent-brown-light: #94A3B8;
+
+  /* Moods (Muted, neon-lite tones that don't blind the user) */
+  --mood-dot-great:     #2DD4BF;   /* Teal-400 */
+  --mood-dot-good:      #818CF8;   /* Indigo-400 */
+  --mood-dot-okay:      #94A3B8;   /* Slate-400 */
+  --mood-dot-difficult: #F472B6;   /* Pink-400 */
+  --mood-dot-low:       #38BDF8;   /* Sky-400 */
+  --mood-dot-none:      rgba(255,255,255,0.05);
+
+  --border-light: rgba(255, 255, 255, 0.05);
+  --border-medium: rgba(255, 255, 255, 0.10);
+  --border-heavy: rgba(255, 255, 255, 0.15);
+  --selection-bg: rgba(255, 255, 255, 0.10);
+}
+
+.theme-forest {
+  /* ── Forest ── */
+  --bg-main:            #EFEFED;   /* Muted sage/stone canvas */
+  --bg-surface:         #E3E6DF;   /* Deeper sage */
+  --bg-elevated:        #F4F5F1;   /* Light cards */
+  
+  --text-primary:       #2F3E2E;   /* Dark olive */
+  --text-secondary:     #526B50;   /* Muted olive */
+  --text-muted:         #839981;   /* Light sage */
+  --text-body:          #364535;   /* Long-form content */
+
+  --accent-brown:       #4E644B;   /* Olive accent */
+  --accent-brown-dark:  #3A4A38;
+  --accent-brown-light: #7E967A;
+
+  /* Moods (Earthy) */
+  --mood-dot-great:     #65814A;   /* Deep chartreuse */
+  --mood-dot-good:      #526B50;   /* Olive */
+  --mood-dot-okay:      #839981;   /* Sage */
+  --mood-dot-difficult: #B37D6E;   /* Earthy terracotta */
+  --mood-dot-low:       #5C788A;   /* Muted slate blue */
+  --mood-dot-none:      rgba(47, 62, 46, 0.04);
+
+  --border-light: rgba(47, 62, 46, 0.06);
+  --border-medium: rgba(47, 62, 46, 0.12);
+  --border-heavy: rgba(47, 62, 46, 0.20);
+  --selection-bg: rgba(47, 62, 46, 0.12);
+}
+
+.theme-minimal {
+  /* ── Minimal ── */
+  --bg-main:            #FFFFFF;   /* Pure stark white */
+  --bg-surface:         #F5F5F5;   /* Very light grey */
+  --bg-elevated:        #FFFFFF;   /* Pure white */
+  
+  --text-primary:       #000000;   /* Pitch black */
+  --text-secondary:     #666666;   /* Dark grey */
+  --text-muted:         #A3A3A3;   /* Light grey */
+  --text-body:          #111111;   /* Almost black */
+
+  --accent-brown:       #000000;   /* Black buttons */
+  --accent-brown-dark:  #333333;
+  --accent-brown-light: #CCCCCC;
+
+  /* Moods (Greyscale) */
+  --mood-dot-great:     #000000;   /* Black */
+  --mood-dot-good:      #404040;   /* Neutral 700 */
+  --mood-dot-okay:      #A3A3A3;   /* Neutral 400 */
+  --mood-dot-difficult: #D4D4D4;   /* Neutral 300 */
+  --mood-dot-low:       #737373;   /* Neutral 500 */
+  --mood-dot-none:      rgba(0,0,0,0.03);
+
+  --border-light: rgba(0, 0, 0, 0.04);
+  --border-medium: rgba(0, 0, 0, 0.10);
+  --border-heavy: rgba(0, 0, 0, 0.80); /* Sharp dark borders */
+  --selection-bg: rgba(0, 0, 0, 0.08);
+}
+
+.theme-warm {
+  /* ── Warm ── */
+  --bg-main:            #F7EDE2;   /* Soft terracotta/clay */
+  --bg-surface:         #F1E3D3;   /* Deeper clay */
+  --bg-elevated:        #FDF8F3;   /* Cream cards */
+  
+  --text-primary:       #5C3A21;   /* Deep brown */
+  --text-secondary:     #8C6A51;   /* Muted brown */
+  --text-muted:         #BCA38E;   /* Light clay */
+  --text-body:          #4A2E1B;   /* Dark espresso */
+
+  --accent-brown:       #D97746;   /* Terracotta */
+  --accent-brown-dark:  #B85C2F;
+  --accent-brown-light: #F29A6B;
+
+  /* Moods (Warm/Sunset) */
+  --mood-dot-great:     #F59E0B;   /* Vibrant gold */
+  --mood-dot-good:      #D97746;   /* Terracotta */
+  --mood-dot-okay:      #BCA38E;   /* Clay */
+  --mood-dot-difficult: #B94B4B;   /* Muted red */
+  --mood-dot-low:       #A67A68;   /* Dusky brown */
+  --mood-dot-none:      rgba(92, 58, 33, 0.04);
+
+  --border-light: rgba(92, 58, 33, 0.06);
+  --border-medium: rgba(92, 58, 33, 0.12);
+  --border-heavy: rgba(92, 58, 33, 0.20);
+  --selection-bg: rgba(217, 119, 70, 0.15);
+}
+
+/* Base mappings for components to ingest CSS vars */
+:root, .theme-morning-light, .theme-midnight, .theme-forest, .theme-minimal, .theme-warm {
   --background:         var(--bg-main);
   --foreground:         var(--text-body);
   --card:               var(--bg-elevated);
@@ -102,69 +169,17 @@
   
   --muted:              var(--bg-surface);
   --muted-foreground:   var(--text-muted);
-  --accent:             rgba(103, 115, 130, 0.06); /* subtle cool hover */
-  --accent-foreground:  #5B6B7C;
+  --accent:             var(--selection-bg);
+  --accent-foreground:  var(--text-primary);
   --destructive:        #c0392b;
   --destructive-foreground: #ffffff;
   
-  --border:             rgba(104, 92, 74, 0.12);
-  --input:              rgba(104, 92, 74, 0.20);
+  --border:             var(--border-medium);
+  --input:              var(--border-heavy);
   --input-background:   var(--bg-surface);
-  --switch-background:  #E5E5E5;
-  --ring:               rgba(104, 92, 74, 0.20);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-
-  /* ── Sidebar ── */
-  --sidebar:                    var(--bg-main);
-  --sidebar-foreground:         var(--text-primary);
-  --sidebar-primary:            var(--text-primary);
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:             rgba(103, 115, 130, 0.06);
-  --sidebar-accent-foreground:  #5B6B7C;
-  --sidebar-border:             rgba(104, 92, 74, 0.08);
-  --sidebar-ring:               rgba(104, 92, 74, 0.20);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --switch-background:  var(--border-heavy);
+  --ring:               var(--border-heavy);
+  --radius:             0.625rem;
 }
 
 @theme inline {
@@ -194,6 +209,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  
+  --color-mood-great: var(--mood-dot-great);
+  --color-mood-good: var(--mood-dot-good);
+  --color-mood-okay: var(--mood-dot-okay);
+  --color-mood-difficult: var(--mood-dot-difficult);
+  --color-mood-low: var(--mood-dot-low);
+  --color-mood-none: var(--mood-dot-none);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

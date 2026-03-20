@@ -158,6 +158,45 @@ p, textarea {
 }
 
 /* Secondary Button - Most Actions */
+.button-second.glass-panel {
+  background: rgba(250, 247, 242, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* ── Privacy Mode (A10b) ─────────────────────────────────────────────────── */
+.privacy-mode main p,
+.privacy-mode main h1,
+.privacy-mode main h2,
+.privacy-mode main h3,
+.privacy-mode main textarea,
+.privacy-mode main input[type="text"] {
+  filter: blur(4px);
+  opacity: 0.7;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.privacy-mode main p:hover,
+.privacy-mode main h1:hover,
+.privacy-mode main h2:hover,
+.privacy-mode main h3:hover,
+.privacy-mode main textarea:hover,
+.privacy-mode main textarea:focus,
+.privacy-mode main input[type="text"]:hover,
+.privacy-mode main input[type="text"]:focus {
+  filter: blur(0);
+  opacity: 1;
+}
+
+/* Exclude UI elements from blur */
+.privacy-mode main button p,
+.privacy-mode main button h1,
+.privacy-mode main button h2,
+.privacy-mode main button h3 {
+  filter: none;
+  opacity: 1;
+}
 .button-secondary {
   background: var(--bg-elevated);
   color: #5C4A3A;

@@ -1,16 +1,27 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Archive, Play, Edit2, Trash2, CheckCircle2, Circle, Target } from 'lucide-react';
+import { Plus, Archive, Play, Edit2, Trash2, CheckCircle2, Circle, Target, Zap } from 'lucide-react';
 import { format, parseISO, differenceInDays, eachDayOfInterval } from 'date-fns';
 import type { Habit, GentleStart, HabitEngagement, JournalEntry } from '@/app/types';
 import { habitsStorage } from '@/app/utils/habits';
 import { GentleStartTracker } from '@/app/components/GentleStartTracker';
+import { StartAssist } from '@/app/components/StartAssist';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Textarea } from '@/app/components/ui/textarea';
 import { Card } from '@/app/components/ui/card';
 import { Label } from '@/app/components/ui/label';
 import { Badge } from '@/app/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 /**
@@ -47,6 +58,8 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
   const [engagingHabit, setEngagingHabit] = useState<string | null>(null);
   const [engagementNote, setEngagementNote] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState<string>(reflectionPrompts[0]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [startAssistHabit, setStartAssistHabit] = useState<string | null>(null);
 
   const activeHabits = habits.filter(h => !h.isArchived);
   const archivedHabits = habits.filter(h => h.isArchived);
@@ -98,6 +111,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
 
     setEngagingHabit(null);
     setEngagementNote('');
+    setStartAssistHabit(null);
     toast.success('Engagement recorded');
     setHabits([...habits]); // Trigger re-render
   };
@@ -106,6 +120,14 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
     habitsStorage.archiveHabit(habitId);
     setHabits(habitsStorage.getHabits());
     toast.success('Habit archived');
+  };
+
+  const deleteHabit = () => {
+    if (!confirmDeleteId) return;
+    habitsStorage.deleteHabit(confirmDeleteId);
+    setHabits(habitsStorage.getHabits());
+    setConfirmDeleteId(null);
+    toast.success('Habit permanently deleted');
   };
 
   const startEdit = (habit: Habit) => {
@@ -299,6 +321,21 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                           </Button>
                         </div>
                       </motion.div>
+                    ) : startAssistHabit === habit.id ? (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mt-4"
+                      >
+                        <StartAssist
+                          taskText={`Practice ${habit.name}`}
+                          onFocusComplete={() => {
+                            toast.success(`Completed 5-minute kickstart for ${habit.name}`);
+                            recordEngagement(habit.id, 'performed');
+                          }}
+                          onCancel={() => setStartAssistHabit(null)}
+                        />
+                      </motion.div>
                     ) : (
                       <div className="mt-4 flex gap-2">
                         {!hasEngagedToday && (
@@ -309,6 +346,17 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                           >
                             <CheckCircle2 className="size-4" />
                             Record Today
+                          </Button>
+                        )}
+                        {!hasEngagedToday && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setStartAssistHabit(habit.id)}
+                            className="gap-2 text-amber-600 border-amber-200 hover:bg-amber-50"
+                          >
+                            <Zap className="size-4 text-amber-500" />
+                            Start Assist
                           </Button>
                         )}
                         {hasEngagedToday && (
@@ -398,9 +446,19 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                 className="space-y-2"
               >
                 {archivedHabits.map(habit => (
-                  <Card key={habit.id} className="p-4 opacity-60">
-                    <p className="font-medium">{habit.name}</p>
-                    <p className="text-sm text-stone-600">{habit.why}</p>
+                  <Card key={habit.id} className="p-4 opacity-60 flex justify-between items-start group hover:opacity-100 transition-opacity">
+                    <div>
+                      <p className="font-medium">{habit.name}</p>
+                      <p className="text-sm text-stone-600">{habit.why}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmDeleteId(habit.id)}
+                      className="text-stone-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </Card>
                 ))}
               </motion.div>
@@ -421,6 +479,23 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
           discipline. Reflection always counts as engagement.
         </p>
       </div>
+
+      <AlertDialog open={confirmDeleteId !== null} onOpenChange={(isOpen) => !isOpen && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this habit?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. All history and engagements for this habit will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteHabit} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format, subDays, parseISO } from 'date-fns';
-import { Sparkles, Save, X, Zap, BookOpen, Edit3, ChevronLeft } from 'lucide-react';
-import type { JournalEntry as JournalEntryType } from '@/app/types';
+import { Sparkles, Save, X, Zap, BookOpen, Edit3, ChevronLeft, Wind, HelpCircle } from 'lucide-react';
+import type { JournalEntry as JournalEntryType, ReflectionAnchor } from '@/app/types';
 import { storage } from '@/app/utils/storage';
 import { erasStorage } from '@/app/utils/eras';
-import { getSmartPrompt } from '@/app/utils/prompts';
-import { getReflectionPrompt } from '@/app/utils/prompts-v2';
+import { getReflectionPrompt, getContextAwarePrompt, computeJournalContext } from '@/app/utils/prompts-v2';
 import { findSimilarEntries, createMemorySurface } from '@/app/utils/memory-surface';
 import { preferences } from '@/app/utils/preferences';
 import { questionsStorage } from '@/app/utils/questions';
@@ -17,20 +16,34 @@ import { Label } from '@/app/components/ui/label';
 import { TagManager } from '@/app/components/TagManager';
 import { MemorySurface } from '@/app/components/MemorySurface';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
+import { BreathingOverlay } from '@/app/components/BreathingOverlay';
+import { StartAssist, type AEEMetrics } from '@/app/components/StartAssist';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type WriteMode = 'quick' | 'guided' | 'deep';
+type WriteMode = 'quick' | 'guided' | 'deep' | 'read';
 type ReflectionType = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 interface JournalEntryProps {
   selectedDate: string;
   onSave: () => void;
   onCancel: () => void;
+  onDelete?: (date: string) => void;
   allEntries: JournalEntryType[];
   onViewEntry?: (date: string) => void;
   initialReflectionType?: ReflectionType;   // set by Timeline for weekly/monthly/yearly
   initialQuestionId?: string;               // A8b — set by App when navigating from Compass
+  initialMode?: WriteMode;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -78,7 +91,7 @@ const moods = [
   },
   {
     value: 'difficult',
-    label: 'Difficult',
+    label: 'Hard',
     emoji: '😣',
     bg: 'bg-stone-50',
     border: 'border-stone-300',
@@ -102,11 +115,13 @@ const REFLECTION_META: Record<string, {
     badge: 'This week',
     badgeCls: 'bg-amber-100 text-amber-700',
     fields: [
-      { key: 'whatHappened', label: 'What happened this week?',     placeholder: 'The events, moments, conversations…' },
-      { key: 'feelings',     label: 'How did the week feel?',       placeholder: 'The emotional texture of the week…' },
-      { key: 'whatMatters',  label: 'What mattered most?',          placeholder: "What you'd want to remember…" },
-      { key: 'insight',      label: 'What did you learn?',          placeholder: 'A pattern, a realisation, a shift…' },
-      { key: 'freeWrite',    label: 'Anything else',                placeholder: 'Whatever needs space…' },
+      { key: 'whatHappened',    label: 'What happened this week?',     placeholder: 'The events, moments, conversations…' },
+      { key: 'feelings',        label: 'How did the week feel?',       placeholder: 'The emotional texture of the week…' },
+      { key: 'whatMatters',     label: 'What mattered most?',          placeholder: "What you'd want to remember…" },
+      { key: 'insight',         label: 'What did you learn?',          placeholder: 'A pattern, a realisation, a shift…' },
+      { key: 'intentionAction', label: 'What will you act on next week?', placeholder: 'One specific direction or action…' },
+      { key: 'intentionRelease',label: 'What will you release?',       placeholder: 'A habit, a worry, or a project that needs to rest…' },
+      { key: 'freeWrite',       label: 'Anything else',                placeholder: 'Whatever needs space…' },
     ],
   },
   monthly: {
@@ -114,11 +129,13 @@ const REFLECTION_META: Record<string, {
     badge: 'This month',
     badgeCls: 'bg-stone-200 text-stone-600',
     fields: [
-      { key: 'whatHappened', label: 'What defined this month?',     placeholder: 'The chapters, the turning points…' },
-      { key: 'feelings',     label: 'What shifted emotionally?',    placeholder: 'How you changed, what softened or hardened…' },
-      { key: 'whatMatters',  label: 'What mattered more than expected?', placeholder: 'Surprises in what moved you…' },
-      { key: 'insight',      label: 'What do you understand now?',  placeholder: 'What the month taught you…' },
-      { key: 'freeWrite',    label: 'What to carry forward',        placeholder: "What you're taking into next month…" },
+      { key: 'whatHappened',    label: 'What defined this month?',     placeholder: 'The chapters, the turning points…' },
+      { key: 'feelings',        label: 'What shifted emotionally?',    placeholder: 'How you changed, what softened or hardened…' },
+      { key: 'whatMatters',     label: 'What mattered more than expected?', placeholder: 'Surprises in what moved you…' },
+      { key: 'insight',         label: 'What do you understand now?',  placeholder: 'What the month taught you…' },
+      { key: 'intentionAction', label: 'What is the focus for next month?', placeholder: 'Your primary direction…' },
+      { key: 'intentionRelease',label: 'What are you letting go of?',   placeholder: 'Something that no longer serves you…' },
+      { key: 'freeWrite',       label: 'What to carry forward',        placeholder: "What you're taking into next month…" },
     ],
   },
   yearly: {
@@ -126,11 +143,14 @@ const REFLECTION_META: Record<string, {
     badge: 'This year',
     badgeCls: 'bg-rose-100 text-rose-700',
     fields: [
-      { key: 'whatHappened', label: 'What defined this year?',      placeholder: 'The chapters that shaped it…' },
-      { key: 'feelings',     label: 'How did you change?',          placeholder: 'Who you were in January vs now…' },
-      { key: 'whatMatters',  label: 'What surprised you most?',     placeholder: "What you couldn't have anticipated…" },
-      { key: 'insight',      label: 'What belief did you outgrow?', placeholder: "What you understand now that you didn't before…" },
-      { key: 'freeWrite',    label: 'What to leave behind',         placeholder: "What you're not taking into next year…" },
+      { key: 'whatHappened',    label: 'What defined this year?',      placeholder: 'The chapters that shaped it…' },
+      { key: 'whatIReleased',   label: 'What did you release this year?', placeholder: 'The burdens, roles, or habits you left behind…' },
+      { key: 'feelings',        label: 'How did you change?',          placeholder: 'Who you were in January vs now…' },
+      { key: 'whatMatters',     label: 'What surprised you most?',     placeholder: "What you couldn't have anticipated…" },
+      { key: 'insight',         label: 'What belief did you outgrow?', placeholder: "What you understand now that you didn't before…" },
+      { key: 'intentionAction', label: 'Your intention for next year',  placeholder: 'A direction, a word, a quiet promise…' },
+      { key: 'intentionRelease',label: 'What will you let go of?',     placeholder: 'The weight you choose not to carry forward…' },
+      { key: 'freeWrite',       label: 'Final thoughts',               placeholder: "Closing the chapter…" },
     ],
   },
 };
@@ -235,6 +255,22 @@ function getPreviousPeriodIntention(
     yearly:  'Last year',
   };
   return `${periodLabel[type]} you intended: "${preview}" — how did that unfold?`;
+}
+
+/**
+ * Finds the intentionActions for the last 2 periods of the same type.
+ */
+function getIntentionHistory(
+  allEntries: JournalEntryType[],
+  currentDate: string,
+  type: string
+): string[] {
+  const prefix = `reflection-${type}-`;
+  return allEntries
+    .filter(e => e.date.startsWith(prefix) && e.date !== currentDate && e.intentionAction)
+    .sort((a, b) => (b.date).localeCompare(a.date))
+    .slice(0, 2)
+    .map(e => e.intentionAction!);
 }
 
 /**
@@ -446,12 +482,14 @@ export function JournalEntry({
   selectedDate,
   onSave,
   onCancel,
+  onDelete,
   allEntries,
   onViewEntry,
   initialReflectionType = 'daily',
   initialQuestionId,
+  initialMode = 'guided',
 }: JournalEntryProps) {
-  const [mode, setMode] = useState<WriteMode>('guided');
+  const [mode, setMode] = useState<WriteMode>(initialMode);
   const [entry, setEntry] = useState<Partial<JournalEntryType>>({
     whatHappened: '',
     feelings: '',
@@ -465,6 +503,9 @@ export function JournalEntry({
     questionId: initialQuestionId,
     reflectionType: initialReflectionType,
     oneWord: '',
+    intentionAction: '',
+    intentionRelease: '',
+    whatIReleased: '',
   });
   const [prompt, setPrompt] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -473,10 +514,16 @@ export function JournalEntry({
   const [similarEntries, setSimilarEntries] = useState<JournalEntryType[]>([]);
   const [memoryDismissed, setMemoryDismissed] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showBreathing, setShowBreathing] = useState(false);
+  const [showStartAssist, setShowStartAssist] = useState(false);
 
   const prefs = preferences.get();
-  const coreValues = preferences.getAnchors().filter(a => a.type === 'value' || a.type === 'intention');
+  const coreValues = preferences.getAnchors().filter((a: ReflectionAnchor) => a.type === 'value' || a.type === 'intention');
   const activeQuestions = questionsStorage.getActive();
+
+  // Derived — does this entry already exist in storage?
+  const existing = useMemo(() => storage.getEntryByDate(selectedDate), [selectedDate]);
 
   // Derived — is this a reflection entry (not daily)?
   const isReflection = initialReflectionType !== 'daily';
@@ -494,10 +541,9 @@ export function JournalEntry({
   // ── Load existing entry ────────────────────────────────────────────────────
 
   useEffect(() => {
-    const existing = storage.getEntryByDate(selectedDate);
     if (existing) {
       setEntry(existing);
-      setMode('guided');
+      setMode(initialMode !== 'guided' ? initialMode : 'read'); // Default to read mode for existing entries unless forced otherwise
     } else {
       setEntry({
         whatHappened: '',
@@ -512,17 +558,26 @@ export function JournalEntry({
         questionId: initialQuestionId,
         reflectionType: initialReflectionType,
         oneWord: '',
+        intentionAction: '',
+        intentionRelease: '',
+        whatIReleased: '',
       });
-      // Set prompt based on reflection type
-      if (isReflection) {
-        setPrompt(getReflectionPrompt(initialReflectionType as 'weekly' | 'monthly' | 'yearly'));
-      } else {
-        setPrompt(getSmartPrompt());
-      }
       setMemoryDismissed(false);
       setHasUnsavedChanges(false);
     }
-  }, [selectedDate, initialReflectionType, initialQuestionId]);
+
+    // Set prompt based on reflection type
+    if (isReflection) {
+      setPrompt(getReflectionPrompt(initialReflectionType as 'weekly' | 'monthly' | 'yearly'));
+    } else {
+      if (allEntries.length === 0) {
+        setPrompt("Start simply. Just one sentence about today.");
+      } else {
+        const ctx = computeJournalContext(allEntries, selectedDate, !!existing);
+        setPrompt(getContextAwarePrompt(ctx));
+      }
+    }
+  }, [selectedDate, initialReflectionType, initialQuestionId, existing, isReflection, allEntries.length, initialMode]);
 
   // ── Memory surface (similar entries) ─────────────────────────────────────
 
@@ -555,10 +610,20 @@ export function JournalEntry({
 
   // ── Field updates ──────────────────────────────────────────────────────────
 
-  const updateField = useCallback((field: keyof JournalEntryType, value: unknown) => {
-    setEntry(prev => ({ ...prev, [field]: value }));
+  const updateField = useCallback((field: keyof JournalEntryType, value: any) => {
+    setEntry((prev: Partial<JournalEntryType>) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
   }, []);
+
+  const setMood = (mood: JournalEntryType['mood']) => {
+    setEntry((prev: Partial<JournalEntryType>) => ({ ...prev, mood }));
+    setHasUnsavedChanges(true);
+  };
+
+  const setEnergy = (energy: JournalEntryType['energy']) => {
+    setEntry((prev: Partial<JournalEntryType>) => ({ ...prev, energy }));
+    setHasUnsavedChanges(true);
+  };
 
   // ── Save ───────────────────────────────────────────────────────────────────
 
@@ -577,8 +642,6 @@ export function JournalEntry({
       setIsSaving(false);
       return;
     }
-
-    const existing = storage.getEntryByDate(selectedDate);
 
     // A7a — auto-assign eraId by date. Silent, zero friction.
     // Find the first era whose date range covers this entry's date.
@@ -674,14 +737,32 @@ export function JournalEntry({
             <p className="text-sm font-medium" style={{ color: '#1A1A1A' }}>
               {formatEntryDate(selectedDate)}
             </p>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="button-primary"
-            >
-              <Save className="size-3.5" />
-              {isSaving ? 'Saving…' : 'Save'}
-            </button>
+            <div className="flex items-center gap-3">
+              {!isSaving && existing && onDelete && (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  title="Delete Entry"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
+              )}
+              <button
+                onClick={() => setShowBreathing(true)}
+                className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/60 transition-colors"
+                title="Box Breathing"
+              >
+                <Wind className="size-4" />
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="button-primary flex items-center gap-1.5"
+              >
+                <Save className="size-3.5" />
+                {isSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
           </div>
 
           {/* Deep mode canvas — typewriter scroll via scroll-pt + overflow-y-auto */}
@@ -743,6 +824,136 @@ export function JournalEntry({
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // RENDER — Read Mode
+  // ─────────────────────────────────────────────────────────────────────────
+
+  if (mode === 'read') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        className="max-w-2xl mx-auto px-6 py-12"
+      >
+        <div className="flex items-center justify-between mb-10">
+          <button
+            onClick={onCancel}
+            className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors"
+          >
+            <ChevronLeft className="size-4" />
+            Back
+          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleModeChange('guided')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-stone-200/60"
+              style={{ color: '#8a7f72' }}
+            >
+              <Edit3 className="size-4" />
+              Edit
+            </button>
+            {onDelete && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Delete Entry"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <article className="prose prose-stone max-w-none">
+          <header className="mb-10 text-center">
+            <h1 className="text-3xl font-light mb-2" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
+              {formatEntryDate(selectedDate)}
+            </h1>
+            {reflectionMeta && (
+              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${reflectionMeta.badgeCls}`}>
+                {reflectionMeta.label}
+              </span>
+            )}
+            {entry.whatMatters && !reflectionMeta && (
+              <p className="text-xl italic text-stone-600 mt-4" style={{ fontFamily: 'var(--font-display)' }}>
+                {entry.whatMatters}
+              </p>
+            )}
+          </header>
+
+          <div className="space-y-8 text-lg leading-relaxed text-stone-800" style={{ fontFamily: 'var(--font-body)' }}>
+            {entry.freeWrite ? (
+              <div className="whitespace-pre-wrap">{entry.freeWrite}</div>
+            ) : (
+              // Structured content display
+              <>
+                {entry.whatHappened && (
+                  <section>
+                    {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[0].label}</h3>}
+                    <div className="whitespace-pre-wrap">{entry.whatHappened}</div>
+                  </section>
+                )}
+                {entry.feelings && (
+                  <section>
+                    {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3 mb-3">{reflectionMeta.fields[1].label}</h3>}
+                    <div className="whitespace-pre-wrap">{entry.feelings}</div>
+                  </section>
+                )}
+                {reflectionMeta && entry.whatMatters && (
+                  <section>
+                    <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[2].label}</h3>
+                    <div className="whitespace-pre-wrap">{entry.whatMatters}</div>
+                  </section>
+                )}
+                {entry.insight && (
+                  <section>
+                    {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[3].label}</h3>}
+                    <div className="whitespace-pre-wrap">{entry.insight}</div>
+                  </section>
+                )}
+                {entry.whatIReleased && (
+                  <section>
+                    <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">Released this year</h3>
+                    <div className="whitespace-pre-wrap italic opacity-90">{entry.whatIReleased}</div>
+                  </section>
+                )}
+                {entry.intentionAction && (
+                  <section className="pt-6 border-t border-stone-200">
+                    <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">Next Step (Action)</h3>
+                    <div className="whitespace-pre-wrap italic opacity-90">{entry.intentionAction}</div>
+                  </section>
+                )}
+                {entry.intentionRelease && (
+                  <section className="pt-6 border-t border-stone-200">
+                    <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">To Release</h3>
+                    <div className="whitespace-pre-wrap italic opacity-90">{entry.intentionRelease}</div>
+                  </section>
+                )}
+                {entry.intention && (
+                  <section className="pt-6 border-t border-stone-200">
+                    <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">Intention</h3>
+                    <div className="whitespace-pre-wrap italic opacity-90">{entry.intention}</div>
+                  </section>
+                )}
+              </>
+            )}
+          </div>
+
+          <footer className="mt-16 pt-8 border-t border-stone-200/60 flex items-center justify-between text-sm text-stone-500">
+            {entry.tags && entry.tags.length > 0 && (
+              <div className="flex gap-2">
+                {entry.tags.map((tag: string) => (
+                  <span key={tag} className="px-2 py-1 bg-stone-100 rounded-md">#{tag}</span>
+                ))}
+              </div>
+            )}
+          </footer>
+        </article>
+      </motion.div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // RENDER — Quick Capture mode
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -770,6 +981,13 @@ export function JournalEntry({
               <p className="text-sm text-stone-400 mt-0.5">Quick capture</p>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowBreathing(true)}
+                className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/60 transition-colors"
+                title="Box Breathing"
+              >
+                <Wind className="size-5" />
+              </button>
               <ModeSwitcher mode={mode} onChange={handleModeChange} />
               <button onClick={handleCancel} className="ml-1 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/60 transition-colors">
                 <X className="size-5" />
@@ -828,7 +1046,16 @@ export function JournalEntry({
             />
           </div>
 
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-3 justify-end items-center">
+            {!isSaving && existing && onDelete && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="mr-auto p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Delete Entry"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              </button>
+            )}
             <Button variant="outline" onClick={handleCancel}>Cancel</Button>
             <Button onClick={handleSave} disabled={isSaving} className="gap-2">
               <Save className="size-4" />
@@ -877,6 +1104,24 @@ export function JournalEntry({
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
+            {!isReflection && (
+              <>
+                <button
+                  onClick={() => setShowStartAssist(prev => !prev)}
+                  className="p-1.5 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                  title="Start Assist"
+                >
+                  <Zap className="size-5" />
+                </button>
+                <button
+                  onClick={() => setShowBreathing(true)}
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-200/60 transition-colors"
+                  title="Box Breathing"
+                >
+                  <Wind className="size-5" />
+                </button>
+              </>
+            )}
             {!isReflection && <ModeSwitcher mode={mode} onChange={handleModeChange} />}
             <button
               onClick={handleCancel}
@@ -897,7 +1142,7 @@ export function JournalEntry({
             className="mb-6"
           >
             <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
-              Your values: {coreValues.map(v => v.text).join(' · ')}
+              Your values: {coreValues.map((v: ReflectionAnchor) => v.text).join(' · ')}
             </p>
           </motion.div>
         )}
@@ -949,6 +1194,70 @@ export function JournalEntry({
             onViewYearAgo={() => yearAgoEntry && onViewEntry?.(yearAgoEntry.date)}
           />
         </motion.div>
+
+        {/* ── Start Assist Flow ───────────────────────────────────────────── */}
+        <AnimatePresence>
+          {showStartAssist && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden mb-8"
+            >
+              <StartAssist
+                taskText={entry.intentionAction || entry.whatHappened || prompt}
+                onChange={(metrics: AEEMetrics) => {
+                  setEntry(prev => ({ ...prev, ...metrics }));
+                  setHasUnsavedChanges(true);
+                }}
+                onFocusComplete={() => {
+                  toast.success('5-Minute Focus Complete');
+                  setShowStartAssist(false);
+                }}
+                onCancel={() => setShowStartAssist(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── 3-Week Intention Pivot Hint ────────────────────────────── */}
+        {(() => {
+          if (initialReflectionType !== 'weekly' || !entry.intentionAction) return null;
+          const history = getIntentionHistory(allEntries, selectedDate, 'weekly');
+          if (history.length < 2) return null;
+          
+          const isRepeating = history.every(h => h.trim().toLowerCase() === entry.intentionAction?.trim().toLowerCase());
+          if (!isRepeating) return null;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-8 p-4 rounded-xl border-2 border-amber-200 bg-amber-50/50 flex items-start gap-3"
+            >
+              <HelpCircle className="size-5 text-amber-600 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-900">This intention has been carried for 3 weeks.</p>
+                <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                  In the Gita philosophy, if an intention is stuck, it's often a sign that it needs deeper exploration. 
+                  Would you like to pivot this into a Persistent Question instead?
+                </p>
+                <Button 
+                   size="sm" 
+                   variant="outline" 
+                   onClick={() => {
+                     questionsStorage.add({ question: entry.intentionAction!, isActive: true, notes: 'Pivoted from weekly intention.' });
+                     updateField('intentionAction', '');
+                     toast.success('Pivoted to Persistent Question');
+                   }}
+                   className="mt-3 bg-white border-amber-200 text-amber-800 hover:bg-amber-100"
+                >
+                  Pivot to Question
+                </Button>
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* ── Mood & Energy — compact single row, daily entries only ─────── */}
         {!isReflection && (
@@ -1089,7 +1398,7 @@ export function JournalEntry({
             { key: 'feelings',     label: 'How did it make you feel?',  placeholder: 'All feelings are welcome here…' },
             { key: 'whatMatters',  label: 'What mattered most?',        placeholder: 'What stood out or resonated…' },
             { key: 'insight',      label: 'One insight or lesson',      placeholder: 'Something you learned or noticed…' },
-            { key: 'freeWrite',    label: 'Free write',                 placeholder: 'Anything else on your mind…' },
+            { key: 'freeWrite',    label: 'Anything else?',                 placeholder: 'Anything else on your mind…' },
           ];
           const minHeights: Record<string, string> = {
             freeWrite: 'min-h-[120px]',
@@ -1247,8 +1556,11 @@ export function JournalEntry({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.4 }}
-          className="flex gap-3 justify-end"
+          className="flex items-center justify-end gap-3"
         >
+          {allEntries.length === 0 && (
+            <span className="text-xs text-stone-400 italic mr-auto">You can always come back and edit this later.</span>
+          )}
           <Button variant="outline" onClick={handleCancel} className="button-secondary">
             Cancel
           </Button>
@@ -1258,6 +1570,33 @@ export function JournalEntry({
           </Button>
         </motion.div>
       </motion.div>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The entry will be permanently removed from your journal.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                if (onDelete && selectedDate) {
+                  onDelete(selectedDate);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <BreathingOverlay isOpen={showBreathing} onClose={() => setShowBreathing(false)} />
     </>
   );
 }

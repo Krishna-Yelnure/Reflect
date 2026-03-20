@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
 import {
@@ -15,19 +15,25 @@ import {
   Target,
   ChevronLeft,
   Compass,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Toaster } from "@/app/components/ui/sonner";
+
+// Core views — always in the initial bundle
 import { JournalEntry } from "@/app/components/JournalEntry";
 import { TimelineView } from "@/app/components/TimelineView";
-import { Insights } from "@/app/components/Insights";
-import { MoodChart } from "@/app/components/MoodChart";
-import { InnerCompass } from "@/app/components/InnerCompass";
-import { PrivacySettings } from "@/app/components/PrivacySettings";
-import { ErasManager } from "@/app/components/ErasManager";
-import { MemoryThreads } from "@/app/components/MemoryThreads";
-import { DataLegacy } from "@/app/components/DataLegacy";
-import { WelcomeMessage } from "@/app/components/WelcomeMessage";
-import { HabitBuilder } from "@/app/components/HabitBuilder";
+
+// Secondary views — loaded on demand
+const Insights       = lazy(() => import('@/app/components/Insights').then(m => ({ default: m.Insights })));
+const MoodChart      = lazy(() => import('@/app/components/MoodChart').then(m => ({ default: m.MoodChart })));
+const InnerCompass   = lazy(() => import('@/app/components/InnerCompass').then(m => ({ default: m.InnerCompass })));
+const PrivacySettings = lazy(() => import('@/app/components/PrivacySettings').then(m => ({ default: m.PrivacySettings })));
+const ErasManager    = lazy(() => import('@/app/components/ErasManager').then(m => ({ default: m.ErasManager })));
+const MemoryThreads  = lazy(() => import('@/app/components/MemoryThreads').then(m => ({ default: m.MemoryThreads })));
+const DataLegacy     = lazy(() => import('@/app/components/DataLegacy').then(m => ({ default: m.DataLegacy })));
+const HabitBuilder   = lazy(() => import('@/app/components/HabitBuilder').then(m => ({ default: m.HabitBuilder })));
 import { storage } from "@/app/utils/storage";
 import type { JournalEntry as JournalEntryType } from "@/app/types";
 
@@ -46,21 +52,21 @@ type View =
 // ── Navigation groups ──────────────────────────────────────────────────────
 const NAV_GROUPS = [
   {
-    label: "Today",
+    label: "TODAY",
     items: [
       { id: "write"    as View, label: "Write",    icon: PenLine },
       { id: "timeline" as View, label: "Timeline", icon: Calendar },
     ],
   },
   {
-    label: "Understand",
+    label: "UNDERSTAND",
     items: [
       { id: "insights"  as View, label: "Insights",  icon: Lightbulb },
       { id: "mood"      as View, label: "Mood",       icon: TrendingUp },
     ],
   },
   {
-    label: "Explore",
+    label: "EXPLORE",
     items: [
       { id: "habits"    as View, label: "Habits",     icon: Target },
       { id: "compass"   as View, label: "Compass",    icon: Compass },
@@ -69,7 +75,7 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "Settings",
+    label: "SETTINGS",
     items: [
       { id: "privacy" as View, label: "Privacy", icon: Shield },
       { id: "legacy"  as View, label: "Legacy",  icon: FileText },
@@ -86,9 +92,25 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [privacyMode, setPrivacyMode] = useState(false);
   const [pendingReflectionType, setPendingReflectionType] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
+  const [pendingMode, setPendingMode] = useState<'quick' | 'guided' | 'deep' | 'read'>('guided');
+  const [theme, setTheme] = useState<string>("default");
 
-  useEffect(() => { loadEntries(); }, []);
+  useEffect(() => { 
+    loadEntries(); 
+    const savedTheme = localStorage.getItem('journal-theme') || 'default';
+    setTheme(savedTheme);
+  }, []);
+
+  useEffect(() => {
+    // Clear previous theme classes
+    document.documentElement.className = '';
+    if (theme !== 'default') {
+      document.documentElement.classList.add(`theme-${theme}`);
+    }
+    localStorage.setItem('journal-theme', theme);
+  }, [theme]);
 
   const loadEntries = () => setEntries(storage.getEntries());
 
@@ -115,11 +137,12 @@ export default function App() {
     setActiveQuestionId(questionId);
     setSelectedDate(format(new Date(), "yyyy-MM-dd"));
     setPendingReflectionType('daily');
+    setPendingMode('guided');
     setCurrentView("write");
   };
 
-  const handleNewEntry = () => { setActiveQuestionId(undefined); setSelectedDate(format(new Date(), "yyyy-MM-dd")); setPendingReflectionType('daily'); setCurrentView("write"); };
-  const handleSelectDate = (date: string) => { setActiveQuestionId(undefined); setSelectedDate(date); setPendingReflectionType('daily'); setCurrentView("write"); };
+  const handleNewEntry = () => { setActiveQuestionId(undefined); setSelectedDate(format(new Date(), "yyyy-MM-dd")); setPendingReflectionType('daily'); setPendingMode('guided'); setCurrentView("write"); };
+  const handleSelectDate = (date: string) => { setActiveQuestionId(undefined); setSelectedDate(date); setPendingReflectionType('daily'); setPendingMode('guided'); setCurrentView("write"); };
   const handleEditEntry = (date: string) => {
     setActiveQuestionId(undefined);
     // Infer reflection type from synthetic date key — prevents blank screen bug
@@ -130,13 +153,43 @@ export default function App() {
     if (date.startsWith('reflection-yearly-'))  type = 'yearly';
     setSelectedDate(date);
     setPendingReflectionType(type);
+    setPendingMode('read');
     setCurrentView("write");
   };
   const handleReflectionEntry = (date: string, type: 'weekly' | 'monthly' | 'yearly') => {
     setActiveQuestionId(undefined);
     setSelectedDate(date);
     setPendingReflectionType(type);
+    setPendingMode('guided');
     setCurrentView("write");
+  };
+
+  const handleDeleteEntry = (date: string) => {
+    const entryToDelete = storage.getEntryByDate(date);
+    storage.deleteEntry(date);
+    loadEntries();
+    setCurrentView('timeline');
+    
+    // 5-second undo window
+    let undone = false;
+    const toastId = toast.success('Entry deleted', {
+      description: 'Tap Undo to restore it.',
+      duration: 5000,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          undone = true;
+          if (entryToDelete) {
+            const existing = storage.getEntries();
+            storage.saveEntries([...existing, entryToDelete as any]);
+            loadEntries();
+            toast.success('Entry restored');
+          }
+        },
+      },
+    });
+    // Auto-dismiss is handled by duration above
+    void toastId;
   };
 
   const navigate = (id: View) => {
@@ -151,17 +204,21 @@ export default function App() {
   // border + slate-700 text, no fill. The sidebar disappears into the page.
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="px-5 py-6 border-b border-stone-200/60">
-        <h1 className="text-base font-medium tracking-tight" style={{ color: '#3C3C38' }}>Journal</h1>
-        <p className="text-xs text-stone-500 mt-0.5">A quiet space to think clearly</p>
+      {/* Sidebar Header - Restored */}
+      <div className="px-6 py-8">
+        <h1 className="text-[20px] font-medium leading-none text-foreground" style={{ fontFamily: '"Source Serif Pro", serif' }}>
+          Journal
+        </h1>
+        <p className="text-[12px] mt-1.5 text-muted-foreground">
+          A quiet space to think clearly
+        </p>
       </div>
 
-      {/* Nav groups */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
+      {/* Nav groups - with 24px top margin (mt-6 ~= 24px) */}
+      <nav className="flex-1 overflow-y-auto px-3 mt-1">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-500 px-3 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-3 mb-1">
               {group.label}
             </p>
             {group.items.map((item) => {
@@ -173,13 +230,12 @@ export default function App() {
                   onClick={() => navigate(item.id)}
                   className={`
                     w-full flex items-center gap-3 px-3 py-2 text-sm
-                    transition-all duration-150 mb-0.5 rounded-r-md
+                    transition-colors duration-150 mb-0.5 rounded-r-md
                     ${isActive
-                      ? "border-l-2 border-amber-500 text-stone-700 pl-[10px]"
-                      : "border-l-2 border-transparent text-stone-600 hover:text-stone-800 pl-[10px]"
+                      ? "border-l-2 border-primary bg-selection-bg text-primary pl-[10px]"
+                      : "border-l-2 border-transparent text-muted-foreground hover:text-primary hover:bg-muted pl-[10px]"
                     }
                   `}
-                  style={isActive ? { color: '#3C3C38' } : undefined}
                 >
                   <Icon className="size-4 shrink-0" />
                   <span>{item.label}</span>
@@ -191,8 +247,40 @@ export default function App() {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-stone-200/60">
-        <p className="text-[10px] text-stone-500 leading-relaxed">
+      <div className="px-5 py-4 border-t border-white/5 flex flex-col items-start gap-3">
+        {/* Privacy toggle */}
+        <button
+          onClick={() => {
+            setPrivacyMode(!privacyMode);
+            if (!privacyMode) toast.success("Privacy mode enabled", { description: "Journal content is blurred until hovered." });
+            else toast.success("Privacy mode disabled");
+          }}
+          className={`flex items-center gap-2 text-sm transition-colors ${
+            privacyMode ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          }`}
+          title={privacyMode ? "Disable privacy blur" : "Enable privacy blur"}
+        >
+          {privacyMode ? <EyeOff className="size-4 shrink-0" /> : <Eye className="size-4 shrink-0" />}
+          <span className="truncate">{privacyMode ? 'Privacy On' : 'Privacy Off'}</span>
+        </button>
+
+        {/* Theme Selector */}
+        <div className="flex flex-col gap-1 w-full mt-2">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">Theme</label>
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="w-full bg-transparent text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer outline-none border border-transparent hover:border-border rounded px-1 py-1"
+          >
+            <option value="default" className="bg-background text-foreground">Morning Light (Default)</option>
+            <option value="midnight" className="bg-background text-foreground">Midnight</option>
+            <option value="forest" className="bg-background text-foreground">Forest</option>
+            <option value="minimal" className="bg-background text-foreground">Minimal (Greyscale Moods)</option>
+            <option value="warm" className="bg-background text-foreground">Warm</option>
+          </select>
+        </div>
+
+        <p className="text-[10px] text-muted-foreground leading-relaxed mt-2">
           Private. Secure. Always yours.
         </p>
       </div>
@@ -200,85 +288,100 @@ export default function App() {
   );
 
   // ── Main content ───────────────────────────────────────────────────────
+  const ViewFallback = () => (
+    <div className="flex flex-col gap-6 p-8 max-w-4xl mx-auto w-full pt-12 animate-pulse">
+      <div className="h-8 bg-muted rounded-md w-1/3 mb-4"></div>
+      <div className="h-4 bg-muted rounded-md w-full"></div>
+      <div className="h-4 bg-muted rounded-md w-5/6"></div>
+      <div className="h-4 bg-muted rounded-md w-4/6"></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div className="h-48 bg-muted rounded-xl"></div>
+        <div className="h-48 bg-muted rounded-xl"></div>
+      </div>
+    </div>
+  );
+
   const MainContent = () => (
-    <AnimatePresence mode="wait">
-      {currentView === "write" && (
-        <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} allEntries={entries} onViewEntry={handleEditEntry} initialReflectionType={pendingReflectionType} initialQuestionId={activeQuestionId} />
-        </motion.div>
-      )}
-      {currentView === "timeline" && (
-        <motion.div key="timeline" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <TimelineView entries={entries} onSelectDate={handleSelectDate} onEditEntry={handleEditEntry} onReflectionEntry={handleReflectionEntry} activeIntention={activeIntention} />
-        </motion.div>
-      )}
-      {currentView === "mood" && (
-        <motion.div key="mood" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <MoodChart entries={entries} />
-        </motion.div>
-      )}
-      {currentView === "insights" && (
-        <motion.div key="insights" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <Insights entries={entries} />
-        </motion.div>
-      )}
-      {currentView === "compass" && (
-        <motion.div key="compass" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <InnerCompass onWriteAbout={handleWriteAboutQuestion} entries={entries} onViewEntry={handleEditEntry} />
-        </motion.div>
-      )}
-      {currentView === "privacy" && (
-        <motion.div key="privacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <PrivacySettings entries={entries} onImport={loadEntries} />
-        </motion.div>
-      )}
-      {currentView === "eras" && (
-        <motion.div key="eras" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <ErasManager entries={entries} />
-        </motion.div>
-      )}
-      {currentView === "threads" && (
-        <motion.div key="threads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <MemoryThreads entries={entries} onViewEntry={handleEditEntry} />
-        </motion.div>
-      )}
-      {currentView === "legacy" && (
-        <motion.div key="legacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <DataLegacy entries={entries} />
-        </motion.div>
-      )}
-      {currentView === "habits" && (
-        <motion.div key="habits" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-          <HabitBuilder entries={entries} />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Suspense fallback={<ViewFallback />}>
+      <AnimatePresence mode="wait">
+        {currentView === "write" && (
+          <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} onDelete={handleDeleteEntry} allEntries={entries} onViewEntry={handleEditEntry} initialReflectionType={pendingReflectionType} initialQuestionId={activeQuestionId} initialMode={pendingMode} />
+          </motion.div>
+        )}
+        {currentView === "timeline" && (
+          <motion.div key="timeline" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <TimelineView entries={entries} onSelectDate={handleSelectDate} onEditEntry={handleEditEntry} onReflectionEntry={handleReflectionEntry} activeIntention={activeIntention} />
+          </motion.div>
+        )}
+        {currentView === "mood" && (
+          <motion.div key="mood" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <MoodChart entries={entries} />
+          </motion.div>
+        )}
+        {currentView === "insights" && (
+          <motion.div key="insights" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <Insights entries={entries} />
+          </motion.div>
+        )}
+        {currentView === "compass" && (
+          <motion.div key="compass" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <InnerCompass onWriteAbout={handleWriteAboutQuestion} entries={entries} onViewEntry={handleEditEntry} />
+          </motion.div>
+        )}
+        {currentView === "privacy" && (
+          <motion.div key="privacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <PrivacySettings entries={entries} onImport={loadEntries} />
+          </motion.div>
+        )}
+        {currentView === "eras" && (
+          <motion.div key="eras" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <ErasManager entries={entries} />
+          </motion.div>
+        )}
+        {currentView === "threads" && (
+          <motion.div key="threads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <MemoryThreads entries={entries} onViewEntry={handleEditEntry} />
+          </motion.div>
+        )}
+        {currentView === "legacy" && (
+          <motion.div key="legacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <DataLegacy entries={entries} />
+          </motion.div>
+        )}
+        {currentView === "habits" && (
+          <motion.div key="habits" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+            <HabitBuilder entries={entries} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Suspense>
   );
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#E8E2D8', color: '#3C3C38' }}>
+    <div className={`min-h-screen flex bg-background text-foreground ${privacyMode ? 'privacy-mode' : ''}`}>
       <Toaster position="top-center" />
 
       {/* ── Desktop Sidebar ── */}
       {/* A5c — sidebar recedes into the page: no white bg, thin warm border only */}
-      <aside
-        className={`
-          hidden md:flex flex-col shrink-0
-          border-r border-stone-200/50
-          transition-all duration-200 sticky top-0 h-screen overflow-hidden
-          ${sidebarOpen ? "w-52" : "w-14"}
-        `}
-      >
+        <aside
+          className={`
+            hidden md:flex flex-col shrink-0
+            border-r border-border bg-card shadow-xl
+            transition-[width] duration-200 sticky top-0 h-screen overflow-hidden
+            ${sidebarOpen ? "w-56" : "w-16"}
+          `}
+        >
         {sidebarOpen ? (
           <>
             <SidebarContent />
             {/* Collapse button */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="absolute top-4 right-3 p-1.5 rounded-md text-stone-500 hover:text-stone-700 transition-all"
+              className="absolute top-4 right-3 p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
               title="Collapse sidebar"
             >
-              <ChevronLeft className="size-4" />
+              <span className="text-lg font-bold leading-none">‹</span>
             </button>
           </>
         ) : (
@@ -287,7 +390,7 @@ export default function App() {
             {/* Expand button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-stone-500 hover:text-stone-700 mb-3"
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground mb-3"
               title="Expand sidebar"
             >
               <Menu className="size-4" />
@@ -301,8 +404,8 @@ export default function App() {
                   onClick={() => navigate(item.id)}
                   title={item.label}
                   className={`
-                    p-2 rounded-lg transition-all
-                    ${isActive ? "text-amber-600" : "text-stone-600 hover:text-stone-800"}
+                    p-2 rounded-lg transition-colors
+                    ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}
                   `}
                 >
                   <Icon className="size-4" />
@@ -316,11 +419,11 @@ export default function App() {
       {/* ── Mobile header + drawer ── */}
       <div className="flex flex-col flex-1 min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden border-b border-stone-200/60 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+        <header className="md:hidden border-b border-border bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <div>
-            <span className="text-sm font-medium" style={{ color: '#3C3C38' }}>Journal</span>
+            <span className="text-sm font-medium text-foreground">Journal</span>
           </div>
-          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-stone-500 hover:text-stone-700">
+          <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground">
             <Menu className="size-5" />
           </button>
         </header>
@@ -343,11 +446,10 @@ export default function App() {
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed left-0 top-0 bottom-0 w-64 z-40 md:hidden shadow-xl"
-                style={{ backgroundColor: '#E8E2D8' }}
+                className="fixed left-0 top-0 bottom-0 w-64 z-40 md:hidden shadow-xl bg-card border-r border-border"
               >
                 <div className="absolute top-3 right-3">
-                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-stone-500 hover:text-stone-700">
+                  <button onClick={() => setMobileSidebarOpen(false)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground">
                     <X className="size-4" />
                   </button>
                 </div>

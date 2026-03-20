@@ -29,13 +29,13 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
   };
 
   const handleExportJSON = () => {
-    exportToJSON(entries);
-    toast.success('Journal exported');
+    exportToJSON();
+    toast.success('All journal data exported');
   };
 
   const handleExportMarkdown = () => {
-    exportToMarkdown(entries);
-    toast.success('Journal exported');
+    exportToMarkdown();
+    toast.success('All journal data exported as Markdown');
   };
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,18 +43,25 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
     if (!file) return;
 
     try {
-      const importedEntries = await importFromJSON(file);
+      const result = await importFromJSON(file);
       
-      // Merge with existing entries, avoiding duplicates
-      const existing = storage.getEntries();
-      const existingIds = new Set(existing.map(e => e.id));
-      const newEntries = importedEntries.filter(e => !existingIds.has(e.id));
-      
-      storage.saveEntries([...existing, ...newEntries]);
+      // Build a human-readable summary of what was imported
+      const parts: string[] = [];
+      if (result.entriesAdded > 0) parts.push(`${result.entriesAdded} ${result.entriesAdded === 1 ? 'entry' : 'entries'}`);
+      if (result.erasAdded > 0) parts.push(`${result.erasAdded} ${result.erasAdded === 1 ? 'era' : 'eras'}`);
+      if (result.habitsAdded > 0) parts.push(`${result.habitsAdded} ${result.habitsAdded === 1 ? 'habit' : 'habits'}`);
+      if (result.anchorsAdded > 0) parts.push(`${result.anchorsAdded} ${result.anchorsAdded === 1 ? 'value/intention' : 'values/intentions'}`);
+      if (result.questionsAdded > 0) parts.push(`${result.questionsAdded} ${result.questionsAdded === 1 ? 'question' : 'questions'}`);
+      if (result.threadsAdded > 0) parts.push(`${result.threadsAdded} ${result.threadsAdded === 1 ? 'thread' : 'threads'}`);
+
       onImport();
-      toast.success(`Imported ${newEntries.length} entries`);
+      if (parts.length === 0) {
+        toast.success('Import complete', { description: 'Everything was already up to date. No duplicates added.' });
+      } else {
+        toast.success('Import complete', { description: `Added: ${parts.join(', ')}.` });
+      }
     } catch (error) {
-      toast.error('Failed to import journal');
+      toast.error('Failed to import data', { description: 'The file may be corrupted or in an unsupported format.' });
     }
     
     // Reset input

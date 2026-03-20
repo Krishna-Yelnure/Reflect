@@ -18,7 +18,7 @@ import {
   isSameMonth,
   getWeek,
 } from 'date-fns';
-import { ChevronLeft, Edit } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, X, BookOpen } from 'lucide-react';
 import type { JournalEntry, Era } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 import { erasStorage } from '@/app/utils/eras';
@@ -36,41 +36,49 @@ interface TimelineViewProps {
 }
 
 // ── Mood colour system ─────────────────────────────────────────────────────
-// Decision 3 (agreed): faint dot colours deepened so they're visible on parchment.
-// okay: slate-300 → slate-400 (was ghostly), difficult: slate-400 → slate-500
-// Decision 3 (agreed): faint dot colours deepened so they're visible on parchment.
+// Uses dynamic CSS variables defined in theme.css for perfect adaptation across all 5 themes.
+
 const MOOD_CELL: Record<string, string> = {
-  great:     'bg-amber-400',
-  good:      'bg-stone-400',
-  okay:      'bg-stone-300',
-  low:       'bg-stone-400',
-  difficult: 'bg-stone-500',
+  great:     'bg-mood-great',
+  good:      'bg-mood-good',
+  okay:      'bg-mood-okay',
+  low:       'bg-mood-low',
+  difficult: 'bg-mood-difficult',
 };
-// Inline styles for mood cells that need exact warm palette colors
+
+// Inline styles for SVG shapes or inline backgrounds that require exact CSS variable strings
 const MOOD_CELL_STYLE: Record<string, string> = {
-  great:     '#C4762A',
-  good:      '#6A9B62',
-  okay:      '#8A9BAA',
-  low:       '#8A8078',
-  difficult: '#6B5C4E',
+  great:     'var(--mood-dot-great)',
+  good:      'var(--mood-dot-good)',
+  okay:      'var(--mood-dot-okay)',
+  low:       'var(--mood-dot-low)',
+  difficult: 'var(--mood-dot-difficult)',
 };
+
 const MOOD_LABEL: Record<string, string> = {
-  great: 'Great', good: 'Good', okay: 'Okay', low: 'Low', difficult: 'Hard',
+  great: 'Vibrant', good: 'Peaceful', okay: 'Balanced', low: 'Heavy', difficult: 'Hard',
 };
-const MOOD_BG: Record<string, string> = {
-  great:     'bg-amber-50 border-amber-200',
-  good:      'bg-stone-50 border-stone-200',
-  okay:      'bg-stone-50 border-stone-200',
-  low:       'bg-stone-100 border-stone-200',
-  difficult: 'bg-stone-100 border-stone-300',
-};
-const MOOD_TEXT: Record<string, string> = {
-  great: 'text-amber-700', good: 'text-stone-600', okay: 'text-stone-500',
-  low: 'text-stone-500', difficult: 'text-stone-600',
-};
+const MOOD_ORDER: string[] = ['low', 'okay', 'good', 'great', 'difficult'];
 const MOOD_EMOJI: Record<string, string> = {
   great: '✨', good: '🌿', okay: '○', low: '◌', difficult: '·',
 };
+
+const MOOD_BG: Record<string, string> = {
+  great:     'bg-mood-great/10 border-mood-great/30',
+  good:      'bg-mood-good/10 border-mood-good/30',
+  okay:      'bg-mood-okay/10 border-mood-okay/30',
+  low:       'bg-mood-low/10 border-mood-low/30',
+  difficult: 'bg-mood-difficult/10 border-mood-difficult/30',
+};
+
+const MOOD_TEXT: Record<string, string> = {
+  great:     'text-mood-great',
+  good:      'text-mood-good',
+  okay:      'text-mood-okay',
+  low:       'text-mood-low',
+  difficult: 'text-mood-difficult',
+};
+
 
 type DrillLevel = 'year' | 'month' | 'week' | 'day';
 
@@ -138,7 +146,7 @@ function summaryLine(entries: JournalEntry[]): string {
   return `${total} ${total === 1 ? 'entry' : 'entries'}${moodStr}`;
 }
 
-/** Returns the day-of-week name the user writes most often — a pure witness observation */
+/** Returns the day-of-week name the user writes most often - a pure witness observation */
 function mostActiveDay(entries: JournalEntry[]): string | null {
   const daily = entries.filter(e => !e.date.startsWith('reflection-'));
   if (daily.length < 4) return null; // not enough data to be meaningful
@@ -163,6 +171,11 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
   const [activeEraFilter, setActiveEraFilter] = useState<string | null>(null);
   const [eras, setEras] = useState<Era[]>([]);
+
+  const handlePrevYear = () => setYear(y => y - 1);
+  const handleNextYear = () => setYear(y => y + 1);
+  const handleWriteToday = () => onSelectDate(format(new Date(), 'yyyy-MM-dd'));
+
 
   useEffect(() => {
     setEras(erasStorage.getAll());
@@ -202,7 +215,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     }
     return false;
   });
-  // Combined daily prompt pool — existing smart prompts + Gita-informed prompts (A8a)
+  // Combined daily prompt pool - existing smart prompts + Gita-informed prompts (A8a)
   // 50/50 split gives both pools equal rotation weight without changing the once-per-day gate
   const [dailyPrompt] = useState(() =>
     Math.random() < 0.5 ? getSmartPrompt(entries) : getGitaDailyPrompt()
@@ -240,263 +253,214 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     });
   }, [activeFocusDay, eras]);
 
-  // ── Breadcrumb nav ─────────────────────────────────────────────────────
-  const YearNav = () => (
-    <div className="flex items-center gap-1.5 mb-8 flex-wrap">
-      {/* Year */}
-      <button
-        onClick={() => setLevel('year')}
-        className={`transition-colors leading-none ${
-          level === 'year'
-            ? 'cursor-default text-2xl font-light'
-            : 'text-stone-400 hover:text-stone-700 text-xl'
-        }`}
-        style={{ fontFamily: 'var(--font-display)', color: level === 'year' ? '#3C3C38' : undefined }}
-      >
-        {year}
-      </button>
+  // ── SUB-COMPONENTS ──────────────────────────────────────────────────────
+  
 
-      {/* Month crumb */}
-      {(level === 'month' || level === 'week' || level === 'day') && (
-        <>
-          <span className="text-stone-200 text-lg">/</span>
-          <button
-            onClick={() => setLevel('month')}
-            className={`transition-colors leading-none ${
-              level === 'month'
-                ? 'cursor-default text-2xl font-light'
-                : 'text-stone-400 hover:text-stone-700 text-xl'
-            }`}
-            style={{ fontFamily: 'var(--font-display)', color: level === 'month' ? '#3C3C38' : undefined }}
-          >
-            {MONTH_NAMES[focusMonth]}
-          </button>
-        </>
-      )}
 
-      {/* Week crumb */}
-      {(level === 'week' || level === 'day') && (
-        <>
-          <span className="text-stone-200 text-lg">/</span>
-          <button
-            onClick={() => setLevel('week')}
-            className={`transition-colors leading-none ${
-              level === 'week'
-                ? 'cursor-default text-2xl font-light'
-                : 'text-stone-400 hover:text-stone-700 text-xl'
-            }`}
-            style={{ fontFamily: 'var(--font-display)', color: level === 'week' ? '#3C3C38' : undefined }}
-          >
-            {(() => {
-              const wStart = startOfMonth(new Date(year, focusMonth, 1));
-              const weeks  = eachWeekOfInterval({ start: wStart, end: endOfMonth(wStart) });
-              const idx    = weeks.findIndex(w => format(w, 'yyyy-MM-dd') === format(focusWeek, 'yyyy-MM-dd'));
-              return `Week ${idx >= 0 ? idx + 1 : 1}`;
-            })()}
-          </button>
-        </>
-      )}
-
-      {/* Day crumb */}
-      {level === 'day' && focusDay && (
-        <>
-          <span className="text-stone-200 text-lg">/</span>
-          <span
-            className="text-2xl font-light leading-none"
-            style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}
-          >
-            {format(parseISO(focusDay), 'EEE d')}
-          </span>
-        </>
-      )}
-
-      {/* Chapter Label */}
-      {activeFocusEra && level !== 'year' && (
-        <span className="ml-3 px-2 py-0.5 mt-0.5 text-[11px] rounded-md font-medium tracking-wide border" 
-              style={{ backgroundColor: (activeFocusEra.colour || '#c2714f') + '15', color: '#5a5550', borderColor: (activeFocusEra.colour || '#c2714f') + '25' }}>
-          Chapter: {activeFocusEra.name}
-        </span>
-      )}
-
-      {level !== 'day' && (
-        <span className="ml-auto text-xs text-stone-400 tracking-wide">{(() => {
-          if (level === 'year')  return summaryLine(yearEntries);
-          if (level === 'month') {
-            const mEntries = dailyEntries.filter(e => {
-              try { return getMonth(parseISO(e.date)) === focusMonth && getYear(parseISO(e.date)) === year; }
-              catch { return false; }
-            });
-            const total = mEntries.length;
-            if (total === 0) return '';
-            const mood = dominantMood(mEntries);
-            const MOOD_PHRASE: Record<string, string> = {
-              great: 'A mostly great month', good: 'A mostly good month',
-              okay: 'A steady month', low: 'A tender month', difficult: 'A tender month',
-            };
-            return `${total} ${total === 1 ? 'entry' : 'entries'}${mood ? ` · ${MOOD_PHRASE[mood]}` : ''}`;
-          }
-          if (level === 'week') {
-            const wEnd = endOfWeek(focusWeek);
-            const wEntries = dailyEntries.filter(e => {
-              try {
-                const d = parseISO(e.date);
-                return d >= focusWeek && d <= wEnd;
-              } catch { return false; }
-            });
-            const total = wEntries.length;
-            if (total === 0) return '';
-            const mood = dominantMood(wEntries);
-            const MOOD_PHRASE: Record<string, string> = {
-              great: 'Mostly great', good: 'Mostly good',
-              okay: 'Steady', low: 'Tender', difficult: 'Tender',
-            };
-            return `${total} of 7 days · ${mood ? MOOD_PHRASE[mood] : 'Mixed'}`;
-          }
-          return '';
-        })()}</span>
-      )}
-    </div>
-  );
-
-  // ── DAILY HEATMAP — tiny dot per day ──────────────────────────────────
   const DailyHeatmap = () => {
-    const yearStart = startOfYear(new Date(year, 0, 1));
-    const yearEnd   = endOfYear(new Date(year, 0, 1));
-    const days      = eachDayOfInterval({ start: yearStart, end: yearEnd });
-
-    const months = useMemo(() => {
-      return MONTH_NAMES.map((name, mi) => {
-        const monthDays = days.filter(d => getMonth(d) === mi);
-        const paddingBefore = getDay(monthDays[0]);
-        return { name, mi, monthDays, paddingBefore };
-      });
-    }, [days]);
+    const FULL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const isCurrentMonth = (mi: number) => mi === getMonth(new Date()) && year === getYear(new Date());
 
     return (
-      <div>
-        <div className="grid grid-cols-6 gap-5">
-          {months.map(({ name, mi, monthDays, paddingBefore }) => (
-            <div key={mi} className="min-w-0">
-              <button
-                onClick={() => { setFocus(mi); setLevel('month'); }}
-                className="text-[11px] font-medium text-stone-400 hover:text-stone-600 mb-2 flex items-center gap-0.5 transition-colors tracking-wider uppercase"
-              >
-                {name}
-                {(() => {
-                  const periodKey = `${year}-${String(mi + 1).padStart(2, '0')}`;
-                  const hasMonthlyReflection = entries.some(
-                    e => e.reflectionType === 'monthly' && e.date === `reflection-monthly-${periodKey}`
-                  );
-                  return hasMonthlyReflection ? <ReflectionDot type="monthly" /> : null;
-                })()}
-              </button>
-              <div className="grid grid-cols-7 gap-0.5">
-                {DAY_LABELS.map((d, i) => (
-                  <div key={i} className="text-[7px] text-stone-400 text-center pb-0.5 font-medium">{d}</div>
+      <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 px-2 min-h-0 max-w-[1200px] mx-auto w-full overflow-y-auto pb-4">
+        {FULL_MONTH_NAMES.map((name, mi) => {
+          const mStart    = startOfMonth(new Date(year, mi, 1));
+          const monthDays = eachDayOfInterval({ start: mStart, end: endOfMonth(mStart) });
+          const padBefore = getDay(monthDays[0]);
+          const isCurrent = isCurrentMonth(mi);
+
+          return (
+            <motion.div
+              key={name}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: mi * 0.03 }}
+              className="rounded-2xl p-4 flex flex-col cursor-pointer group transition-[transform,colors] duration-200"
+              style={{
+                backgroundColor: 'var(--card)',
+                border: isCurrent ? '1.5px solid var(--primary)' : '1px solid var(--border-medium)',
+                boxShadow: isCurrent
+                  ? '0 4px 16px var(--selection-bg)'
+                  : '0 1px 4px var(--border-light)',
+              }}
+              onClick={() => { setFocus(mi); setLevel('month'); }}
+            >
+              {/* Month name */}
+              <div className="flex items-center justify-between mb-3">
+                <h3
+                  className="text-[13px] font-semibold tracking-wide transition-colors"
+                  style={{ fontFamily: 'var(--font-display)', color: isCurrent ? 'var(--primary)' : 'var(--foreground)' }}
+                >
+                  {name}
+                </h3>
+                <span className="opacity-0 group-hover:opacity-60 transition-opacity text-[12px]" style={{ color: 'var(--primary)' }}>→</span>
+              </div>
+
+              {/* Day-of-week headers */}
+              <div className="grid grid-cols-7 mb-1">
+                {['S','M','T','W','T','F','S'].map((d, i) => (
+                  <div key={i} className="text-[8px] text-center font-semibold uppercase tracking-wider text-muted-foreground">{d}</div>
                 ))}
-                {Array(paddingBefore).fill(null).map((_, i) => (
-                  <div key={`pad-${i}`} />
+              </div>
+
+              {/* Day grid */}
+              <div className="grid grid-cols-7 gap-y-0.5">
+                {/* Padding cells */}
+                {Array(padBefore).fill(null).map((_, i) => (
+                  <div key={`p-${i}`} />
                 ))}
+
                 {monthDays.map(day => {
-                  const ds    = format(day, 'yyyy-MM-dd');
-                  const entry = entryMap.get(ds);
+                  const ds     = format(day, 'yyyy-MM-dd');
+                  const entry  = entryMap.get(ds);
                   const todayC = isToday(day);
-                  const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
-                  
-                  const activeEras = eras.filter(era => {
-                    if (!era.startDate) return false;
-                    const t = day.getTime();
-                    const st = parseISO(era.startDate).getTime();
-                    const en = era.endDate ? parseISO(era.endDate).getTime() : Infinity;
-                    return t >= st && t <= en;
-                  });
-                  const activeEra = activeEras[0]; // Primary era
-                  const eraMatch = !activeEraFilter || (activeEra?.id === activeEraFilter);
-                  
+                  const moodColor = entry?.mood ? MOOD_CELL_STYLE[entry.mood] : null;
+
                   return (
-                    <div key={ds} className="relative aspect-square overflow-hidden rounded-sm" style={activeEra && eraMatch ? { backgroundColor: activeEra.colour + '33' } : undefined}>
-                      <motion.button
-                        whileHover={{ scale: 1.4 }}
-                        whileTap={{ scale: 0.85 }}
-                        onClick={() => {
-                          setFocus(mi);
-                          setFocusW(startOfWeek(day));
-                          if (entry) { setFocusDay(ds); setLevel('day'); }
-                          else onSelectDate(ds);
+                    <button
+                      key={ds}
+                      title={format(day, 'MMMM d')}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (entry) { setFocus(mi); setFocusDay(ds); setLevel('day'); }
+                        else onSelectDate(ds);
+                      }}
+                      className="relative flex items-center justify-center"
+                      style={{ aspectRatio: '1' }}
+                    >
+                      {/* Mood circle or today ring */}
+                      {moodColor ? (
+                        <span
+                          className="absolute inset-[1px] rounded-full"
+                          style={{ backgroundColor: moodColor }}
+                        />
+                      ) : entry ? (
+                        <span
+                          className="absolute inset-[2px] rounded-full"
+                          style={{ border: '1.5px dashed var(--text-muted)' }}
+                        />
+                      ) : todayC ? (
+                        <span
+                          className="absolute inset-[1px] rounded-full"
+                          style={{ border: '1.5px solid var(--primary)' }}
+                        />
+                      ) : null}
+
+                      {/* Day number */}
+                      <span
+                        className="relative z-10 text-[9px] leading-none font-medium"
+                        style={{
+                          color: moodColor
+                            ? 'rgba(255,255,255,0.92)'
+                            : todayC
+                            ? 'var(--primary)'
+                            : 'var(--muted-foreground)',
                         }}
-                        title={ds}
-                        className={`
-                          w-full h-full transition-all flex items-center justify-center
-                          ${!entry?.mood
-                            ? entry
-                              ? 'bg-stone-400 ring-1 ring-stone-500 ring-offset-[1px] ring-dashed rounded-sm'
-                              : activeEra
-                                ? 'bg-transparent hover:bg-black/10 rounded-sm'
-                                : 'bg-stone-300/80 hover:bg-stone-400/60 rounded-sm'
-                            : 'rounded-sm'
-                          }
-                          ${todayC && !hasEntries ? 'ring-2 ring-amber-400 ring-offset-1 animate-pulse z-10 rounded-sm' : todayC ? 'ring-1 ring-stone-500 ring-offset-1 z-10 rounded-sm' : ''}
-                          ${(activeTagFilter && !tagMatch) || (activeEraFilter && !eraMatch) ? 'opacity-20' : ''}
-                        `}
-                        style={entry?.mood ? { backgroundColor: MOOD_CELL_STYLE[entry.mood] } : undefined}
-                      />
-                    </div>
+                      >
+                        {format(day, 'd')}
+                      </span>
+                    </button>
                   );
                 })}
               </div>
-            </div>
-          ))}
-        </div>
-        <MoodLegend />
-        <EraLegend />
+            </motion.div>
+          );
+        })}
       </div>
     );
   };
 
-  // ── WELCOME CARD — first-run empty state ──────────────────────────────
-  const WelcomeCard = () => (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.5 }}
-      className="mb-8 rounded-2xl bg-amber-50 border border-amber-100 px-6 py-6 max-w-xl"
-    >
-      <p
-        className="text-stone-700 text-xl font-light leading-snug mb-2"
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
-        Every day you write, a dot lights up.
-      </p>
-      <p className="text-stone-500 text-sm leading-relaxed mb-5">
-        Over time this becomes a map of your emotional life — colours for how you felt, a record only you can read.
-      </p>
-      <div className="flex items-center gap-4">
-        <Button
-          size="sm"
-          className="bg-amber-400 hover:bg-amber-500 text-amber-900 border-0 font-medium shadow-none"
-          onClick={() => onSelectDate(format(new Date(), 'yyyy-MM-dd'))}
-        >
-          Write today's entry →
-        </Button>
-        <button
-          onClick={handleDismissWelcome}
-          className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
-        >
-          Got it
-        </button>
-      </div>
-    </motion.div>
-  );
 
-  // ── BELOW HEATMAP — daily prompt + most-active-day + intention ────────
-  const BelowHeatmap = () => {
-    const activeDayStr = mostActiveDay(dailyEntries.filter(e => getYear(parseISO(e.date)) === year));
-    const intentionLabel = activeIntention?.type === 'monthly' ? 'This month you intended:' : 'This week you intended:';
+
+
+
+  const LegendFooter = () => {
+    const currentYearEra = eras.find(era => {
+      const today = new Date().getTime();
+      const st = new Date(era.startDate || '').getTime();
+      const en = era.endDate ? new Date(era.endDate).getTime() : Infinity;
+      return today >= st && today <= en;
+    });
+
+    // Remaining days in the currently viewed year
+    const now = new Date();
+    const msPerDay = 86400000;
+    const yearEnd = new Date(year, 11, 31);
+    const daysLeft = Math.max(0, Math.ceil((yearEnd.getTime() - now.getTime()) / msPerDay));
+    const isCurrentViewYear = year === getYear(now);
+
+    // Mood insight from recent entries
+    const MOOD_SCORE: Record<string, number> = { great: 5, good: 4, okay: 3, low: 2, difficult: 1 };
+    const recentDaily = entries
+      .filter(e => e.date && !e.reflectionType && !e.date.startsWith('reflection-'))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const insight = (() => {
+      if (recentDaily.length < 2) return null;
+      const last3 = recentDaily.slice(0, 3).filter(e => e.mood).map(e => MOOD_SCORE[e.mood!] ?? 3);
+      const prev3 = recentDaily.slice(3, 6).filter(e => e.mood).map(e => MOOD_SCORE[e.mood!] ?? 3);
+      if (last3.length >= 2 && prev3.length >= 2) {
+        const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
+        const diff = avg(last3) - avg(prev3);
+        if (diff >= 0.8)  return 'Mood has been rising this week.';
+        if (diff <= -0.8) return 'Mood has been quieter lately.';
+      }
+      let streak = 0;
+      let cursor = new Date();
+      while (streak <= 60) {
+        if (!recentDaily.find(e => e.date === format(cursor, 'yyyy-MM-dd'))) break;
+        streak++;
+        cursor = new Date(cursor.getTime() - msPerDay);
+      }
+      if (streak >= 3) return `${streak}-day writing streak.`;
+      const moodCounts: Record<string, number> = {};
+      recentDaily.slice(0, 14).forEach(e => { if (e.mood) moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1; });
+      const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+      const MOOD_PHRASE: Record<string, string> = { great: 'A vibrant stretch lately.', good: 'A peaceful stretch lately.', okay: 'A steady stretch lately.', low: 'A tender stretch lately.', difficult: 'A tender stretch lately.' };
+      return topMood ? (MOOD_PHRASE[topMood] ?? null) : null;
+    })();
 
     return (
-      <div className="mt-10 space-y-4 max-w-md">
-        {/* Daily opening prompt — fades after 6s, once per day */}
+      <div className="mt-3 shrink-0 max-w-[1200px] mx-auto w-full px-2 pb-2">
+        {insight && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-2 mb-2 px-4"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Insight</span>
+            <span className="text-[11px] text-muted-foreground">{insight}</span>
+          </motion.div>
+        )}
+        <div className="flex items-center justify-between px-4 opacity-60">
+          <div className="flex gap-1.5 items-center">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mr-1">Mood</span>
+            <div className="w-[10px] h-[10px] rounded-full bg-border" title="No entry" />
+            {MOOD_ORDER.map(m => (
+              <div key={m} className="w-[10px] h-[10px] rounded-full" style={{ backgroundColor: MOOD_CELL_STYLE[m] }} title={MOOD_LABEL[m]} />
+            ))}
+          </div>
+          {isCurrentViewYear && daysLeft > 0 && (
+            <span className="text-[10px] font-medium text-muted-foreground">
+              <span className="font-bold text-primary">{daysLeft}</span> days left in {year}
+            </span>
+          )}
+          {currentYearEra && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Chapter:</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{currentYearEra.name}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const BelowHeatmap = () => {
+    const activeDayStr = mostActiveDay(entries.filter(e => e.date && !e.reflectionType && getYear(parseISO(e.date)) === year));
+    return (
+      <div className="mt-2 space-y-1 text-center max-w-md mx-auto">
         <AnimatePresence>
           {showDailyPrompt && (
             <motion.p
@@ -504,29 +468,19 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               animate={{ opacity: 0.7 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.2 }}
-              className="text-stone-400 text-sm italic leading-relaxed cursor-pointer"
+              className="text-stone-400 text-[12px] italic leading-relaxed cursor-pointer"
               onClick={() => setShowDailyPrompt(false)}
-              style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem' }}
+              style={{ fontFamily: 'ui-serif, Georgia, serif' }}
             >
               {dailyPrompt}
             </motion.p>
           )}
         </AnimatePresence>
-
-        {/* Witness observation — quiet, factual, no judgement */}
-        {activeDayStr && (
-          <p className="text-xs text-stone-400 tracking-wide">You tend to write on {activeDayStr}.</p>
-        )}
-
-        {/* Active intention — only shown when there's real content (Decision 5: hide if < 3 chars) */}
+        {activeDayStr && <p className="text-[9px] text-stone-400 font-medium uppercase tracking-widest">Mostly writing on {activeDayStr}</p>}
         {activeIntention && activeIntention.text.trim().length >= 3 && (
-          <div className="pt-1 border-t border-stone-200/60">
-            <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-1">{intentionLabel}</p>
-            <p
-              className="text-stone-500 italic text-sm leading-relaxed"
-              style={{ fontFamily: 'var(--font-display)', fontSize: '1rem' }}
-            >
-              "{activeIntention.text}"
+          <div className="pt-0.5">
+            <p className="text-[9px] text-stone-400 font-medium uppercase tracking-widest">
+              {activeIntention.type === 'monthly' ? 'Monthly' : 'Weekly'} Intent: "{activeIntention.text}"
             </p>
           </div>
         )}
@@ -534,98 +488,28 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     );
   };
 
-  // ── Shared mood legend ─────────────────────────────────────────────────
-  const MoodLegend = () => (
-    <div className="mt-5 flex items-center gap-3 flex-wrap">
-      {/* Decision 3: legend dots enlarged (w-3/h-3) for visibility */}
-      {Object.entries(MOOD_CELL).map(([mood, cls]) => (
-        <div key={mood} className="flex items-center gap-1.5">
-          <div className={`w-3 h-3 rounded-sm ${cls}`} />
-          <span className="text-[10px] text-stone-500 tracking-wide">{MOOD_LABEL[mood]}</span>
-        </div>
-      ))}
-      <div className="flex items-center gap-1.5">
-        <div className="w-3 h-3 rounded-sm bg-stone-300/80 border border-stone-400/60" />
-        <span className="text-[10px] text-stone-500 tracking-wide">No entry</span>
-      </div>
-    </div>
-  );
-
-  // ── Era Legend ─────────────────────────────────────────────────────────
-  const EraLegend = () => {
-    if (activeErasThisYear.length === 0) return null;
-    return (
-      <div className="mt-3 flex items-center gap-x-4 gap-y-2 flex-wrap pt-3 border-t border-stone-200/50">
-        <span className="text-[10px] text-stone-400 uppercase tracking-widest pl-1">Chapters</span>
-        {activeErasThisYear.map(era => (
-          <button
-            key={era.id}
-            onClick={() => setActiveEraFilter(activeEraFilter === era.id ? null : era.id)}
-            className={`flex items-center gap-1.5 transition-opacity ${activeEraFilter && activeEraFilter !== era.id ? 'opacity-40' : 'hover:opacity-80'}`}
-          >
-            <div className="w-5 h-2 rounded-sm" style={{ backgroundColor: (era.colour || '#c2714f') + '40' }} />
-            <span className="text-[11px] font-medium" style={{ color: '#5a5550' }}>{era.name}</span>
-          </button>
-        ))}
-      </div>
-    );
-  };
-
-  // ── TAG & ERA FILTER STRIP ──────────────────────────────────────────────
   const FilterStrip = () => {
     if (!activeTagFilter && !activeEraFilter) return null;
-    
     const activeEra = activeEraFilter ? eras.find(e => e.id === activeEraFilter) : null;
-    
     return (
-      <motion.div
-        initial={{ opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.18 }}
-        className="flex items-center gap-2 mb-6 -mt-2"
-      >
-        <span className="text-[11px] text-stone-400 uppercase tracking-widest">Filtered by</span>
-        
+      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center items-center gap-3 mb-4">
+        <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Filtered</span>
         {activeTagFilter && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium"
-            style={{ backgroundColor: '#3C3C38', color: '#EDE8DF' }}>
-            {activeTagFilter}
-            <button
-              onClick={() => setActiveTagFilter(null)}
-              className="text-stone-400 hover:text-white transition-colors ml-0.5"
-              aria-label="Clear tag filter"
-            >
-              ×
-            </button>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-primary text-primary-foreground text-[10px] rounded-full font-medium">
+            {activeTagFilter} <button onClick={() => setActiveTagFilter(null)} className="opacity-60 hover:opacity-100">×</button>
           </span>
         )}
-        
         {activeEra && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full font-medium border"
-            style={{ backgroundColor: (activeEra.colour || '#c2714f') + '15', color: '#3C3C38', borderColor: (activeEra.colour || '#c2714f') + '40' }}>
-            Chapter: {activeEra.name}
-            <button
-              onClick={() => setActiveEraFilter(null)}
-              className="text-stone-500 hover:text-stone-800 transition-colors ml-0.5"
-              aria-label="Clear era filter"
-            >
-              ×
-            </button>
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 border border-border text-[10px] rounded-full font-medium" style={{ backgroundColor: activeEra.colour ? activeEra.colour + '15' : 'var(--selection-bg)', color: 'var(--foreground)' }}>
+            {activeEra.name} <button onClick={() => setActiveEraFilter(null)} className="opacity-60 hover:opacity-100">×</button>
           </span>
         )}
-
-        <button
-          onClick={() => { setActiveTagFilter(null); setActiveEraFilter(null); }}
-          className="text-xs text-stone-400 hover:text-stone-600 transition-colors ml-2"
-        >
-          clear {activeTagFilter && activeEraFilter ? 'all' : ''}
-        </button>
+        <button onClick={() => { setActiveTagFilter(null); setActiveEraFilter(null); }} className="text-[10px] underline hover:opacity-100 opacity-60 text-muted-foreground">clear</button>
       </motion.div>
     );
   };
 
-  // ── REFLECTION PANEL — replaces flat banners in Month/Week/Year views ─
+  // ── REFLECTION PANEL - replaces flat banners in Month/Week/Year views ─
   const REFLECTION_PANEL_META: Record<ReflectionEntryType, {
     label: string;
     emptyLabel: string;
@@ -690,32 +574,27 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl px-5 py-4 mb-5"
-          style={{
-            backgroundColor: 'var(--card)',
-            border: '1.5px solid rgba(28,28,24,0.22)',
-            boxShadow: '0 2px 8px rgba(28,28,24,0.10)',
-          }}
+          className="rounded-[16px] p-6 bg-card border border-border shadow-sm mb-6"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-xs font-semibold uppercase tracking-wide mb-0.5 ${meta.accentText}`}>
+              <p className={`text-[12px] font-medium uppercase tracking-wide mb-1 ${meta.accentText}`}>
                 {meta.emptyLabel}
               </p>
-              <p className="text-sm text-stone-400 italic">{meta.emptyPrompt}</p>
+              <p className="text-[14px] text-muted-foreground italic">"{meta.emptyPrompt}"</p>
             </div>
             <button
               onClick={onWrite}
-              className={`ml-4 shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors ${meta.accentButton}`}
+              className={`ml-4 shrink-0 text-[13px] px-4 py-2 rounded-lg border transition-colors hover:bg-stone-50 ${meta.accentButton}`}
             >
-              Write →
+              Write Reflection
             </button>
           </div>
         </motion.div>
       );
     }
 
-    // Written state — show full content
+    // Written state - show full content
     const fields: { key: keyof JournalEntry; label: string }[] = [
       { key: 'whatHappened', label: FIELD_LABELS.whatHappened },
       { key: 'feelings',     label: FIELD_LABELS.feelings },
@@ -727,53 +606,66 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     return (
       <motion.div
         initial={{ opacity: 0, y: -4 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl px-5 py-4 mb-5"
-        style={{
-          backgroundColor: 'var(--card)',
-          border: '1.5px solid rgba(28,28,24,0.22)',
-          boxShadow: '0 2px 8px rgba(28,28,24,0.10)',
-        }}
+        className="rounded-[16px] p-6 bg-card border border-border shadow-sm mb-6"
       >
         {/* Header row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dotCls}`} />
-            <p className={`text-xs font-semibold uppercase tracking-wide ${meta.accentText}`}>
-              {meta.label}
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dotCls}`} />
+              <h2 className="text-[18px] font-semibold text-foreground leading-none">
+                {meta.label}
+              </h2>
+              {reflection.mood && (
+                <span className="text-[18px] leading-none ml-1">{MOOD_EMOJI[reflection.mood]}</span>
+              )}
+            </div>
+            <p className="text-[14px] text-muted-foreground mt-2">
+              Your thoughts for {type === 'monthly' ? MONTH_NAMES[focusMonth] : type === 'weekly' ? 'this week' : year}
             </p>
-            {reflection.mood && (
-              <span className="text-base leading-none ml-1">{MOOD_EMOJI[reflection.mood]}</span>
-            )}
           </div>
           <button
             onClick={onEdit}
-            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-colors ${meta.accentButton}`}
+            className={`flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-lg border transition-colors ${meta.accentButton} hover:bg-stone-50`}
           >
-            <Edit className="size-3" />
+            <Edit className="size-3.5" />
             Edit
           </button>
         </div>
 
-        {/* Intention — prominent at top, shown before content */}
-        {(reflection as JournalEntry & { intention?: string }).intention && (
-          <div className="mb-4 pb-3 border-b border-stone-200/60">
-            <p className="text-[10px] text-stone-400 uppercase tracking-wide mb-1">Intention</p>
-            <p className={`text-sm italic font-medium ${meta.accentText} leading-relaxed`}>
-              "{(reflection as JournalEntry & { intention?: string }).intention}"
-            </p>
-          </div>
-        )}
+        {/* Content sections */}
+        <div className="space-y-6">
+          {/* Intention - prominent at top */}
+          {(reflection as JournalEntry & { intention?: string }).intention && (
+            <div 
+              onClick={onEdit}
+              className="group cursor-pointer rounded-xl -mx-3 px-3 py-2 -my-2 transition-colors hover:bg-muted"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide">Intention</p>
+                <Edit className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <p className={`text-[16px] italic font-medium ${meta.accentText} leading-[1.6]`}>
+                "{(reflection as JournalEntry & { intention?: string }).intention}"
+              </p>
+            </div>
+          )}
 
-        {/* Content fields — below intention */}
-        <div className="space-y-3">
+          {/* Content fields - below intention */}
           {fields.map(({ key, label }) => {
             const val = reflection[key] as string | undefined;
             if (!val) return null;
             return (
-              <div key={String(key)}>
-                <p className="text-[10px] text-stone-400 uppercase tracking-wide mb-0.5">{label}</p>
-                <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-wrap line-clamp-4">
+              <div 
+                key={String(key)}
+                onClick={onEdit}
+                className="group cursor-pointer rounded-xl -mx-3 px-3 py-2 -my-2 transition-colors hover:bg-muted"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+                  <Edit className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <p className="text-[16px] text-foreground leading-[1.6] whitespace-pre-wrap">
                   {val}
                 </p>
               </div>
@@ -786,159 +678,224 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
   // ── MONTH VIEW ─────────────────────────────────────────────────────────
   const MonthView = () => {
+    const FULL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const mStart = startOfMonth(new Date(year, focusMonth, 1));
     const mEnd   = endOfMonth(mStart);
     const weeks  = eachWeekOfInterval({ start: mStart, end: mEnd });
     const periodKey = format(mStart, 'yyyy-MM');
     const monthlyReflection = findReflectionEntry(entries, 'monthly', periodKey);
+    const monthlyKey = `reflection-monthly-${periodKey}`;
+    const [showReflection, setShowReflection] = useState(false);
 
-    // Scroll-triggered swap — calendar fades out when reflection sentinel enters viewport
-    const sentinelRef = useRef<HTMLDivElement>(null);
-    const [reflectionVisible, setReflectionVisible] = useState(false);
+    // Active era for the month footer — dynamic from Chapters/Eras feature
+    const currentEra = eras.find(era => {
+      const t = mStart.getTime();
+      const st = new Date(era.startDate || '').getTime();
+      const en = era.endDate ? new Date(era.endDate).getTime() : Infinity;
+      return t >= st && t <= en;
+    });
 
-    useEffect(() => {
-      const el = sentinelRef.current;
-      if (!el) return;
-      const observer = new IntersectionObserver(
-        ([entry]) => setReflectionVisible(entry.isIntersecting),
-        { threshold: 0.15 }
-      );
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, []);
+    // Nearby months for the sidebar scrubber
+    const sidebarMonths = (() => {
+      const result = [];
+      for (let i = focusMonth - 2; i <= focusMonth + 2; i++) {
+        const m = ((i % 12) + 12) % 12;
+        const y = year + Math.floor(i / 12);
+        // Explicitly show the year when crossing boundaries or on January to anchor the timeline
+        const showYear = y !== year || m === 0;
+        const label = showYear ? `${FULL_MONTH_NAMES[m]} ${y}` : FULL_MONTH_NAMES[m];
+        result.push({ m, y, label });
+      }
+      return result;
+    })();
 
     return (
-      <div className="space-y-3">
-        {/* Calendar — fades out when reflection scrolls into view */}
-        <motion.div
-          animate={{ opacity: reflectionVisible ? 0.15 : 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-2 mb-1">
+      <div className="flex h-full min-h-0 overflow-hidden">
+        {/* ── Sidebar month scrubber ── */}
+        <div className="flex flex-col justify-center gap-3 px-5 mr-2 shrink-0 min-w-[140px]">
+          {sidebarMonths.map(({ m, y, label }, idx) => {
+            const isActive = m === focusMonth && y === year;
+            const dist = Math.abs(idx - 2); // 0=active, 1=adjacent, 2=far
+            return (
+              <button
+                key={`${y}-${m}`}
+                onClick={() => { setFocus(m); if (y !== year) setYear(y); }}
+                className="text-left transition-all duration-200 leading-snug hover:opacity-100"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: isActive ? '22px' : dist === 1 ? '15px' : '13px',
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? 'var(--foreground)' : dist === 1 ? 'var(--text-secondary)' : 'var(--text-muted)',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Main calendar area ── */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden pr-6 -mr-4">
+          {/* Header: title + Month/Week pill */}
+          <div className="flex items-center justify-between mb-5 pt-1 shrink-0">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setFocus(m => ((m - 1 + 12) % 12))} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                <ChevronLeft className="size-4" />
+              </button>
+              <h2 className="text-[26px] font-medium leading-none" style={{ fontFamily: 'var(--font-display)', color: 'var(--foreground)' }}>
+                {FULL_MONTH_NAMES[focusMonth]} {year}
+              </h2>
+              <button onClick={() => setFocus(m => ((m + 1) % 12))} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+            {/* Month / Week pill toggle */}
+            <div className="flex items-center gap-1 bg-muted rounded-full p-0.5 text-sm">
+              <span className="px-3 py-1 rounded-full font-medium bg-background text-foreground">Month</span>
+              <button
+                onClick={() => setLevel('week')}
+                className="px-3 py-1 rounded-full text-muted-foreground hover:text-foreground transition-colors font-medium"
+              >
+                Week
+              </button>
+            </div>
+          </div>
+
+          {/* Day-of-week headers */}
+          <div className="grid grid-cols-7 gap-1.5 mb-2 shrink-0">
             {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-              <div key={d} className="text-xs text-center text-stone-400 font-medium">{d}</div>
+              <div key={d} className="text-[10px] text-center font-semibold uppercase tracking-widest text-muted-foreground">{d}</div>
             ))}
           </div>
 
-          {weeks.map((weekStart, wi) => {
-            const weekEnd    = endOfWeek(weekStart);
-            const weekDays   = eachDayOfInterval({ start: weekStart, end: weekEnd });
-            const weekEntries = weekDays
-              .map(d => entryMap.get(format(d, 'yyyy-MM-dd')))
-              .filter(Boolean) as JournalEntry[];
-            void weekEntries;
+          {/* Week rows */}
+          <div className="flex flex-col gap-1.5 flex-1">
+            {weeks.map((weekStart, wi) => {
+              const weekEnd  = endOfWeek(weekStart);
+              const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+              const weekKey  = format(weekStart, 'yyyy-MM-dd');
+              const hasWeekReflection = entries.some(e => e.replectionType === 'weekly' && e.date === `reflection-weekly-${weekKey}`);
 
-            return (
-              <div key={wi} className="relative mb-3">
-                {/* Week row header — click → drill into week */}
-                {(() => {
-                  const weekKey = format(weekStart, 'yyyy-MM-dd');
-                  const hasWeeklyReflection = entries.some(
-                    e => e.reflectionType === 'weekly' && e.date === `reflection-weekly-${weekKey}`
-                  );
-                  return (
-                    <button
-                      onClick={() => { setFocusW(weekStart); setLevel('week'); }}
-                      className="absolute -left-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5 text-[10px] text-stone-400 hover:text-stone-500 transition-colors"
-                      title="View this week"
-                    >
-                      W{getWeek(weekStart)}
-                      {hasWeeklyReflection && <ReflectionDot type="weekly" />}
-                    </button>
-                  );
-                })()}
+              return (
+                <motion.div
+                  key={wi}
+                  className="relative group grid grid-cols-7 gap-1.5 rounded-xl cursor-pointer transition-colors"
+                  whileHover="hover"
+                  onClick={() => { setFocusW(weekStart); setLevel('week'); }}
+                >
+                  <motion.div
+                    className="absolute inset-0 rounded-xl pointer-events-none"
+                    style={{ backgroundColor: 'var(--selection-bg)' }}
+                    initial={{ opacity: 0 }}
+                    variants={{ hover: { opacity: 1 } }}
+                    transition={{ duration: 0.15 }}
+                  />
 
-                <div className="grid grid-cols-7 gap-2">
                   {weekDays.map(day => {
-                    const ds       = format(day, 'yyyy-MM-dd');
-                    const entry    = entryMap.get(ds);
-                    const inMonth  = isSameMonth(day, mStart);
-                    const todayC   = isToday(day);
-                    const tagMatch = !activeTagFilter || (entry?.tags?.includes(activeTagFilter) ?? false);
+                    const ds      = format(day, 'yyyy-MM-dd');
+                    const entry   = entryMap.get(ds);
+                    const inMonth = isSameMonth(day, mStart);
+                    const todayC  = isToday(day);
+                    const cellBg  = entry?.mood ? MOOD_CELL_STYLE[entry.mood] : inMonth ? 'var(--border)' : 'transparent';
 
                     return (
-                      <motion.button
+                      <div
                         key={ds}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => {
-                          setFocusW(weekStart);
+                        className={`aspect-square rounded-lg flex items-center justify-center relative transition-all ${!inMonth ? 'opacity-0 pointer-events-none' : ''}`}
+                        style={{ backgroundColor: inMonth ? cellBg : 'transparent' }}
+                        onClick={e => {
+                          e.stopPropagation();
                           if (entry) { setFocusDay(ds); setLevel('day'); }
                           else onSelectDate(ds);
                         }}
-                        className={`
-                          aspect-square rounded-lg transition-all flex flex-col items-center justify-center
-                          text-sm relative
-                          ${!inMonth ? 'opacity-20' : ''}
-                          ${entry?.mood
-                            ? 'text-stone-800 font-medium'
-                            : entry
-                              ? 'text-stone-600'
-                              : 'text-stone-400 hover:text-stone-500'
-                          }
-                          ${todayC ? 'ring-2 ring-amber-500 ring-offset-1' : ''}
-                          ${activeTagFilter && !tagMatch && inMonth ? 'opacity-20' : ''}
-                        `}
-                        style={
-                          entry?.mood
-                            ? {
-                                backgroundColor: MOOD_CELL_STYLE[entry.mood] + 'AA',
-                                border: '1.5px solid rgba(28,28,24,0.18)',
-                                boxShadow: '0 1px 4px rgba(28,28,24,0.10)',
-                              }
-                            : entry
-                              ? {
-                                  backgroundColor: 'var(--card)',
-                                  border: '1.5px solid rgba(28,28,24,0.20)',
-                                  boxShadow: '0 1px 4px rgba(28,28,24,0.10)',
-                                }
-                              : {
-                                  backgroundColor: 'var(--card)',
-                                  border: '1px solid rgba(28,28,24,0.12)',
-                                  opacity: 0.5,
-                                }
-                        }
                       >
-                        <span>{format(day, 'd')}</span>
-                        {entry?.mood && (
-                          <span className="text-[10px] leading-none mt-0.5 opacity-80">{MOOD_EMOJI[entry.mood]}</span>
+                        <span className={`text-[13px] font-medium leading-none ${entry?.mood ? 'text-white' : todayC ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {format(day, 'd')}
+                        </span>
+                        {todayC && (
+                          <div className="absolute inset-0 rounded-lg pointer-events-none" style={{ border: '2px solid var(--primary)' }} />
                         )}
-                      </motion.button>
+                        {entry && !entry.mood && (
+                          <div className="absolute bottom-[3px] right-[3px] w-[4px] h-[4px] rounded-full bg-border" />
+                        )}
+                      </div>
                     );
                   })}
-                </div>
-              </div>
-            );
-          })}
-        </motion.div>
 
-        {/* Sentinel — reflection panel fades in as it enters viewport */}
-        <div ref={sentinelRef} className="mt-6">
-          <motion.div
-            animate={{ opacity: reflectionVisible ? 1 : 0, y: reflectionVisible ? 0 : 12 }}
-            transition={{ duration: 0.5 }}
-          >
-            <ReflectionPanel
-              type="monthly"
-              reflection={monthlyReflection}
-              onWrite={() => onReflectionEntry(`reflection-monthly-${year}-${String(focusMonth + 1).padStart(2, '0')}`, 'monthly')}
-              onEdit={() => onEditEntry(monthlyReflection!.date)}
-            />
-          </motion.div>
+                  {/* › chevron on hover */}
+                  <motion.div
+                    className="absolute -right-5 top-1/2 -translate-y-1/2 text-primary pointer-events-none"
+                    initial={{ opacity: 0, x: -4 }}
+                    variants={{ hover: { opacity: 1, x: 0 } }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <ChevronRight className="size-3.5" />
+                  </motion.div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Footer: era name + reflection toggle */}
+          <div className="mt-4 pt-3 border-t border-border shrink-0">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                {currentEra
+                  ? <><span className="text-muted-foreground">Chapter: </span><span className="text-primary">{currentEra.name}</span></>
+                  : `${FULL_MONTH_NAMES[focusMonth]} ${year}`}
+              </span>
+              <button
+                onClick={() => setShowReflection(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
+                style={{
+                  color: showReflection ? 'var(--primary)' : 'var(--muted-foreground)',
+                  backgroundColor: showReflection ? 'var(--selection-bg)' : 'transparent',
+                  border: '1px solid',
+                  borderColor: showReflection ? 'var(--border)' : 'var(--border-light)',
+                }}
+              >
+                {monthlyReflection ? (showReflection ? 'Hide reflection ↑' : 'Read reflection ↓') : (showReflection ? 'Cancel ↑' : 'Write reflection ↓')}
+              </button>
+            </div>
+
+            {/* Inline reflection panel */}
+            <AnimatePresence>
+              {showReflection && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-4">
+                    <ReflectionPanel
+                      type="monthly"
+                      reflection={monthlyReflection}
+                      onWrite={() => onReflectionEntry(monthlyKey, 'monthly')}
+                      onEdit={() => monthlyReflection && onEditEntry(monthlyReflection.date)}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     );
   };
 
-  // ── WEEK VIEW — vertical timeline dots ────────────────────────────────
+
+  // ── WEEK VIEW - vertical timeline dots ────────────────────────────────
+
+
   const WeekView = () => {
     const wEnd   = endOfWeek(focusWeek);
     const wDays  = eachDayOfInterval({ start: focusWeek, end: wEnd });
     const weekKey = format(focusWeek, 'yyyy-MM-dd');
     const weeklyReflection = findReflectionEntry(entries, 'weekly', weekKey);
 
-    // Scroll-triggered swap — timeline fades out when reflection sentinel enters viewport
+    // Scroll-triggered swap - timeline fades out when reflection sentinel enters viewport
     const sentinelRef = useRef<HTMLDivElement>(null);
     const [reflectionVisible, setReflectionVisible] = useState(false);
 
@@ -953,16 +910,29 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       return () => observer.disconnect();
     }, []);
 
+    const weeklyKey = `reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`;
+
     return (
-      <div className="max-w-lg">
-        {/* Timeline — fades out when reflection scrolls into view */}
-        <motion.div
-          className="relative"
-          animate={{ opacity: reflectionVisible ? 0.15 : 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Vertical line */}
-          <div className="absolute left-[22px] top-4 bottom-4 w-px bg-stone-200" />
+      <div className="max-w-[720px] mx-auto w-full pb-12">
+        {/* Week Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-[32px] font-bold text-foreground leading-none mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+            Week {getWeek(focusWeek)}, {year}
+          </h2>
+          <p className="text-[15px] text-muted-foreground">Weekly overview and reflection</p>
+        </div>
+
+        <div className="mb-8">
+          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wide pl-2 mb-3">Week Overview</p>
+          <div className="bg-card border border-border rounded-[16px] p-5 shadow-sm">
+            {/* Timeline */}
+            <motion.div
+              className="relative"
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Vertical line */}
+              <div className="absolute left-[26px] top-4 bottom-4 w-px bg-stone-200" />
 
           <div className="space-y-4">
             {wDays.map((day, i) => {
@@ -997,19 +967,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                   <div
                     className="flex-1 rounded-xl p-3 transition-all"
                     style={{
-                      backgroundColor: 'var(--card)',
-                      border: entry
-                        ? '1px solid rgba(28,28,24,0.18)'
-                        : '1px solid rgba(28,28,24,0.10)',
-                      boxShadow: entry ? '0 1px 4px rgba(28,28,24,0.08)' : undefined,
-                      opacity: entry ? 1 : 0.6,
+                      backgroundColor: 'var(--input-background)',
+                      border: '1px solid var(--border)',
+                      boxShadow: entry ? '0 1px 4px var(--border-light)' : undefined,
                     }}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`text-sm font-medium ${today ? '' : 'text-stone-500'}`}
-                        style={today ? { color: '#3C3C38' } : undefined}>
+                      <span className={`text-sm font-medium ${today ? 'text-primary' : 'text-foreground'}`}>
                         {format(day, 'EEEE')}
-                        <span className="font-normal text-stone-400 ml-1.5">{format(day, 'MMM d')}</span>
+                        <span className="font-normal text-muted-foreground ml-1.5">{format(day, 'MMM d')}</span>
                       </span>
                       {entry?.mood && (
                         <span className="text-base">{MOOD_EMOJI[entry.mood]}</span>
@@ -1035,19 +1001,21 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 </motion.div>
               );
             })}
+            </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Sentinel — reflection panel fades in as it enters viewport */}
-        <div ref={sentinelRef} className="mt-6">
+        {/* Sentinel - reflection panel fades in as it enters viewport */}
+        <div ref={sentinelRef} className="mt-8">
           <motion.div
-            animate={{ opacity: reflectionVisible ? 1 : 0, y: reflectionVisible ? 0 : 12 }}
+            animate={{ opacity: 1, y: reflectionVisible ? 0 : 12 }}
             transition={{ duration: 0.5 }}
           >
             <ReflectionPanel
               type="weekly"
               reflection={weeklyReflection}
-              onWrite={() => onReflectionEntry(`reflection-weekly-${format(focusWeek, 'yyyy-MM-dd')}`, 'weekly')}
+              onWrite={() => onReflectionEntry(weeklyKey, 'weekly')}
               onEdit={() => onEditEntry(weeklyReflection!.date)}
             />
           </motion.div>
@@ -1056,7 +1024,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     );
   };
 
-  // ── DAY VIEW — full entry read mode ───────────────────────────────────
+  // ── DAY VIEW - full entry read mode ───────────────────────────────────
   const DayView = () => {
     if (!focusDay) return null;
     const entry = entryMap.get(focusDay);
@@ -1090,27 +1058,25 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl space-y-6"
       >
-        {/* Date heading — display font */}
+        {/* Date heading */}
         <div>
           <p
-            className="text-3xl font-light leading-tight"
-            style={{ fontFamily: 'var(--font-display)', color: '#3C3C38' }}
+            className="text-3xl font-light leading-tight text-foreground"
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             {format(parseISO(focusDay), 'EEEE, MMMM d')}
           </p>
-          <p className="text-xs text-stone-400 mt-0.5 tracking-wide">
+          <p className="text-xs text-muted-foreground mt-0.5 tracking-wide">
             {format(parseISO(focusDay), 'yyyy')}
           </p>
         </div>
 
-        {/* Reflection type badge */}
         {badge && (
           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium tracking-wide ${badge.cls}`}>
             {badge.label}
           </span>
         )}
 
-        {/* Mood + energy bar */}
         {(entry.mood || entry.energy) && (
           <div className={`flex items-center gap-4 px-4 py-3 rounded-xl border ${moodStyle}`}>
             {entry.mood && (
@@ -1121,7 +1087,7 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             )}
             {entry.energy && (
               <div className="flex items-end gap-0.5 ml-auto">
-                {[1,2,3,4,5].map(l => (
+                {[1, 2, 3, 4, 5].map(l => (
                   <div
                     key={l}
                     className={`w-1.5 rounded-sm transition-all ${l <= entry.energy! ? 'bg-amber-400' : 'bg-stone-200'}`}
@@ -1133,7 +1099,6 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           </div>
         )}
 
-        {/* Inner state — shown as a quiet pill when present */}
         {entry.innerState && (() => {
           const stateStyle: Record<string, string> = {
             clear:    'bg-stone-100 text-stone-600 border-stone-200',
@@ -1146,18 +1111,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             heavy:    'Heavy mind',
           };
           return (
-            <div>
-              <span className={`inline-block px-2.5 py-1 rounded-full text-xs border ${stateStyle[entry.innerState!]}`}>
-                {stateLabel[entry.innerState!]}
-              </span>
-            </div>
+            <span className={`inline-block px-2.5 py-1 rounded-full text-xs border ${stateStyle[entry.innerState!]}`}>
+              {stateLabel[entry.innerState!]}
+            </span>
           );
         })()}
 
-        {/* Tags — clickable to filter */}
         {entry.tags && entry.tags.length > 0 && (
           <div className="flex gap-2 flex-wrap">
-            {entry.tags.map(tag => (
+            {entry.tags.map((tag: string) => (
               <button
                 key={tag}
                 onClick={() => {
@@ -1166,10 +1128,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
                 }}
                 className={`px-2.5 py-1 text-xs rounded-full tracking-wide transition-all
                   ${activeTagFilter === tag
-                    ? 'text-parchment'
-                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-700'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-border hover:text-foreground'
                   }`}
-                style={activeTagFilter === tag ? { backgroundColor: '#3C3C38', color: '#EDE8DF' } : undefined}
                 title={activeTagFilter === tag ? 'Clear filter' : `Filter by "${tag}"`}
               >
                 {tag}
@@ -1191,14 +1152,13 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             if (!val) return null;
             return (
               <div key={key}>
-                <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-2">{label}</p>
-                <p className="leading-relaxed whitespace-pre-wrap text-[0.95rem]" style={{ color: '#3C3C38' }}>{val}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
+                <p className="leading-relaxed whitespace-pre-wrap text-[0.95rem] text-foreground">{val}</p>
               </div>
             );
           })}
         </div>
 
-        {/* Edit button */}
         <div className="pt-5 border-t border-stone-200/60">
           <Button
             variant="outline"
@@ -1214,219 +1174,198 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
     );
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────
-  const currentYear = getYear(new Date());
-  const yearsToShow = Array.from({ length: 6 }, (_, i) => currentYear - i); // newest first
+  // ── (Consolidated above) ──────────────────────────────────────────────
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 flex gap-10">
+    <div className="h-screen w-full overflow-hidden flex flex-col font-sans bg-background text-foreground">
+      <div className="flex-1 flex flex-col max-w-[1400px] mx-auto w-full px-6 pt-3 pb-2 min-h-0">
+        <div className={`flex flex-col items-center ${level === 'month' ? 'mb-0' : 'mb-[40px]'}`}>
+          {level === 'year' && !showWelcome && (
+            <div className="relative flex items-center justify-between w-full max-w-[1200px] mx-auto px-2 mb-4">
+              {/* Year navigation */}
+              <div className="flex items-center gap-3">
+                <button onClick={handlePrevYear} className="hover:text-foreground transition-colors p-1 text-muted-foreground">
+                  <ChevronLeft className="size-4" />
+                </button>
+                <span className="text-[18px] font-medium text-foreground" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.02em' }}>
+                  {year}
+                </span>
+                <button onClick={handleNextYear} className="hover:text-foreground transition-colors p-1 text-muted-foreground">
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
 
-      {/* ── Main heatmap area ── */}
-      <div className="flex-1 min-w-0">
-        <YearNav />
+              {/* Reflect logo — pinned to absolute center */}
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none select-none">
+                <BookOpen className="size-[18px] text-primary" strokeWidth={1.75} />
+                <span
+                  className="text-[17px] font-semibold tracking-tight text-foreground"
+                  style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}
+                >
+                  Reflect
+                </span>
+              </div>
 
-        <AnimatePresence>
-          <FilterStrip />
-        </AnimatePresence>
+              {/* Write Today */}
+              <Button
+                onClick={handleWriteToday}
+                className="text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl h-[36px] px-5 flex items-center gap-2 transition-all shadow-none font-medium text-[13px] border-0"
+              >
+                <Edit className="size-3.5" />
+                <span>Write Today</span>
+              </Button>
+            </div>
+          )}
+
+
+
+          {level !== 'year' && level !== 'month' && (
+            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+              <button
+                onClick={() => setLevel('year')}
+                className="hover:opacity-100 text-[11px] font-medium transition-colors uppercase tracking-widest text-muted-foreground"
+              >
+                {year}
+              </button>
+              
+              {(level === 'month' || level === 'week' || level === 'day') && (
+                <>
+                  <span className="text-[10px] text-border">/</span>
+                  <button
+                    onClick={() => setLevel('month')}
+                    className={`text-[11px] font-medium transition-colors uppercase tracking-widest ${
+                      level === 'month' ? 'text-foreground cursor-default' : 'text-muted-foreground hover:opacity-100'
+                    }`}
+                  >
+                    {MONTH_NAMES[focusMonth]}
+                  </button>
+                </>
+              )}
+
+              {(level === 'week' || level === 'day') && (
+                <>
+                  <span className="text-border text-[10px]">/</span>
+                  <button
+                    onClick={() => setLevel('week')}
+                    className={`text-[11px] font-medium transition-colors uppercase tracking-widest ${
+                      level === 'week' ? 'text-foreground cursor-default' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {(() => {
+                      const wStart = startOfMonth(new Date(year, focusMonth, 1));
+                      const weeks  = eachWeekOfInterval({ start: wStart, end: endOfMonth(wStart) });
+                      const idx    = weeks.findIndex(w => format(w, 'yyyy-MM-dd') === format(focusWeek, 'yyyy-MM-dd'));
+                      return `Week ${idx >= 0 ? idx + 1 : 1}`;
+                    })()}
+                  </button>
+                </>
+              )}
+
+              {level === 'day' && focusDay && (
+                <>
+                  <span className="text-border text-[10px]">/</span>
+                  <span className="text-[11px] font-medium text-foreground uppercase tracking-widest">
+                    {format(parseISO(focusDay), 'EEE d')}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         <AnimatePresence mode="wait">
           {level === 'year' && (
-            <motion.div key="year" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <AnimatePresence>
-                {showWelcome && <WelcomeCard />}
-              </AnimatePresence>
-              <DailyHeatmap />
-              {/* Yearly reflection panel — only shown when written. Empty state lives
-                  behind the sidebar '+' button so it never appears uninvited. */}
-              {(() => {
-                const yearlyReflection = findReflectionEntry(entries, 'yearly', String(year));
-                if (!yearlyReflection) return null;
-                return (
-                  <div className="mt-8 max-w-xl">
-                    <ReflectionPanel
-                      type="yearly"
-                      reflection={yearlyReflection}
-                      onWrite={() => onReflectionEntry(`reflection-yearly-${year}`, 'yearly')}
-                      onEdit={() => onEditEntry(yearlyReflection.date)}
-                    />
+            <motion.div key="year" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col min-h-0">
+              {showWelcome ? (
+                /* ── New-user: full-screen centred welcome, no calendar ── */
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                  className="flex-1 flex flex-col items-center justify-center text-center px-6"
+                >
+                  <p
+                    className="text-[13px] font-semibold uppercase tracking-[0.18em] mb-6"
+                    style={{ color: '#B8663F' }}
+                  >
+                    Your Journal
+                  </p>
+                  <h1
+                    className="text-[36px] font-light leading-snug mb-4 max-w-md"
+                    style={{ fontFamily: 'var(--font-display)', color: '#2E2A26' }}
+                  >
+                    A place to witness<br />your own mind.
+                  </h1>
+                  <p
+                    className="text-[15px] leading-relaxed max-w-sm mb-10 italic"
+                    style={{ color: '#8C857B', fontFamily: 'ui-serif, Georgia, serif' }}
+                  >
+                    "Write without concern for how it sounds or what it achieves."
+                  </p>
+                  <button
+                    onClick={handleWriteToday}
+                    className="px-8 py-3 rounded-2xl text-white text-[15px] font-medium transition-all hover:opacity-90 active:scale-95"
+                    style={{ backgroundColor: '#B8663F' }}
+                  >
+                    Write today's entry →
+                  </button>
+                  <p
+                    className="mt-5 text-[11px] uppercase tracking-widest"
+                    style={{ color: '#C2B8AE' }}
+                  >
+                    {format(new Date(), 'EEEE, MMMM d')}
+                  </p>
+                </motion.div>
+              ) : (
+                /* ── Returning user: full calendar grid ── */
+                <>
+                  <FilterStrip />
+                  <div className="flex-1 min-h-0 flex flex-col py-2">
+                    <DailyHeatmap />
                   </div>
-                );
-              })()}
-              <BelowHeatmap />
+                  <div className="shrink-0 space-y-1 py-1">
+                    <LegendFooter />
+                    <BelowHeatmap />
+                  </div>
+                  {(() => {
+                    const yearlyReflection = findReflectionEntry(entries, 'yearly', String(year));
+                    if (!yearlyReflection) return null;
+                    return (
+                      <div className="mt-2 max-w-xl mx-auto w-full">
+                        <ReflectionPanel
+                          type="yearly"
+                          reflection={yearlyReflection}
+                          onWrite={() => onReflectionEntry(`reflection-yearly-${year}`, 'yearly')}
+                          onEdit={() => onEditEntry(yearlyReflection.date)}
+                        />
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
             </motion.div>
           )}
+
+
           {level === 'month' && (
-            <motion.div key="month" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            <motion.div key="month" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 min-h-0 flex flex-col">
               <MonthView />
             </motion.div>
           )}
+
           {level === 'week' && (
-            <motion.div key="week" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            <motion.div key="week" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="w-full max-w-2xl mx-auto overflow-y-auto">
               <WeekView />
             </motion.div>
           )}
+
           {level === 'day' && (
-            <motion.div key="day" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            <motion.div key="day" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="w-full max-w-2xl mx-auto overflow-y-auto">
               <DayView />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      {/* ── Dynamic right sidebar — content changes per drill level ── */}
-      <div className="flex flex-col gap-1 pt-1 shrink-0 min-w-[72px]">
-
-        {/* YEAR level — show year list */}
-        {level === 'year' && yearsToShow.map(y => {
-          const yEntries = entries.filter(e => {
-            try { return getYear(parseISO(e.date)) === y; } catch { return false; }
-          });
-          const mood = dominantMood(yEntries);
-          const isActive = y === year;
-          const yearlyReflection = findReflectionEntry(entries, 'yearly', String(y));
-          return (
-            <div key={y} className="group relative">
-              <button
-                onClick={() => { setYear(y); setLevel('year'); }}
-                className={`
-                  flex items-center gap-2 px-3 py-1.5 rounded-r-md text-sm transition-all text-left w-full
-                  border-l-2
-                  ${isActive
-                    ? 'border-amber-500 text-amber-700 font-semibold'
-                    : 'border-transparent text-stone-500 hover:text-stone-700'}
-                `}
-              >
-                <span>{y}</span>
-                {yearlyReflection && !isActive && <ReflectionDot type="yearly" />}
-                {mood && !isActive && !yearlyReflection && (
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[mood] }} title={MOOD_LABEL[mood]} />
-                )}
-              </button>
-              <button
-                onClick={() => onReflectionEntry(
-                  yearlyReflection ? yearlyReflection.date : `reflection-yearly-${y}`, 'yearly'
-                )}
-                title={yearlyReflection ? 'Edit yearly reflection' : 'Write yearly reflection'}
-                className={`
-                  absolute right-1 top-1/2 -translate-y-1/2 text-[10px] opacity-0 group-hover:opacity-100
-                  transition-opacity px-1.5 py-0.5 rounded
-                  ${yearlyReflection ? 'text-amber-500 hover:text-amber-700' : 'text-stone-400 hover:text-stone-600'}
-                `}
-              >
-                {yearlyReflection ? '✎' : '+'}
-              </button>
-            </div>
-          );
-        })}
-
-        {/* MONTH level — show Jan–Dec for the active year */}
-        {level === 'month' && MONTH_NAMES.map((name, mi) => {
-          const mEntries = dailyEntries.filter(e => {
-            try { return getMonth(parseISO(e.date)) === mi && getYear(parseISO(e.date)) === year; }
-            catch { return false; }
-          });
-          const mood = dominantMood(mEntries);
-          const isActive = mi === focusMonth;
-          const hasReflection = entries.some(
-            e => e.reflectionType === 'monthly' && e.date === `reflection-monthly-${year}-${String(mi + 1).padStart(2, '0')}`
-          );
-          return (
-            <button
-              key={mi}
-              onClick={() => { setFocus(mi); setLevel('month'); }}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-r-md text-sm transition-all text-left
-                border-l-2
-                ${isActive
-                  ? 'border-amber-500 text-amber-700 font-semibold'
-                  : 'border-transparent text-stone-500 hover:text-stone-700'}
-              `}
-            >
-              <span>{name}</span>
-              {hasReflection && !isActive && <ReflectionDot type="monthly" />}
-              {mood && !isActive && !hasReflection && (
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[mood] }} title={MOOD_LABEL[mood]} />
-              )}
-            </button>
-          );
-        })}
-
-        {/* WEEK level — show 7 days of the focused week */}
-        {level === 'week' && (() => {
-          const wEnd  = endOfWeek(focusWeek);
-          const wDays = eachDayOfInterval({ start: focusWeek, end: wEnd });
-          return wDays.map(day => {
-            const ds    = format(day, 'yyyy-MM-dd');
-            const entry = entryMap.get(ds);
-            const today = isToday(day);
-            const isActive = focusDay === ds && level === 'week'; // highlight focused day
-            return (
-              <button
-                key={ds}
-                onClick={() => {
-                  if (entry) { setFocusDay(ds); setLevel('day'); }
-                  else onSelectDate(ds);
-                }}
-                className={`
-                  flex items-center gap-2 px-3 py-1.5 rounded-r-md text-sm transition-all text-left
-                  border-l-2
-                  ${today
-                    ? 'border-amber-500 text-stone-700 font-medium'
-                    : 'border-transparent text-stone-400 hover:text-stone-700'}
-                `}
-              >
-                <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
-                {entry?.mood
-                  ? <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[entry.mood] }} />
-                  : entry
-                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-stone-400 ring-1 ring-stone-500 ring-dashed" />
-                    : null
-                }
-              </button>
-            );
-          });
-        })()}
-
-        {/* DAY level — show the 7 days of that week for navigation */}
-        {level === 'day' && (() => {
-          const wEnd  = endOfWeek(focusWeek);
-          const wDays = eachDayOfInterval({ start: focusWeek, end: wEnd });
-          return wDays.map(day => {
-            const ds    = format(day, 'yyyy-MM-dd');
-            const entry = entryMap.get(ds);
-            const today = isToday(day);
-            const isCurrentDay = focusDay === ds;
-            return (
-              <button
-                key={ds}
-                onClick={() => {
-                  if (entry) { setFocusDay(ds); setLevel('day'); }
-                  else onSelectDate(ds);
-                }}
-                className={`
-                  flex items-center gap-2 px-3 py-1.5 rounded-r-md text-sm transition-all text-left
-                  border-l-2
-                  ${isCurrentDay
-                    ? 'border-amber-500 text-stone-700 font-medium'
-                    : today
-                      ? 'border-stone-300 text-stone-600'
-                      : 'border-transparent text-stone-400 hover:text-stone-700'}
-                `}
-              >
-                <span className="w-7 shrink-0">{format(day, 'EEE')}</span>
-                {entry?.mood
-                  ? <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: MOOD_CELL_STYLE[entry.mood] }} />
-                  : entry
-                    ? <span className="w-2 h-2 rounded-full shrink-0 bg-stone-400 ring-1 ring-stone-500 ring-dashed" />
-                    : null
-                }
-              </button>
-            );
-          });
-        })()}
-
-      </div>
-
     </div>
   );
 }

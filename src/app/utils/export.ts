@@ -1,19 +1,11 @@
-import type { JournalEntry } from '@/app/types';
+import type { JournalEntry, ReflectionAnchor, Habit, HabitEngagement, MemoryThread } from '@/app/types';
 import { format, parseISO } from 'date-fns';
 
-// V2: Data export and privacy controls
+import { db } from '@/app/db';
 
-export function exportToJSON(entries: JournalEntry[]): void {
-  const data = {
-    exportDate: new Date().toISOString(),
-    version: '2.0',
-    entriesCount: entries.length,
-    entries: entries.sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    ),
-  };
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], { 
+export function exportToJSON(): void {
+  const jsonString = db.backup.exportAll();
+  const blob = new Blob([jsonString], { 
     type: 'application/json' 
   });
   
@@ -27,18 +19,81 @@ export function exportToJSON(entries: JournalEntry[]): void {
   URL.revokeObjectURL(url);
 }
 
-export function exportToMarkdown(entries: JournalEntry[]): void {
+export function exportToMarkdown(): void {
+  const entries = db.entries.getAll();
   const sorted = [...entries].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
+  const eras = db.eras.getAll();
+  const anchors = db.anchors.getAll();
+  const habits = db.habits.getAll();
+  const engagements = db.engagements.getAll();
+  const threads = db.threads.getAll();
+
   let markdown = `# Journal Export\n\n`;
-  markdown += `Exported: ${format(new Date(), 'MMMM d, yyyy')}\n`;
-  markdown += `Total Entries: ${entries.length}\n\n`;
+  markdown += `Exported: ${format(new Date(), 'MMMM d, yyyy')}\n\n`;
   markdown += `---\n\n`;
 
+  // --- CORE VALUES & INTENTIONS ---
+  if (anchors.length > 0) {
+    markdown += `## Core Values & Intentions\n\n`;
+    anchors.forEach((a: ReflectionAnchor) => {
+      markdown += `- **${a.type === 'value' ? 'Value' : 'Intention'}:** ${a.text}\n`;
+    });
+    markdown += `\n---\n\n`;
+  }
+
+  // --- ERAS ---
+  if (eras.length > 0) {
+    markdown += `## Life Eras\n\n`;
+    const sortedEras = [...eras].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    sortedEras.forEach(e => {
+      const end = e.endDate ? format(parseISO(e.endDate), 'MMM d, yyyy') : 'Present';
+      markdown += `- **${e.name}** (${format(parseISO(e.startDate), 'MMM d, yyyy')} – ${end})\n`;
+      if (e.description) markdown += `  > ${e.description}\n`;
+    });
+    markdown += `\n---\n\n`;
+  }
+
+  // --- HABITS ---
+  if (habits.length > 0) {
+    markdown += `## Habits\n\n`;
+    habits.forEach((h: Habit) => {
+      const count = engagements.filter((eng: HabitEngagement) => eng.habitId === h.id).length;
+      markdown += `- **${h.name}** ${h.isArchived ? '(Archived)' : ''}\n`;
+      if (h.why) markdown += `  - *Why:* ${h.why}\n`;
+      markdown += `  - *Engaged:* ${count} times\n`;
+    });
+    markdown += `\n---\n\n`;
+  }
+
+  // --- THREADS ---
+  if (threads.length > 0) {
+    markdown += `## Memory Threads\n\n`;
+    threads.forEach((t: MemoryThread) => {
+      markdown += `- **${t.name}** (${t.entryIds.length} entries stitched together)\n`;
+      if (t.description) markdown += `  > ${t.description}\n`;
+    });
+    markdown += `\n---\n\n`;
+  }
+
+  // --- ENTRIES ---
+  markdown += `## Journal Entries\n\n`;
+  markdown += `Total Entries: ${entries.length}\n\n`;
+
   sorted.forEach(entry => {
-    markdown += `## ${format(parseISO(entry.date), 'EEEE, MMMM d, yyyy')}\n\n`;
+    let dateStr = entry.date;
+    try {
+      if (!dateStr.startsWith('reflection-')) {
+        dateStr = format(parseISO(dateStr), 'EEEE, MMMM d, yyyy');
+      } else {
+        if (dateStr.startsWith('reflection-weekly-')) dateStr = `Week of ${format(parseISO(dateStr.replace('reflection-weekly-', '')), 'MMM d, yyyy')}`;
+        else if (dateStr.startsWith('reflection-monthly-')) dateStr = `Month of ${dateStr.replace('reflection-monthly-', '')}`;
+      }
+    } catch { /* keep original */ }
+
+    markdown += `### ${dateStr}\n\n`;
     
     if (entry.mood) {
       markdown += `**Mood:** ${entry.mood}`;
@@ -57,23 +112,27 @@ export function exportToMarkdown(entries: JournalEntry[]): void {
     }
 
     if (entry.whatHappened) {
-      markdown += `### What happened today?\n\n${entry.whatHappened}\n\n`;
+      markdown += `**What happened?**\n${entry.whatHappened}\n\n`;
     }
 
     if (entry.feelings) {
-      markdown += `### How did it make you feel?\n\n${entry.feelings}\n\n`;
+      markdown += `**How did it feel?**\n${entry.feelings}\n\n`;
     }
 
     if (entry.whatMatters) {
-      markdown += `### What mattered most?\n\n${entry.whatMatters}\n\n`;
+      markdown += `**What mattered most?**\n${entry.whatMatters}\n\n`;
     }
 
     if (entry.insight) {
-      markdown += `### Insight\n\n${entry.insight}\n\n`;
+      markdown += `**Insight**\n${entry.insight}\n\n`;
+    }
+
+    if (entry.intention) {
+      markdown += `**Intention**\n*${entry.intention}*\n\n`;
     }
 
     if (entry.freeWrite) {
-      markdown += `### Free write\n\n${entry.freeWrite}\n\n`;
+      markdown += `**Free write**\n${entry.freeWrite}\n\n`;
     }
 
     markdown += `---\n\n`;
@@ -90,18 +149,15 @@ export function exportToMarkdown(entries: JournalEntry[]): void {
   URL.revokeObjectURL(url);
 }
 
-export function importFromJSON(file: File): Promise<JournalEntry[]> {
+export function importFromJSON(file: File): Promise<{ entriesAdded: number; erasAdded: number; habitsAdded: number; anchorsAdded: number; questionsAdded: number; threadsAdded: number }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target?.result as string);
-        if (data.entries && Array.isArray(data.entries)) {
-          resolve(data.entries);
-        } else {
-          reject(new Error('Invalid file format'));
-        }
+        const jsonString = e.target?.result as string;
+        const result = db.backup.mergeAll(jsonString);
+        resolve(result);
       } catch (error) {
         reject(error);
       }

@@ -13,6 +13,16 @@ import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import type { Era, JournalEntry } from '@/app/types';
 import { erasStorage } from '@/app/utils/eras';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
 
 // ── Locked colour palette (A7a decisions) ─────────────────────────────────
 // Warm, distinct from mood system (amber/emerald/slate/blue/stone).
@@ -390,32 +400,13 @@ export function ErasManager({ entries }: ErasManagerProps) {
                       <Edit2 className="size-3.5" />
                     </button>
 
-                    {/* Inline delete confirm */}
-                    {confirmDeleteId === era.id ? (
-                      <div className="flex items-center gap-2 ml-1">
-                        <span className="text-xs text-stone-500">Remove?</span>
-                        <button
-                          onClick={() => handleDelete(era.id)}
-                          className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
-                        >
-                          No
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmDeleteId(era.id)}
-                        className="p-1.5 rounded-md text-stone-400 hover:text-red-500 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setConfirmDeleteId(era.id)}
+                      className="p-1.5 rounded-md text-stone-400 hover:text-red-500 transition-colors"
+                      title="Delete era"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
                   </div>
                 </div>
               )}
@@ -451,6 +442,32 @@ export function ErasManager({ entries }: ErasManagerProps) {
         </motion.button>
       )}
 
+      <AlertDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(isOpen: boolean) => {
+          if (!isOpen) setConfirmDeleteId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this era?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. Journal entries assigned to this era will no longer be attached to it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmDeleteId) handleDelete(confirmDeleteId);
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

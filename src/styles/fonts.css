@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    Typography
-   Display: Lora — warm serif, editorial, distinctly human
-   Body:    Inter — clean, legible, modern without being cold
+   Display: Cormorant Garamond — ultra-light, editorial, book-like
+   Body:    DM Sans — clean, warm, humanist sans
    Mono:    System monospace — for dates, labels, stats
    ───────────────────────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap');

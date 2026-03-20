@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Trash2, Heart, Target, HelpCircle, Pause, Play, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import type { ReflectionAnchor, PersistentQuestion } from '@/app/types';
+import type { ReflectionAnchor, PersistentQuestion, JournalEntry } from '@/app/types';
 import { preferences } from '@/app/utils/preferences';
 import { questionsStorage } from '@/app/utils/questions';
 import { Button } from '@/app/components/ui/button';
@@ -11,11 +11,21 @@ import { Textarea } from '@/app/components/ui/textarea';
 import { Card } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/app/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 interface InnerCompassProps {
   onWriteAbout?: (questionId: string) => void;
-  entries?: any[]; // Using any to avoid importing JournalEntryType directly right now, or we can use JournalEntry from types
+  entries?: JournalEntry[];
   onViewEntry?: (date: string) => void;
 }
 
@@ -60,23 +70,26 @@ export function InnerCompass({ onWriteAbout, entries = [], onViewEntry }: InnerC
 // ── Values Tab ──────────────────────────────────────────────────────────────
 
 function ValuesTab() {
-  const [anchors, setAnchors] = useState<ReflectionAnchor[]>(preferences.getAnchors().filter(a => a.type !== 'question'));
+  const [anchors, setAnchors] = useState<ReflectionAnchor[]>(preferences.getAnchors().filter((a: ReflectionAnchor) => a.type !== 'question'));
   const [isAdding, setIsAdding] = useState(false);
   const [newValue, setNewValue] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
 
   const handleAdd = () => {
     if (!newValue.trim()) return;
     
     preferences.addAnchor({ type: 'value', text: newValue });
-    setAnchors(preferences.getAnchors().filter(a => a.type !== 'question'));
+    setAnchors(preferences.getAnchors().filter((a: ReflectionAnchor) => a.type !== 'question'));
     setNewValue('');
     setIsAdding(false);
     toast.success('Value added to compass');
   };
 
-  const handleRemove = (id: string) => {
-    preferences.removeAnchor(id);
-    setAnchors(preferences.getAnchors().filter(a => a.type !== 'question'));
+  const confirmRemove = () => {
+    if (!deleteDialog.id) return;
+    preferences.removeAnchor(deleteDialog.id);
+    setAnchors(preferences.getAnchors().filter((a: ReflectionAnchor) => a.type !== 'question'));
+    setDeleteDialog({ isOpen: false, id: null });
     toast.success('Value removed');
   };
 
@@ -113,7 +126,7 @@ function ValuesTab() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemove(anchor.id)}
+                    onClick={() => setDeleteDialog({ isOpen: true, id: anchor.id })}
                     className="text-stone-400 hover:text-red-600"
                   >
                     <Trash2 className="size-4" />
@@ -132,8 +145,8 @@ function ValuesTab() {
               <p className="text-sm mb-2" style={{ color: 'var(--text-primary)' }}>What value matters to you?</p>
               <Input
                 value={newValue}
-                onChange={e => setNewValue(e.target.value)}
-                onKeyDown={e => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewValue(e.target.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   if (e.key === 'Enter') handleAdd();
                   if (e.key === 'Escape') setIsAdding(false);
                 }}
@@ -182,6 +195,29 @@ function ValuesTab() {
           </p>
         </div>
       )}
+
+      <AlertDialog
+        open={deleteDialog.isOpen}
+        onOpenChange={(isOpen: boolean) => setDeleteDialog((prev: { isOpen: boolean; id: string | null }) => ({ ...prev, isOpen }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this value?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This value will no longer appear when you journal.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemove}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -190,7 +226,7 @@ function ValuesTab() {
 
 interface QuestionsTabProps {
   onWriteAbout?: (questionId: string) => void;
-  entries: any[];
+  entries: JournalEntry[];
   onViewEntry?: (date: string) => void;
 }
 
@@ -201,6 +237,7 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ question: '', notes: '' });
   const [resolutionText, setResolutionText] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
 
   const handleAdd = () => {
     if (!formData.question.trim()) return;
@@ -217,14 +254,22 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
   };
 
   const toggleActive = (id: string, isActive: boolean) => {
-    questionsStorage.update(id, { isActive: !isActive } as any);
+    questionsStorage.update(id, { isActive: !isActive, isDeferred: false } as any);
     setQuestions(questionsStorage.getAll());
     toast.success(isActive ? 'Question paused' : 'Question activated');
   };
 
-  const handleDelete = (id: string) => {
-    questionsStorage.delete(id);
+  const toggleDeferred = (id: string, isDeferred: boolean) => {
+    questionsStorage.update(id, { isDeferred: !isDeferred, isActive: false } as any);
     setQuestions(questionsStorage.getAll());
+    toast.success(isDeferred ? 'Question moved to active' : 'Question deferred');
+  };
+
+  const confirmDelete = () => {
+    if (!deleteDialog.id) return;
+    questionsStorage.delete(deleteDialog.id);
+    setQuestions(questionsStorage.getAll());
+    setDeleteDialog({ isOpen: false, id: null });
     toast.success('Question deleted');
   };
 
@@ -246,11 +291,12 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
   };
 
   const getEntriesForQuestion = (qId: string) => entries
-    .filter(e => e.questionId === qId)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .filter((e: JournalEntry) => e.questionId === qId)
+    .sort((a: JournalEntry, b: JournalEntry) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const activeQuestions = questions.filter(q => q.isActive);
-  const pausedQuestions = questions.filter(q => !q.isActive && !q.resolvedAt);
+  const activeQuestions = questions.filter(q => q.isActive && !q.isDeferred);
+  const pausedQuestions = questions.filter(q => !q.isActive && !q.resolvedAt && !q.isDeferred);
+  const deferredQuestions = questions.filter(q => q.isDeferred && !q.resolvedAt);
   const resolvedQuestions = questions.filter(q => !q.isActive && q.resolvedAt);
 
   return (
@@ -259,7 +305,7 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
       <div className="space-y-4">
       <AnimatePresence mode="popLayout">
         {[...activeQuestions, ...pausedQuestions]
-          .map((question, index) => {
+          .map((question: PersistentQuestion, index: number) => {
             const q = question as any;
             const threadedEntries = getEntriesForQuestion(q.id);
             const isExpanded = expandedId === q.id;
@@ -320,7 +366,7 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
                             <p className="text-sm font-medium text-amber-900 mb-2">What clarity have you reached?</p>
                             <Textarea
                               value={resolutionText}
-                              onChange={e => setResolutionText(e.target.value)}
+                              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setResolutionText(e.target.value)}
                               placeholder="This question taught me..."
                               className="mb-3 border-amber-200 bg-white/50 focus:bg-white"
                               rows={3}
@@ -404,7 +450,16 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(question.id)}
+                        onClick={() => toggleDeferred(question.id, q.isDeferred)}
+                        className="text-stone-400 hover:text-amber-600"
+                        title={q.isDeferred ? "Undeffer and make active" : "Defer this question"}
+                      >
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteDialog({ isOpen: true, id: question.id })}
                         className="text-stone-400 hover:text-red-600"
                       >
                         <Trash2 className="size-4" />
@@ -423,7 +478,7 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
             <div>
               <Input
                 value={formData.question}
-                onChange={e => setFormData({ ...formData, question: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, question: e.target.value })}
                 placeholder="What question are you exploring?"
                 className="parchment-input"
                 autoFocus
@@ -434,7 +489,7 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
             </div>
             <Textarea
               value={formData.notes}
-              onChange={e => setFormData({ ...formData, notes: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Optional context or why you want to explore this..."
               className="parchment-input"
               rows={2}
@@ -476,12 +531,53 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
       )}
       </div>
 
+      {/* Deferred Section */}
+      {deferredQuestions.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-stone-200/60">
+          <h3 className="font-medium text-stone-500 mb-4 px-2 tracking-wide uppercase text-xs">Deferred (Holding Space)</h3>
+          <div className="space-y-4">
+            {deferredQuestions.map((question: PersistentQuestion) => {
+              const q = question as any;
+              return (
+                <Card key={q.id} className="p-5 opacity-80" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-stone-600 font-medium">{q.question || q.text}</p>
+                      {q.notes && <p className="text-xs text-stone-400 mt-1">{q.notes}</p>}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleDeferred(q.id, true)}
+                        className="text-amber-600 hover:text-amber-800"
+                        title="Resume question"
+                      >
+                        <Play className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteDialog({ isOpen: true, id: q.id })}
+                        className="text-stone-400 hover:text-red-600"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Resolved Archive Section */}
       {resolvedQuestions.length > 0 && (
         <div className="mt-12 pt-8 border-t border-stone-200/60">
           <h3 className="font-medium text-stone-500 mb-4 px-2 tracking-wide uppercase text-xs">Resolved & Archived</h3>
           <div className="space-y-4">
-            {resolvedQuestions.map(q => {
+            {resolvedQuestions.map((q: PersistentQuestion) => {
               const threadedEntries = getEntriesForQuestion(q.id);
               const isExpanded = expandedId === q.id;
 
@@ -542,7 +638,7 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(q.id)}
+                        onClick={() => setDeleteDialog({ isOpen: true, id: q.id })}
                         className="text-stone-400 hover:text-red-600"
                       >
                         <Trash2 className="size-4" />
@@ -568,6 +664,29 @@ function QuestionsTab({ onWriteAbout, entries, onViewEntry }: QuestionsTabProps)
           </p>
         </div>
       )}
+
+      <AlertDialog
+        open={deleteDialog.isOpen}
+        onOpenChange={(isOpen: boolean) => setDeleteDialog((prev: { isOpen: boolean; id: string | null }) => ({ ...prev, isOpen }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this question?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The question and its thread will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

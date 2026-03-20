@@ -1,6 +1,6 @@
 # BUILDLOG.md
 # Journal App — Project Source of Truth
-# Last updated: Readability pass complete + DoD + Beta Sprint added (2026-03-11)
+# Last updated: gita-witness-integration.docx ingested — A9c brainstormed and logged (2026-03-12)
 
 ---
 
@@ -887,62 +887,72 @@ The "About Life Chapters" info box at the bottom also needs to be either removed
 ---
 
 #### SESSION A7b — Era Surfaces
-**Status:** NOT STARTED
+**Status:** ✅ PARTIAL COMPLETE (2026-03-12 — audit confirmed; session was built without a log entry)
 **Depends on:** A6b + A7a
 **Scope creep risk:** High
 
 **Goal:** Eras become visible across the Timeline. Life chapters rendered in colour on the emotional landscape.
 
-**What to build:**
-- Era overlay on heatmap — background band behind dots, doesn't conflict with mood colours
-- Era legend below heatmap
-- Era label in month/week/day views — quiet "Chapter: [name]"
-- Era transition — week an era changes is quietly noted
-- Era filter — shares filter state infrastructure from A6b
-- Multi-year eras — band spans correctly across year boundaries
+**What was built (confirmed in audit 2026-03-12):**
+- Era colour overlay on heatmap cells — `backgroundColor: activeEra.colour + '33'` (10% tint, doesn't fight mood colours) ✅
+- Era legend strip below heatmap — clickable colour chip + era name, fades inactive eras to 40% opacity ✅
+- `activeEraFilter` state — shares filter infrastructure with `activeTagFilter` from A6b ✅
+- Era filter strip with clear button — `AnimatePresence` enter/exit, same pattern as tag filter ✅
+- Heatmap cells fade to `opacity-20` when era filter active and cell unmatched ✅
 
-**Files:** `src/app/components/TimelineView.tsx`, `src/app/components/ErasManager.tsx`
+**What was NOT built (still to do):**
+- Era label in month/week/day views — quiet "Chapter: [name]" ❌
+- Era transition acknowledgement — week an era changes is quietly noted ❌
+- Multi-year era band spanning correctly across year boundaries — not verified ❌
+
+**Files changed:** `src/app/components/TimelineView.tsx`
+
+**Remaining scope (A7b-cont):** Era label surfaced in MonthView, WeekView, DayView. Era transition note. Multi-year span testing.
 
 ---
 
 #### SESSION A8a — Inner Compass: Data Model + Values
-**Status:** NOT STARTED
+**Status:** ✅ COMPLETE (2026-03-12 — audit confirmed; session was built without a log entry)
 **Depends on:** A5 done
 **Scope creep risk:** Low
 
 **Goal:** Merge Anchors + Questions into one coherent screen. Values tab built and surfaced in Write.
 
-**What to build:**
-- Rename sidebar: `anchors` → `inner-compass`
-- Merge `ReflectionAnchors.tsx` + `PersistentQuestions.tsx` into new `InnerCompass.tsx`
-- Two-tab layout: **Values** and **Questions**
-- Values tab: add/edit/delete, drag-to-reorder
-- Values in Write — quiet context line: *"Your values: Clarity · Family · Craft"*
+**What was done:**
+- `ReflectionAnchors.tsx` + `PersistentQuestions.tsx` merged into new `InnerCompass.tsx` (635 lines) ✅
+- Two-tab layout: **Values** and **Questions** ✅
+- Values tab: add/edit/delete, drag-to-reorder ✅
+- `App.tsx` updated — sidebar renamed from `anchors` → `compass` with Compass icon, wired as lazy-loaded view ✅
+- `ReflectionAnchors.tsx` and `PersistentQuestions.tsx` removed from codebase ✅
 
-**Witness test:** Values never scored, checked off, or tracked. Held present, not evaluated.
+**Not built from original spec:**
+- Values surfaced in Write view as quiet context line — deferred ❌
 
-**Files:** New `InnerCompass.tsx`, `App.tsx`, `JournalEntry.tsx`, `preferences.ts`
+**Witness test:** Values never scored, checked off, or tracked. Held present, not evaluated. ✅
+
+**Files changed:** New `src/app/components/InnerCompass.tsx`, `src/app/App.tsx`; `ReflectionAnchors.tsx` and `PersistentQuestions.tsx` deleted
 
 ---
 
 #### SESSION A8b — Inner Compass: Questions
-**Status:** NOT STARTED
+**Status:** ✅ COMPLETE (2026-03-12 — audit confirmed; built as part of InnerCompass.tsx alongside A8a)
 **Depends on:** A8a
 **Scope creep risk:** Medium
 
-**What to build:**
-- Questions tab: add, open/closed state, entry count, created date
-- Question surfaced in Write — opt-in: *"Open question: [X] — does today's entry relate?"*
-- `questionId` wired in JournalEntry.tsx
-- Question thread view — chronological read of all tagged entries
-- `questions.ts` db abstraction audit
+**What was done:**
+- Questions tab: add, open/paused/resolved states, entry count, created date ✅
+- Question thread view — chronological list of tagged entries inline in the question card ✅
+- `questionId` already existed in `JournalEntry` type; `handleWriteAboutQuestion()` wired in `App.tsx` → routes to Write with question context ✅
+- `questionsStorage` used directly (existing `questions.ts` utility — not rewritten as shim, acceptable) ✅
+- Paused questions section (not active, not resolved) ✅
+- Resolved questions archive within Questions tab ✅
 
-**Files:** `InnerCompass.tsx`, `JournalEntry.tsx`, `questions.ts`
+**Files changed:** `src/app/components/InnerCompass.tsx` (QuestionsTab component), `src/app/App.tsx`
 
 ---
 
 #### SESSION A8c — Inner Compass: Lifecycle
-**Status:** NOT STARTED
+**Status:** ✅ COMPLETE (2026-03-12 — audit confirmed; built as part of InnerCompass.tsx alongside A8a/A8b)
 **Depends on:** A8b
 **Scope creep risk:** Medium
 
@@ -959,14 +969,18 @@ Question marked resolved + closing entry written
 New value created from resolution
 ```
 
-**What to build:**
-- Resolution flow — closing reflection → save
-- "This became a value" prompt on resolution
-- Closed question archive within Questions tab
-- *"You've been asking this for X months"* quiet observation
-- Resolved questions surfaceable in year-ago mechanic
+**What was done:**
+- `handleResolve()` — calls `questionsStorage.resolve(id, resolutionText)`, sets `resolvedAt` timestamp ✅
+- "This became a value" prompt on resolution — `window.confirm` offers to save as Core Value in Values tab ✅
+- Resolved questions archive section within Questions tab — collapsed, expandable ✅
+- `resolvedAt` displayed as resolution date on closed questions ✅
+- Entry thread visible on resolved questions (entries tagged before resolution remain linked) ✅
 
-**Files:** `InnerCompass.tsx`, `JournalEntry.tsx`
+**Not built from original spec:**
+- *"You've been asking this for X months"* duration observation — not present ❌
+- Resolved questions surfaceable in year-ago mechanic — deferred to A11a ❌
+
+**Files changed:** `src/app/components/InnerCompass.tsx`, `src/app/utils/questions.ts`
 
 ---
 
@@ -1033,7 +1047,64 @@ New value created from resolution
 
 ---
 
-#### SESSION A10a — Threads: Reading Experience
+#### SESSION A9c — Gita Structural Features
+**Status:** NOT STARTED — BRAINSTORM COMPLETE (source doc: gita-witness-integration.docx, 2026-03-12)
+**Depends on:** A4 ✅, A8a ✅, A8b ✅, Inner Compass ✅
+**Scope creep risk:** Medium
+
+**Source document:** `gita-witness-integration.docx` — full philosophy integration analysis. Five Gita teachings mapped to app architecture. Prompt pools from this doc are **already built** in `prompts-v2.ts` (A8a). This session builds the structural features that remain.
+
+**What the doc established (already built — do not rebuild):**
+- Gita daily prompt pool (11 prompts, `gitaPrompts` in prompts-v2.ts) ✅
+- Gita reflection prompt pool (14 prompts, `gitaReflectionPrompts` in prompts-v2.ts) ✅
+- Clear / Restless / Heavy inner state dimension (A8b) ✅
+- "Returning is the practice." Habit Builder copy (A8d) ✅
+
+**What remains to build (structural features from the doc):**
+
+**1. Split Intention field — Nishkama Karma made visible**
+Currently the Intention field in Guided/reflection modes asks "what I intend." The Gita's Nishkama structure has two sides: the action and the release.
+- Split into two sub-fields: *"What I intend to do"* and *"What I am releasing attachment to"*
+- Both optional. Neither gates saving.
+- The release field is new — a past-facing companion to the forward-facing intention.
+
+**2. "What I released" field — Yearly reflection only**
+A new field at the end of the Yearly reflection form. One sentence, past-facing.
+- Label: *"What I stopped needing this year"*
+- Placeholder: *"Something I once thought I couldn't live without."*
+- Stored in `JournalEntry` as `yearlyRelease?: string`
+- Visible in Yearly ReflectionPanel in TimelineView
+
+**3. Intentions Loop 3-week pivot — karma of inaction**
+When an intention has been carried forward (unchanged) for 3+ reflection periods, surface a quiet prompt instead of the standard continuity line:
+- *"This intention has stayed with you a while. What would it take to either act on it or release it?"*
+- Requires comparing current intention against prior 2–3 periods of same type
+- Never shown before 3 periods — doesn't punish early carry-forward
+
+**4. Deferred questions category — Inner Compass**
+A third state for questions in the Questions tab, alongside Open and Resolved: **Deferred** — questions the user has explicitly set aside without resolving.
+- User can mark a question as Deferred with an optional note
+- Deferred questions collect in a quiet section below Open
+- Copy: *"Questions you've set aside. They'll wait."*
+- Witness test: naming inaction without judging it ✅
+
+**5. Welcome Card copy — Vairagya for new users**
+Replace or supplement the current WelcomeCard copy with a single Vairagya-aligned line:
+- *"Write without concern for how it sounds or what it achieves. Just witness the mind."*
+- This is the entire philosophy in one sentence for a new user.
+
+**Witness test — all five features:**
+- Split intention: describes the act of setting and releasing, never scores it ✅
+- "What I released": past-facing observation, no metric ✅
+- 3-week pivot: offers a reframe, never a judgement or deadline ✅
+- Deferred questions: names the state, never pressures resolution ✅
+- Welcome Card copy: invitation, not instruction ✅
+
+**Files:** `src/app/components/JournalEntry.tsx`, `src/app/types.ts`, `src/app/components/TimelineView.tsx`, `src/app/components/InnerCompass.tsx`
+
+---
+
+
 **Status:** NOT STARTED
 **Depends on:** A5 done
 **Scope creep risk:** Low
@@ -1113,7 +1184,73 @@ New value created from resolution
 
 ---
 
-### PHASE A→B — BETA SPRINT (added — 2026-03-11)
+#### SESSION A11c — Note Dot on Heatmap Cells
+**Status:** NOT STARTED
+**Depends on:** A3b ✅
+**Scope creep risk:** Low
+
+**Goal:** Add a second information layer to heatmap cells — distinct from mood colour — that signals "this was a day I actually wrote something substantial." Not a metric. A presence signal.
+
+**Brainstorm decision (2026-03-12):**
+
+The heatmap currently encodes one thing: mood (colour). A day can be amber (great mood) but have no written content beyond a quick mood tap. A day can be slate (hard) with 500 words of real processing. Mood colour and written depth are two different things — both worth knowing at a glance.
+
+A small dot in the corner of a heatmap cell adds this second layer without any count, score, or judgement. It says "you wrote here" — nothing more.
+
+**Design decisions:**
+- **Threshold:** `freeWrite.length > 50` OR combined field length > 100 — enough to distinguish a real entry from a mood-only tap. Not surfaced as a number anywhere.
+- **Visual:** 2–3px dot, bottom-right corner of the cell. White at full opacity — reads quietly against any mood colour. Does not appear on empty cells.
+- **Not orange/amber** — amber is the accent colour and implies importance. White is neutral — information, not emphasis.
+- **Witness test:** Shows what's present (written content), never what's absent (no dot ≠ failure). Empty cell already reads as unknown, not failed. ✅
+
+**What to build:**
+- Dot condition computed inline in heatmap cell render — no new utility function needed
+- White dot absolutely positioned bottom-right, `pointer-events-none`
+- No dot on reflection entries (synthetic date keys) — those have their own indicators
+
+**Files:** `src/app/components/TimelineView.tsx`
+
+---
+
+#### SESSION A12a — Box Breathing
+**Status:** NOT STARTED — BRAINSTORM COMPLETE
+**Depends on:** A4 ✅ (Write view architecture)
+**Scope creep risk:** Low
+
+**Goal:** A quiet presence tool accessible from the Write view. Natural companion to journaling — open before writing when anxious, or after a difficult entry. Fits the Witness philosophy because it's a tool for presence, not a metric.
+
+**Brainstorm decisions (2026-03-12):**
+
+**Placement decision — Write view, not sidebar:**
+Three options were considered:
+- Write view button — contextually relevant, offered at the moment it's useful ✅ **chosen**
+- Sidebar item under Reflect group — heavier than needed, implies destination not tool
+- Floating persistent button — adds permanent UI chrome
+
+Write view placement is most Witness-appropriate. It's offered at the moment it's useful, not as a place you navigate to. The breathing exercise is a *preparation for* or *recovery from* writing — not a standalone feature.
+
+**Implementation:**
+- Small quiet icon button (wind or similar from Lucide) in the Write view header area — sits alongside the mode switcher without competing
+- Opens as a modal overlay using Framer Motion (already in codebase)
+- Box breathing: 4 counts in, 4 hold, 4 out, 4 hold — the standard pattern
+- Animated circle or ring that expands/contracts with the breath phase — purely visual, no instructions needed after first use
+- Text label for the current phase fades in/out: *Breathe in · Hold · Breathe out · Hold*
+- No session count, no streak, no "you did 3 sessions today" — opens, runs, closes
+- User dismisses when ready — no auto-close, no timer pressure
+
+**Witness test:** Tool for presence, not a metric. No tracking, no logging, no history. Opens and closes. ✅
+
+**Scope creep guards:**
+- No session logging to localStorage
+- No history or streak
+- No "recommended before writing" nudge — button is there, user chooses
+- Animation is the entire feature — no settings, no customisation
+
+**Files:** New `src/app/components/BreathingOverlay.tsx`, `src/app/components/JournalEntry.tsx`
+
+---
+
+
 *Goal: Turn passive "living with it" into active quality discovery*
 
 **Trigger:** All Phase A sessions complete.
@@ -1312,19 +1449,23 @@ Then attach:
 | Session A6c | — | Search — full-text + tag dimension + result view. **Deferred until 30+ real entries. IN V1.** | ⏳ Pending |
 | **BRAINSTORM A7a** | 2026-03-04 | Era colour palette, data model audit, heatmap overlay design. All 5 decisions locked. | ✅ Complete |
 | Session A7a | 2026-03-04 | Era management — ErasManager redesign, eras.ts shim, auto-assign eraId by date in JournalEntry.tsx | ✅ Complete |
-| Session A7b | — | Era surfaces — heatmap overlay, era label in all views, era filter | ⏳ Pending |
+| Session A7b | 2026-03-12 | Era surfaces — heatmap colour overlay, era legend strip, era filter (shares A6b infrastructure). Era label in month/week/day views still to do. | ⚠️ Partial |
 | Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
 | Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
 | Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
 | Session A8c | 2026-03-04 | Sanskrit Reveal Layer — **REJECTED**. Wrong surfaces. Philosophy screen in Settings will do this properly when built. | ❌ Not building |
 | Session A8d | 2026-03-04 | Habit Builder re-engagement — “Returning is the practice.” in GentleStartTracker after a gap. Other copy changes scoped out as marginal. | ✅ Complete |
-| Session A5c | — | Journal Warmth Pass — background #EDE8DF, ink colour #3C3C38, sidebar recession, write view field treatment | ⏳ Pending |
+| Session Inner Compass (A8a–A8c equiv.) | 2026-03-12 | InnerCompass.tsx built — Values + Questions two-tab layout, resolution lifecycle, entry threading. ReflectionAnchors.tsx + PersistentQuestions.tsx removed. Wired as 'compass' view in App.tsx. Built without a log entry; confirmed in source audit. | ✅ Complete |
+| Session A5c | 2026-03-12 | Journal Warmth Pass — all four changes confirmed applied: body bg (#FAF7F2 warm canvas via --bg-main), ink colour (#3C3C38 via --text-body), amber sidebar active indicator (border-l-2 border-amber-500), write view bg-transparent + border-none textareas. Applied without a log entry; confirmed in source audit. | ✅ Complete |
 | Session A9a | 2026-03-04 | Insights audit + Witness redesign — Language absorbed into Insights, tiered empty states, full copy audit | ✅ Complete |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
+| Session A9c | — | Gita structural features — split Intention field, "What I released" yearly field, 3-week Intentions pivot, Deferred questions, Welcome Card copy. Brainstorm complete. | ⏳ Pending |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
 | Session A10b | — | Threads intelligent building — tag/question-assisted. **POST-V1.** | ⏳ POST-V1 |
 | Session A11a | — | Connecting the dots — passive connections | ⏳ Pending |
 | Session A11b | — | Connecting the dots — active surfaces (north star session). **POST-V1.** | ⏳ POST-V1 |
+| Session A11c | — | Note dot on heatmap cells — second information layer (written depth, not mood). Brainstorm complete. | ⏳ Pending |
+| Session A12a | — | Box Breathing overlay — presence tool accessible from Write view. Brainstorm complete. | ⏳ Pending |
 | Living With It | — | No building. Minimum 2 weeks daily use. Required before V1 declared complete. | ⏳ After A11a |
 | Doc Sprint 2 | — | PRD, FRD, SRS, WBS, Roadmap, Risk-Register, Assumptions, RTM, Flow-Diagrams, AI-Case-Study | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Phase B |
@@ -1527,6 +1668,15 @@ Then attach:
 - **2026-03-04 (A7a):** Delete confirmation — inline Yes / No appears in place of delete button. No modal. `confirmDeleteId` state tracks which era is pending.
 - **2026-03-04 (A7a):** `ERA_COLOURS` exported from ErasManager.tsx — ready for A7b heatmap overlay to import directly.
 - **2026-03-04 (A7a):** `JournalEntry.tsx` — `erasStorage` imported. On save, `autoEraId` computed by finding first era whose date range covers the entry date. Reflection entries (synthetic keys) skipped. On update, existing `eraId` preserved if no era covers the date. Silent — zero UI change.
+- **2026-03-12 (Source audit):** Full audit of src_tar.gz against BUILDLOG. All sessions A2–A9a verified. Four findings: (1) `ReflectionModeSelector.tsx` is dead code — not imported anywhere, safe to delete with `git rm`. (2) `ArchiveView.tsx`, `CalendarView.tsx`, `EntriesList.tsx` are superseded by Timeline (A3b) and unreferenced — candidates for removal. (3) `WelcomeMessage.tsx` appears superseded by WelcomeCard in TimelineView (A4d) — verify and remove if unused. (4) Mood label `'Difficult'` was not renamed to `'Hard'` per A5b log — one-line fix needed in `JournalEntry.tsx` line 93.
+- **2026-03-12 (Source audit):** A7b and Inner Compass sessions confirmed built — code was ahead of the BUILDLOG. Both sessions logged retroactively. A7b partial: heatmap overlay, filter, and legend done; era label in month/week/day views still to do.
+- **2026-03-12 (Source audit):** Inner Compass (merging A8a–A8c original plan): `InnerCompass.tsx` is 635 lines covering Values tab, Questions tab, and full resolution lifecycle. `ReflectionAnchors.tsx` and `PersistentQuestions.tsx` have been deleted. Sidebar entry is `compass` with Compass icon. Two items from original spec deferred: values surfaced in Write view, and *"asking this for X months"* observation on questions.
+- **2026-03-12 (A5c confirmed):** All four A5c changes verified in source: (1) `body { background-color: var(--bg-main) }` and `color: var(--text-body)` in index.css — warm canvas (#FAF7F2) and ink (#3C3C38) applied globally. (2) Sidebar: `border-l-2 border-amber-500` active indicator, background inherits page — no separate panel. (3) Write view: `bg-transparent border-none` on textareas. Applied without a log entry.
+- **2026-03-12 (Tidy session):** Dead files removed from codebase: `ReflectionModeSelector.tsx` (unreferenced since A4), `ArchiveView.tsx`, `CalendarView.tsx`, `EntriesList.tsx` (superseded by Timeline in A3b), `WelcomeMessage.tsx` (superseded by WelcomeCard in TimelineView A4d — import in App.tsx was dead). Mood label corrected: `'Difficult'` → `'Hard'` in JournalEntry.tsx line 93 per A5b spec.
+- **2026-03-12 (A11c brainstorm):** Note dot on heatmap cells — second information layer approved. Threshold: `freeWrite.length > 50` OR combined field length > 100. Visual: 2–3px white dot, bottom-right corner, `pointer-events-none`. White chosen over amber — amber is accent/emphasis, white is neutral information. Not shown on reflection entries (have own indicators). Witness test passed: presence signal only, never absence.
+- **2026-03-12 (A12a brainstorm):** Box Breathing approved. Placement decision locked: Write view button, not sidebar item or floating chrome. Opens as Framer Motion modal overlay. Box pattern: 4-4-4-4. Animated ring + phase label. No session logging, no history, no streak — opens, runs, closes. Scope creep guards locked: no localStorage writes, no nudges, no settings. New file: `BreathingOverlay.tsx`. Other features reviewed and rejected: progress bar/completion count (performance metric), 12-mood system (A3 decision deliberate), wellness tips (external advice, not Witness), habit strikethrough (frames non-completion as failure).
+- **2026-03-12 (gita-witness-integration.docx):** Full philosophy integration analysis added to project. Five Gita teachings mapped to app: Nishkama Karma (action without attachment), Sthitaprajna (steady wisdom), Three Gunas (inner state vocabulary — already built as Clear/Restless/Heavy in A8b), Karma of Inaction, Vairagya (detachment as liberation). All 12 prompt pool entries from the doc confirmed already in `prompts-v2.ts` (built in A8a). Structural features not yet built logged as Session A9c.
+- **2026-03-12 (A9c brainstorm):** Five structural features from gita-witness-integration.docx locked for A9c: (1) Split Intention field — "what I intend" + "what I am releasing attachment to". (2) "What I released" field on Yearly reflection only — stored as `yearlyRelease?: string` in types.ts. (3) Intentions Loop 3-week pivot — after 3 carry-forwards, prompt: *"What would it take to act on this or release it?"* (4) Deferred questions category in Inner Compass — third state alongside Open and Resolved, copy: *"Questions you've set aside. They'll wait."* (5) Welcome Card copy: *"Write without concern for how it sounds or what it achieves. Just witness the mind."* All five pass Witness test.
 
 ---
 
@@ -1817,7 +1967,9 @@ Full screen, distraction free. Title + open canvas. No fields, no structure. For
 **The Witness promise:**
 > "A quiet witness to your life. Holds your memories. Surfaces your patterns. Never judges. Always remembers."
 
-**Current rating: 6.5/10** — good bones, needs narrative continuity and human-centred UX to reach 9/10.
+**Current rating: 8.5/10** — Mastery phase complete. The horizontal Year View, refined sidebars, inline reflections, and strict adherence to the Witness philosophy elevate the layout to a premium, print-like standard. Needs Native App shell (for safe local media storage), global search, and rich text to reach 10/10.
+
+*(Previous rating: 6.5/10 before Mastery phase UI overhauls)*
 
 **What makes this different from every competitor:**
 - Day One, Notion, Reflectly → activity tracking, telemetry, cloud dependency
@@ -2457,6 +2609,46 @@ They change it when they feel like it. No demographic assumptions. No maintenanc
 
 ---
 
+### Phase C: Modern UX & Media (Planned Architecture)
+
+*Phase C elevates the app from a premium text journal to a world-class, fluid, multi-media memory engine. This phase must be executed before compiling to native Electron/Capacitor apps, as it sets the architectural foundation for local file storage.*
+
+#### 1. Photo Integration (The "Album" Architecture)
+**Philosophy:** Photos anchor memories, but they shouldn't clutter the reading experience.
+*   **Storage (Web/Phase C):** Stored as highly-compressed WEBP base64 strings in IndexedDB (localStorage will crash).
+*   **Storage (Native/Phase D):** Safely saved as physical files in the OS application storage directory (e.g., `~/Documents/Reflect/Media/`), with the database just storing local file paths (`file://...`).
+*   **Upload/Viewing:** 
+    *   **Day Level:** Photos sit elegantly below the text entry. Clicking a photo opens a beautiful, distraction-free lightbox overlay (blurred background) that allows swiping left/right.
+    *   **Week/Month/Year Level:** The right side (or a collapsible inline panel) aggregates all photos from that period into a masonry "Album" view. It acts as a visual summary of the chapter.
+
+#### 2. Rich Text Formatting
+**Philosophy:** Deep writing needs structural rhythm without turning into a word processor.
+*   **Implementation:** Replace the standard `<textarea>` with a lightweight headless rich-text editor (e.g., Tiptap or Slate.js).
+*   **Features:** Bold, Italic, Strikethrough, Bulleted Lists, and Quotes. No changing font sizes or colours — the app controls the typography to maintain the calm aesthetic.
+*   **Data Structure:** Saves as Markdown in the database to remain permanently portable and future-proof.
+
+#### 3. Fluid Page Transitions
+**Philosophy:** Time is continuous. Navigating between Year, Month, and Week should literally feel like zooming into the timeline, not jumping between disconnected web pages.
+*   **Implementation:** Deep integration of `framer-motion`'s `layoutId`.
+*   **Motion:** When clicking "March" in the Year view, the March card physically expands to become the Month view container, while the sub-months fade in. No hard web cuts. 
+
+#### 4. The 5 Themes (Emotional Seasons)
+**Philosophy:** The UI should reflect the user's current season of life, completely under their control.
+*   **Implementation:** CSS Variables stored at the root `:root` level. A new "Appearance" tab in Settings.
+*   **Themes:** Morning Light, Midnight, Forest, Minimal, Warm.
+*   **Architecture:** The current heavy reliance on hardcoded Tailwind classes (e.g., `text-stone-500`, `bg-[#FCFCFA]`) will be refactored into semantic CSS variables (e.g., `text-[var(--text-muted)]`, `bg-[var(--bg-parchment)]`) to support seamless instant switching.
+
+#### 5. Command Palette Search (`Cmd+K`)
+**Philosophy:** Instant recall without friction.
+*   **Implementation:** A floating, blurred command menu accessed via `Cmd+K` or a subtle magnifying glass icon.
+*   **Architecture:** Uses a lightweight local fuzzy-search library (like `fuse.js`).
+*   **Capabilities:** 
+    *   *Text Search:* Type a word to instantly see list of matching entries.
+    *   *Command Search:* Type "Theme" to quickly switch to Midnight.
+    *   *Jump to Date:* Type "March 2024" to instantly snap the timeline to that month.
+
+---
+
 ### The Tier Test
 
 Before any new feature is considered:
@@ -2466,6 +2658,102 @@ Before any new feature is considered:
 3. Does it require reading the user's entries? (if yes → never)
 4. Does it assume who the user is? (if yes → reconsider)
 5. Does it add complexity that must be maintained forever? (if yes → scope creep warning)
+
+---
+
+#### SESSION A-THEMES — 5 Emotional Season Themes
+**Status:** ✅ COMPLETE (2026-03-20)
+**Depends on:** A5b (global design language) ✅
+**Scope creep risk:** Low
+**Priority:** Phase C item pulled forward — CSS variable architecture makes this low-effort, high-value
+
+**Goal:** Give users a UI that reflects their current season of life, entirely under their own control. Five feeling-based themes — chosen by mood, not demographic.
+
+**What was built:**
+
+1. **`src/styles/theme.css` — full theme system**
+   - `:root` / `.theme-morning-light` — warm cream canvas, blue-gray text, amber accent. Default.
+   - `.theme-midnight` — deep navy `#0B101A`, muted blue-grey text, teal/indigo mood dots.
+   - `.theme-forest` — muted sage/stone `#EFEFED`, dark olive text, earthy mood palette.
+   - `.theme-minimal` — pure white/black, greyscale mood dots. Maximum clarity.
+   - `.theme-warm` — soft terracotta `#F7EDE2`, deep brown text, terracotta accent.
+   - All themes define the full set of semantic variables: `--bg-main`, `--bg-surface`, `--bg-elevated`, `--text-primary`, `--text-secondary`, `--text-muted`, `--text-body`, `--accent-brown`, and all 5 mood dot colours.
+   - Base Shadcn/Tailwind mappings (`--background`, `--foreground`, `--card`, `--primary`, etc.) re-mapped from semantic vars in a shared block — themes only need to override the semantic layer.
+   - `@theme inline` block bridges CSS custom properties → Tailwind `color-*` tokens so all Tailwind utility classes (`bg-background`, `text-muted-foreground`, etc.) automatically reflect the active theme.
+
+2. **`App.tsx` — theme state + switcher**
+   - `theme` state, initialised from `localStorage.getItem('journal-theme')` on mount.
+   - `useEffect` on `theme` change: wipes `document.documentElement.className`, sets `theme-{name}` class on `<html>` (or no class for `default` / Morning Light).
+   - Theme persisted to `localStorage` on every change — survives refresh.
+   - Compact `<select>` dropdown in sidebar footer — labels are feeling-based, not technical: *Morning Light (Default), Midnight, Forest, Minimal (Greyscale Moods), Warm*.
+   - `@custom-variant dark (&:is(.dark *))` in theme.css ensures Tailwind dark-mode variants remain available alongside the theme system.
+
+**Design decisions locked:**
+- Themes are feeling-based — user picks by mood/season, not identity or aesthetic preference label. No "Dark Mode" label. No demographic assumption.
+- Morning Light is the default and requires no class (`:root` handles it) — zero flash on first load.
+- Changing theme is instantaneous — no animation, no fade, no transition. The environment changes; the user commanded it.
+- Sidebar footer placement is intentional — low-traffic, non-prominent. Theme is a background setting, not a primary action.
+- No `transition: all` on any structural element — prevents CSS variable changes from triggering unintended animations across the whole page (see BUG-FIX session below).
+
+**Session checklist:**
+- [x] All 5 themes render correctly with their full colour palette
+- [x] Mood dot colours adapt per theme (earthy for Forest, greyscale for Minimal, teal/indigo for Midnight, etc.)
+- [x] Theme persists across browser refresh via localStorage
+- [x] `<html>` class approach confirmed — Tailwind utility classes inherit correctly
+- [x] Morning Light is default — no class needed, no first-load flash
+- [x] Sidebar theme switcher uses feeling-based labels, not technical names
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/styles/theme.css` — new file, full theme system
+- `src/app/App.tsx` — theme state, useEffect, switcher UI
+
+---
+
+#### SESSION BUG-FIX — Global Transition Animation Regression
+**Status:** ✅ COMPLETE (2026-03-20)
+**Depends on:** Theme implementation (earlier session)
+**Scope creep risk:** None — targeted bug fix only
+
+**Problem:**
+Two distinct visual regressions were present:
+1. **On localhost load** — the page rendered with a noticeable "sweep" or transition animation even before any user interaction. Elements shifted colour and position on first render.
+2. **On theme change** — switching from one theme to another caused every CSS property on structural elements to animate simultaneously (colours, borders, shadows, widths, padding), producing a disjointed, lagging visual effect.
+3. **On page (view) change** — switching between views (e.g. Timeline → Insights) triggered unexpected layout animations on the sidebar and its children in addition to the intended Framer Motion page fade.
+
+**Root cause:**
+The culprit was indiscriminate use of Tailwind's `transition-all` class on structural elements. When a theme is applied by toggling a class on `<html>`, every CSS variable on the page updates instantly — but `transition-all` caused the browser to animate *every changing property* at once, including layout-affecting ones like `width`, `border`, `box-shadow`, `background-color`, `color`, etc. This created the "everything is moving at once" ghost effect.
+
+The specific offending elements:
+- `<aside>` (desktop sidebar) — `transition-all duration-200` caused the sidebar to animate every property on theme change, not just its width when collapsing/expanding.
+- Sidebar nav `<button>` elements — `transition-all duration-150` animated structural properties unnecessarily.
+- Collapsed sidebar icon `<button>` elements — `transition-all` with no duration.
+- `TimelineView` year heatmap month cards — `transition-all` in `motion.div`.
+- `TimelineView` week rows in MonthView — `transition-all` on clickable grid rows.
+
+**Fix applied:**
+
+| Element | Before | After |
+|---|---|---|
+| Desktop `<aside>` sidebar | `transition-all duration-200` | `transition-[width] duration-200` |
+| Sidebar nav buttons (expanded) | `transition-all duration-150` | `transition-colors duration-150` |
+| Sidebar collapse/expand button | `transition-all` | `transition-colors` |
+| Collapsed sidebar icon buttons | `transition-all` | `transition-colors` |
+| Year heatmap month `motion.div` | `transition-all` | `transition-[transform,colors] duration-200` |
+| MonthView week row `motion.div` | `transition-all` | `transition-colors` |
+
+**Design principle confirmed:** `transition-all` is an anti-pattern on structural elements. It is only safe on isolated leaf elements where *every* CSS property changing is expected and desirable (e.g. a single icon button). On elements that inherit CSS variable changes from a theme swap, `transition-all` becomes a magnet for accidental animation. Targeted transitions (`transition-colors`, `transition-[width]`) are always preferred.
+
+**Session checklist:**
+- [x] Theme change is instant — no lagging sweep or property animation
+- [x] Sidebar width-change animation still works correctly when collapsing/expanding
+- [x] Page-switch Framer Motion fade is clean — no secondary structural animations
+- [x] No `transition-all` remains on structural ancestors of theme CSS variables
+- [x] BUILDLOG updated
+
+**Files changed:**
+- `src/app/App.tsx`
+- `src/app/components/TimelineView.tsx`
 
 ---
 
