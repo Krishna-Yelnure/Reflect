@@ -2757,4 +2757,45 @@ The specific offending elements:
 
 ---
 
+#### SESSION A6d — Insights Dashboard (Privacy-First AI)
+**Status:** ✅ COMPLETE (2026-03-25)
+**Depends on:** A5b (global design language) ✅
+**Scope creep risk:** Low
+
+**Goal:** Transform the empty Insights tab into a "Witness" mirror that reflects the user's journaling patterns without gamification, streaks, or judgement. Initially specked to use Anthropic API, but pivoted to 100% local heuristics to maintain the absolute privacy-first promise.
+
+**What was built:**
+
+1. **New Layout (`Insights.tsx`)**
+   - Replaced generic placeholder with a calm, 4-stat header card.
+   - Removed "Streak" entirely as it violates the Witness philosophy (creates pressure/compliance).
+   - Added "Deepest entry" stat — surfaces the date and a one-line excerpt of the entry that had the highest word count in the `whatMatters` field. 
+
+2. **Language Fingerprint & Recurring Words (`language-analysis.ts`)**
+   - Built a comprehensive keyword matching algorithm mapping user text to four dimensions: Cognitive, Somatic, Relational, and Aspirational.
+   - Designed to work from Entry 1 out of the box — expanded dictionaries using varied word stems to prevent a 0% dead state.
+   - Recurring words dynamically filters out english stopwords and plots the top 5 chips.
+
+3. **100% Offline AI Integration (`ai.ts`)**
+   - Built nuanced local heuristics to simulate "Subtle Reflections" and "One thread to pull" without transmitting any data off-device.
+   - Reflections react to "should" density (self-expectation), momentum (resistance levels), and structural focus (longest fields).
+   - Added a "Reflect on this" button that wires the generated question directly into `App.tsx`'s `handleWriteAboutQuestion`, transitioning the user smoothly into a Guided Write flow.
+   - Verified that all AI remains strictly a non-judgmental witness.
+
+4. **Dynamic Time Filtering**
+   - Hooked up "Week", "Month", and "All time" toggles.
+   - The entire dashboard (stats, charts, language fingerprints, reflections) recomputes instantly based on the active selection utilizing `date-fns` `isWithinInterval`.
+
+**Session checklist:**
+- [x] Insights layout matches new design specs with Witness tone
+- [x] Streak removed, replaced with Deepest entry
+- [x] Time filters actively slice dashboard context
+- [x] Language footprint fully functional with expanded dictionaries
+- [x] No external APIs used — 100% local AI heuristics installed
+- [x] Write flow wired from the "Reflect on this" button
+- [x] No new console errors, `npm run build` succeeds
+- [x] BUILDLOG updated
+
+---
+
 *End of BUILDLOG.md*

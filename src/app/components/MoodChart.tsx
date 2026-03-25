@@ -71,10 +71,19 @@ export function MoodChart({ entries }: MoodChartProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-16 text-center">
-        <p className="text-stone-400 text-lg">
-          Track your mood and energy over time by adding journal entries.
-        </p>
+      <div className="max-w-5xl mx-auto px-6 py-8 min-h-[70vh] flex items-center justify-center">
+        <div className="p-10 rounded-2xl border border-[rgba(0,0,0,0.04)] bg-white/60 shadow-sm text-center max-w-md w-full">
+          <div className="w-12 h-12 rounded-full border border-stone-100 bg-stone-50 flex items-center justify-center mx-auto mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400">
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-stone-800 mb-2">Track your emotional landscape</h3>
+          <p className="text-stone-500 leading-relaxed text-[15px]">
+            Your mood and energy patterns will appear here as you add entries. This space will become a visual history of how you've felt over time.
+          </p>
+        </div>
       </div>
     );
   }

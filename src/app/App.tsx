@@ -321,7 +321,7 @@ export default function App() {
         )}
         {currentView === "insights" && (
           <motion.div key="insights" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
-            <Insights entries={entries} />
+            <Insights entries={entries} sendPrompt={handleWriteAboutQuestion} />
           </motion.div>
         )}
         {currentView === "compass" && (
