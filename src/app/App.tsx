@@ -207,7 +207,7 @@ export default function App() {
       {/* Sidebar Header - Restored */}
       <div className="px-6 py-8">
         <h1 className="text-[20px] font-medium leading-none text-foreground" style={{ fontFamily: '"Source Serif Pro", serif' }}>
-          Journal
+          Reflect
         </h1>
         <p className="text-[12px] mt-1.5 text-muted-foreground">
           A quiet space to think clearly
@@ -421,7 +421,7 @@ export default function App() {
         {/* Mobile top bar */}
         <header className="md:hidden border-b border-border bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <div>
-            <span className="text-sm font-medium text-foreground">Journal</span>
+            <span className="text-sm font-medium text-foreground">Reflect</span>
           </div>
           <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground">
             <Menu className="size-5" />
