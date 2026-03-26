@@ -571,7 +571,7 @@ export function JournalEntry({
       setPrompt(getReflectionPrompt(initialReflectionType as 'weekly' | 'monthly' | 'yearly'));
     } else {
       if (allEntries.length === 0) {
-        setPrompt("Start simply. Just one sentence about today.");
+        setPrompt("Welcome. This space is yours. What is the truest thing you can say today?");
       } else {
         const ctx = computeJournalContext(allEntries, selectedDate, !!existing);
         setPrompt(getContextAwarePrompt(ctx));

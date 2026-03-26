@@ -2798,4 +2798,29 @@ The specific offending elements:
 
 ---
 
+### Upcoming Roadmap (Next Session Targets)
+*(Added at the end of A6d session, pending formalization into Phase C / Phase D)*
+
+**1. Spatial & Visual Memory (Media Integration)**
+- Must handle photos, audio memos, and video.
+- Architecture: Must remain 100% local/privacy-first. While testing in the web app, we will use IndexedDB to store base64 or blob references (preventing `localStorage` string limits/crashes).
+- Will require careful UI design so media doesn't break the calm, text-first reading flow.
+
+**2. Rich Text Structuring**
+- Replacing raw `<textarea>` with a headless block editor (e.g., Tiptap) for bullet points, bolding, and structural headers during long-form writing.
+- Must remain "quiet" without word-processor-style floating toolbars constantly demanding attention.
+
+**3. Mobile-First & Distribution Architecture Strategy**
+- Need to map out the strategy for moving to mobile (iOS/Android) without compromising the "offline-first/privacy-first" guarantee.
+- Consideration: App Store / Play Store developer fees ($99/yr, $25/lifetime) vs distributing via PWA vs native React Native / Capacitor wrappers. 
+- Must ensure the zero-friction capture (widgets/quick launch) while remaining offline.
+
+**4. Global Search & Recall (Associative Memory)**
+- Requires heavily scoped brainstorm before writing any code. High risk of scope creep and UI clutter.
+- Needs to be a `Cmd+K` command palette over a standard search page. Must parse tags, text, and dates instantly.
+
+**Next Immediate Action:** Begin brainstorming and scaffolding the **Media Integration (Spatial & Visual Memory)** for web-app testing.
+
+---
+
 *End of BUILDLOG.md*
