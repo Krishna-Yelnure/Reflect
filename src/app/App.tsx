@@ -17,6 +17,7 @@ import {
   Compass,
   Eye,
   EyeOff,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/app/components/ui/sonner";
@@ -206,10 +207,13 @@ export default function App() {
     <div className="flex flex-col h-full">
       {/* Sidebar Header - Restored */}
       <div className="px-6 py-8">
-        <h1 className="text-[20px] font-medium leading-none text-foreground" style={{ fontFamily: '"Source Serif Pro", serif' }}>
-          Reflect
-        </h1>
-        <p className="text-[12px] mt-1.5 text-muted-foreground">
+        <div className="flex items-center gap-2.5">
+          <BookOpen className="size-[24px] text-foreground/90 stroke-[1.5]" />
+          <h1 className="text-[24px] font-medium leading-none text-foreground tracking-tight" style={{ fontFamily: '"Source Serif Pro", serif' }}>
+            Reflect
+          </h1>
+        </div>
+        <p className="text-[12px] mt-2 text-muted-foreground">
           A quiet space to think clearly
         </p>
       </div>
@@ -420,8 +424,9 @@ export default function App() {
       <div className="flex flex-col flex-1 min-w-0">
         {/* Mobile top bar */}
         <header className="md:hidden border-b border-border bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-20">
-          <div>
-            <span className="text-sm font-medium text-foreground">Reflect</span>
+          <div className="flex items-center gap-2">
+            <BookOpen className="size-[18px] text-foreground/90 stroke-[1.5]" />
+            <span className="text-[16px] font-medium text-foreground" style={{ fontFamily: '"Source Serif Pro", serif' }}>Reflect</span>
           </div>
           <button onClick={() => setMobileSidebarOpen(true)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground">
             <Menu className="size-5" />
