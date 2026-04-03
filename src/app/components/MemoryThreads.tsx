@@ -252,7 +252,7 @@ export function MemoryThreads({ entries, onViewEntry }: MemoryThreadsProps) {
         </div>
       )}
 
-      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
+      <div className="mt-8 p-6 rounded-lg border border-border" style={{ backgroundColor: 'var(--muted)' }}>
         <h3 className="font-medium mb-2">About Memory Threads</h3>
         <p className="text-sm text-stone-600 mb-3">
           Threads let you build your own narrative structure. They're manually curated—the

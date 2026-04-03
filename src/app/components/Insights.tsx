@@ -226,7 +226,7 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 space-y-8" style={{ color: '#1C1C18' }}>
+    <div className="max-w-4xl mx-auto px-6 py-10 space-y-8" style={{ color: 'var(--text-primary)' }}>
       
       <div className="mb-2">
         <div className="flex justify-between items-center mb-2">

@@ -173,9 +173,9 @@ function FilterBar({
             }}
             className="appearance-none pl-3 pr-8 py-2 rounded-lg text-sm border transition-colors cursor-pointer"
             style={{
-              backgroundColor: filterYear ? '#1C1C18' : 'rgba(0,0,0,0.04)',
+              backgroundColor: filterYear ? 'var(--primary)' : 'rgba(0,0,0,0.04)',
               color: filterYear ? '#fff' : '#5a5550',
-              borderColor: filterYear ? '#1C1C18' : 'rgba(0,0,0,0.10)',
+              borderColor: filterYear ? 'var(--primary)' : 'rgba(0,0,0,0.10)',
             }}
           >
             <option value="">All years</option>
@@ -232,9 +232,9 @@ function FilterBar({
                 onClick={() => onSetTag(active ? null : tag)}
                 className="px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150"
                 style={{
-                  backgroundColor: active ? '#1C1C18' : 'rgba(0,0,0,0.04)',
+                  backgroundColor: active ? 'var(--primary)' : 'rgba(0,0,0,0.04)',
                   color:           active ? '#fff'     : '#5a5550',
-                  borderColor:     active ? '#1C1C18' : 'rgba(0,0,0,0.09)',
+                  borderColor:     active ? 'var(--primary)' : 'rgba(0,0,0,0.09)',
                 }}
               >
                 #{tag}
@@ -376,7 +376,7 @@ export function MediaGallery({ entries, onViewEntry, privacyMode }: MediaGallery
       <div className="max-w-3xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-baseline justify-between mb-6">
-          <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
+          <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
             Media
           </h1>
           <p className="text-sm text-stone-400">
@@ -450,7 +450,7 @@ export function MediaGallery({ entries, onViewEntry, privacyMode }: MediaGallery
 
                     {/* Album info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: '#1C1C18' }}>
+                      <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                         {album.name}
                       </p>
                       <p className="text-xs" style={{ color: '#a89e8e' }}>
@@ -526,9 +526,9 @@ export function MediaGallery({ entries, onViewEntry, privacyMode }: MediaGallery
                             onClick={e => { e.stopPropagation(); setFilterTag(filterTag === t ? null : t); }}
                             className="px-2 py-0.5 rounded-full text-[10px] border transition-colors"
                             style={{
-                              backgroundColor: filterTag === t ? '#1C1C18' : 'rgba(0,0,0,0.04)',
+                              backgroundColor: filterTag === t ? 'var(--primary)' : 'rgba(0,0,0,0.04)',
                               color:           filterTag === t ? '#fff'     : '#787068',
-                              borderColor:     filterTag === t ? '#1C1C18' : 'rgba(0,0,0,0.08)',
+                              borderColor:     filterTag === t ? 'var(--primary)' : 'rgba(0,0,0,0.08)',
                             }}
                           >
                             #{t}

@@ -174,7 +174,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
             border: 'none',
             borderBottom: '1px solid #c8c2b6',
             caretColor: '#f59e0b',
-            color: '#1C1C18',
+            color: 'var(--text-primary)',
           }}
           onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
           onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
@@ -266,7 +266,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
               style={{
                 backgroundColor: hex,
                 boxShadow: form.colour === hex
-                  ? `0 0 0 2px #EDE8DF, 0 0 0 3.5px ${hex}`
+                  ? `0 0 0 2px var(--bg-main), 0 0 0 3.5px ${hex}`
                   : 'none',
                 transform: form.colour === hex ? 'scale(1.15)' : 'scale(1)',
               }}
@@ -306,7 +306,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
       <div className="mb-10">
         <h1
           className="text-3xl font-light mb-1"
-          style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
         >
           Life chapters
         </h1>
@@ -368,7 +368,7 @@ export function ErasManager({ entries }: ErasManagerProps) {
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-base font-medium mb-0.5"
-                      style={{ color: '#1C1C18' }}
+                      style={{ color: 'var(--text-primary)' }}
                     >
                       {era.name}
                     </p>

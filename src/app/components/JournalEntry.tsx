@@ -485,7 +485,7 @@ function ClosingMoment({
         <p className="text-stone-400 text-sm tracking-widest uppercase font-medium">
           {formatEntryDate(date)}
         </p>
-        <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>{line}</p>
+        <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>{line}</p>
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
@@ -765,7 +765,7 @@ export function JournalEntry({
               <ChevronLeft className="size-4" />
               Back to Guided
             </button>
-            <p className="text-sm font-medium" style={{ color: '#1A1A1A' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
               {formatEntryDate(selectedDate)}
             </p>
             <div className="flex items-center gap-3">
@@ -1045,7 +1045,7 @@ export function JournalEntry({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
+              <h1 className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
                 {formatEntryDate(selectedDate)}
               </h1>
               <p className="text-sm text-stone-400 mt-0.5">Quick capture</p>
@@ -1159,7 +1159,7 @@ export function JournalEntry({
           className="flex items-start justify-between mb-6"
         >
           <div>
-            <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
+            <h1 className="text-3xl font-light" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               {formatEntryDate(selectedDate)}
             </h1>
             {reflectionMeta && (

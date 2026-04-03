@@ -134,7 +134,7 @@ export function MoodChart({ entries }: MoodChartProps) {
                       if (!active || !payload?.[0]) return null;
                       const data = payload[0].payload;
                       return (
-                        <div style={{ backgroundColor: '#F0EBE2' }} className="p-3 rounded-lg shadow-lg border border-stone-200">
+                        <div style={{ backgroundColor: 'var(--surface, var(--card))' }} className="p-3 rounded-lg shadow-lg border border-border">
                           <p className="text-sm font-medium mb-1">{data.date}</p>
                           {data.moodLabel && (
                             <p className="text-sm text-stone-600 capitalize">
@@ -176,7 +176,7 @@ export function MoodChart({ entries }: MoodChartProps) {
                       content={({ active, payload }) => {
                         if (!active || !payload?.[0]) return null;
                         return (
-                          <div style={{ backgroundColor: '#F0EBE2' }} className="p-3 rounded-lg shadow-lg border border-stone-200">
+                          <div style={{ backgroundColor: 'var(--surface, var(--card))' }} className="p-3 rounded-lg shadow-lg border border-border">
                             <p className="text-sm font-medium">{payload[0].payload.mood}</p>
                             <p className="text-sm text-stone-600">
                               {payload[0].value} entries
@@ -235,7 +235,7 @@ export function MoodChart({ entries }: MoodChartProps) {
                       if (!active || !payload?.[0]) return null;
                       const data = payload[0].payload;
                       return (
-                        <div style={{ backgroundColor: '#F0EBE2' }} className="p-3 rounded-lg shadow-lg border border-stone-200">
+                        <div style={{ backgroundColor: 'var(--surface, var(--card))' }} className="p-3 rounded-lg shadow-lg border border-border">
                           <p className="text-sm font-medium mb-1">{data.date}</p>
                           {data.energy && (
                             <p className="text-sm text-stone-600">

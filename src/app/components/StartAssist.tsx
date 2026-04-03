@@ -113,9 +113,9 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-[#1C1C18]/95 backdrop-blur-md"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
       >
-        <div className="bg-[#EDE8DF] p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl space-y-6">
+        <div className="bg-card p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl space-y-6">
           <h2 className="text-xl font-medium text-stone-800 font-serif">Focus Mode</h2>
           <p className="text-stone-600">Your first step:</p>
           <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-200">

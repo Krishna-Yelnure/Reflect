@@ -88,7 +88,7 @@ export function DataLegacy({ entries }: DataLegacyProps) {
         </Card>
 
         {/* Long-term thinking */}
-        <Card className="p-6 border-stone-200" style={{ backgroundColor: '#E8E2D8' }}>
+        <Card className="p-6 border-border" style={{ backgroundColor: 'var(--muted)' }}>
           <h3 className="font-medium mb-3">Long-Term Data Philosophy</h3>
           <div className="text-sm text-stone-600 space-y-3">
             <p>

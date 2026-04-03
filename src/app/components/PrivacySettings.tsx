@@ -246,7 +246,7 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
         </Card>
       </div>
 
-      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
+      <div className="mt-8 p-6 rounded-lg border border-border" style={{ backgroundColor: 'var(--muted)' }}>
         <h3 className="font-medium mb-2">Privacy Guarantee</h3>
         <ul className="text-sm text-stone-600 space-y-2">
           <li>• All data is stored locally in your browser</li>

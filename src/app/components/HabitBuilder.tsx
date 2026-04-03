@@ -171,7 +171,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
           <p className="text-sm text-stone-500 mb-6">
             Your journaling experience remains unchanged whether you use this or not.
           </p>
-          <div style={{ backgroundColor: '#F0EBE2' }} className="p-4 rounded-lg border border-stone-200 text-left max-w-md mx-auto">
+          <div style={{ backgroundColor: 'var(--muted)' }} className="p-4 rounded-lg border border-border text-left max-w-md mx-auto">
             <p className="text-sm font-medium mb-2">How it works:</p>
             <ol className="text-sm text-stone-600 space-y-2 list-decimal list-inside">
               <li>Create a habit you want to explore</li>
@@ -272,7 +272,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-4 space-y-3 p-4 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
+                        className="mt-4 space-y-3 p-4 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
                         <Label className="text-sm">Optional reflection</Label>
                         <select
                           value={selectedPrompt}
@@ -468,7 +468,7 @@ export function HabitBuilder({ entries }: HabitBuilderProps) {
       )}
 
       {/* Educational Footer */}
-      <div className="mt-8 p-6 rounded-lg" style={{ backgroundColor: '#E8E2D8' }}>
+      <div className="mt-8 p-6 rounded-lg border border-border" style={{ backgroundColor: 'var(--muted)' }}>
         <h3 className="font-medium mb-2">About Habit Builder</h3>
         <p className="text-sm text-stone-600 mb-3">
           This space exists to support routine-building through reflection and meaning, not
@@ -532,7 +532,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
   };
 
   return (
-    <div className="mt-4 p-4 rounded-lg border" style={{ backgroundColor: "var(--habit-track-bg, #F0E8D8)", borderColor: "var(--habit-track-border, #C8A87A)" }}>
+    <div className="mt-4 p-4 rounded-lg border border-border" style={{ backgroundColor: 'var(--muted)' }}>
       {/* Progress Tiles - No numbers, purely visual */}
       <div className="grid grid-cols-7 gap-2 mb-4">
         {days.map((day) => {
@@ -589,7 +589,7 @@ function GentleStartProgress({ gentleStart, engagements, onComplete, habitName, 
       {/* Completion State */}
       {isComplete && !gentleStart.completed && (
         <div className="space-y-3 mt-4 pt-4 border-t border-stone-300">
-          <div style={{ backgroundColor: '#F0EBE2' }} className="p-4 rounded-lg">
+          <div style={{ backgroundColor: 'var(--surface, var(--card))' }} className="p-4 rounded-lg border border-border">
             <p className="font-medium text-stone-800 mb-2">
               This 21-day Gentle Start is complete.
             </p>

@@ -232,7 +232,7 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
                   placeholder="Album name…"
                   maxLength={48}
                   className="flex-1 text-sm bg-transparent outline-none"
-                  style={{ color: '#1C1C18', caretColor: '#f59e0b' }}
+                  style={{ color: 'var(--text-primary)', caretColor: '#f59e0b' }}
                 />
                 <button
                   type="button"

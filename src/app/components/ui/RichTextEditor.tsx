@@ -213,7 +213,7 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
                 className="w-full flex items-center gap-3 px-3 py-1.5 text-left transition-colors duration-100"
                 style={{
                   backgroundColor: action.active ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  color: action.active ? '#1C1C18' : '#5a5550',
+                  color: action.active ? 'var(--text-primary)' : '#5a5550',
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,0,0,0.04)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = action.active ? 'rgba(0,0,0,0.05)' : 'transparent'; }}
@@ -226,7 +226,7 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
                     height: 22,
                     borderRadius: 5,
                     backgroundColor: action.active ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.04)',
-                    color: action.active ? '#1C1C18' : '#8a7f72',
+                    color: action.active ? 'var(--text-primary)' : '#8a7f72',
                   }}
                 >
                   {action.preview}
