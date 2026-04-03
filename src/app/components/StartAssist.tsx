@@ -116,22 +116,22 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
       >
         <div className="bg-card p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl space-y-6">
-          <h2 className="text-xl font-medium text-stone-800 font-serif">Focus Mode</h2>
-          <p className="text-stone-600">Your first step:</p>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-200">
-            <p className="text-stone-800 font-medium">{currentStep}</p>
+          <h2 className="text-xl font-medium text-foreground font-serif">Focus Mode</h2>
+          <p className="text-muted-foreground">Your first step:</p>
+          <div className="bg-background p-4 rounded-xl shadow-sm border border-border">
+            <p className="text-foreground font-medium">{currentStep}</p>
           </div>
 
-          <div className="text-5xl font-light text-stone-800 tabular-nums py-4" style={{ fontFamily: 'var(--font-display)' }}>
+          <div className="text-5xl font-light text-foreground tabular-nums py-4" style={{ fontFamily: 'var(--font-display)' }}>
             {Math.floor(focusSecondsRemaining / 60)}:{(focusSecondsRemaining % 60).toString().padStart(2, '0')}
           </div>
 
           {!focusActive && focusSecondsRemaining === 0 ? (
             <div className="space-y-4">
-              <p className="text-stone-700 font-medium">5 minutes complete. Continue or stop?</p>
+              <p className="text-foreground font-medium">5 minutes complete. Continue or stop?</p>
               <div className="grid grid-cols-2 gap-3">
                 <Button onClick={() => { setFocusSecondsRemaining(300); setFocusActive(true); }} variant="outline">More Time</Button>
-                <Button onClick={handleFocusFinish} className="bg-stone-800 text-white hover:bg-stone-700">I'm Done</Button>
+                <Button onClick={handleFocusFinish}>I'm Done</Button>
               </div>
             </div>
           ) : (
@@ -141,7 +141,7 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
                   Pause
                 </Button>
               ) : (
-                <Button onClick={() => setFocusActive(true)} className="w-full bg-stone-800 text-white hover:bg-stone-700">
+                <Button onClick={() => setFocusActive(true)} className="w-full">
                   Resume
                 </Button>
               )}
@@ -159,14 +159,14 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
   }
 
   return (
-    <div className="bg-[#fcfbf9] border border-stone-200/60 rounded-xl p-5 space-y-5 shadow-sm my-4">
+    <div className="bg-card border border-border rounded-xl p-5 space-y-5 shadow-sm my-4">
       <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-        <h3 className="font-medium text-stone-800 flex items-center gap-2">
+        <h3 className="font-medium text-foreground flex items-center gap-2">
           <Zap className="size-4 text-amber-500" />
           Start Assist
         </h3>
         {onCancel && (
-          <button onClick={onCancel} className="text-stone-400 hover:text-stone-600 text-sm">
+          <button onClick={onCancel} className="text-muted-foreground hover:text-foreground transition-colors text-sm">
             Close
           </button>
         )}
@@ -213,14 +213,14 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
             <Input 
               type="number" min="0" 
               value={delay} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDelay(Number(e.target.value))}
-              className="w-24 text-center h-8 bg-white" 
+              className="w-24 text-center h-8 bg-background" 
             />
           </div>
         </div>
       </div>
 
       {/* 2. Smart Insight Panel */}
-      <div className="bg-[#f4f2ec] rounded-lg p-4 pb-5 border border-stone-200/50">
+      <div className="bg-muted rounded-lg p-4 pb-5 border border-border">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-stone-600 uppercase tracking-widest">Energy Profile</span>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeColors[level]}`}>
@@ -246,7 +246,7 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
               <Minimize2 className="size-3" /> Make it smaller
             </button>
           </div>
-          <div className="bg-white px-3 py-2 rounded shadow-sm border border-stone-200 flex items-center gap-2">
+          <div className="bg-background px-3 py-2 rounded shadow-sm border border-border flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
             <p className="text-sm font-medium text-stone-800 w-full">{currentStep}</p>
           </div>
@@ -255,7 +255,7 @@ export function StartAssist({ taskText, onChange, onFocusComplete, onCancel }: S
 
       {/* 3. Action Controls */}
       <div className="pt-2">
-        <Button onClick={startFocus} className="w-full gap-2 bg-stone-800 text-white hover:bg-stone-700 h-10">
+        <Button onClick={startFocus} className="w-full gap-2 h-10">
           <Play className="size-4" />
           Start 5-Minute Focus
         </Button>

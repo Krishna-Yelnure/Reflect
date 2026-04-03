@@ -225,11 +225,11 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
         </Card>
 
         {/* Delete All Data */}
-        <Card className="p-6 border-red-200 bg-red-50">
+        <Card className="p-6 border-red-500/20 bg-red-500/10">
           <div className="flex items-start gap-4 mb-4">
             <Trash2 className="size-5 text-red-600 mt-1" />
             <div className="flex-1">
-              <h3 className="font-medium text-red-900 mb-1">Delete All Data</h3>
+              <h3 className="font-medium text-red-500 mb-1">Delete All Data</h3>
               <p className="text-sm text-red-700">
                 Permanently erase all journal entries and settings. This cannot be undone.
               </p>
@@ -239,7 +239,7 @@ export function PrivacySettings({ entries, onImport }: PrivacySettingsProps) {
           <Button
             variant="outline"
             onClick={() => setShowDeleteConfirm(true)}
-            className="border-red-300 text-red-700 hover:bg-red-100 hover:text-red-800"
+            className="border-red-500/30 text-red-500 hover:bg-red-500/20 hover:text-red-600"
           >
             Delete Everything
           </Button>

@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import TurndownService from 'turndown';
+import { PenTool } from 'lucide-react';
 
 // ─── Markdown ↔ Tiptap bridge ──────────────────────────────────────────────
 
@@ -99,31 +100,37 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
 
   if (!editor) return null;
 
+  const isMac = typeof window !== 'undefined' ? /Mac|iPod|iPhone|iPad/.test(navigator.platform) : true;
+  const mapShortcut = (macStr: string) => {
+    if (isMac) return macStr;
+    return macStr.replace('⌘', 'Ctrl+').replace('⇧', 'Shift+').replace('⌥', 'Alt+');
+  };
+
   const actions = [
     {
       label: 'Bold',
-      shortcut: '⌘B',
+      shortcut: mapShortcut('⌘B'),
       active: editor.isActive('bold'),
       apply: () => { editor.chain().focus().toggleBold().run(); },
       preview: <strong style={{ fontFamily: 'var(--font-body)', fontSize: 13 }}>B</strong>,
     },
     {
       label: 'Italic',
-      shortcut: '⌘I',
+      shortcut: mapShortcut('⌘I'),
       active: editor.isActive('italic'),
       apply: () => { editor.chain().focus().toggleItalic().run(); },
       preview: <em style={{ fontFamily: 'var(--font-body)', fontSize: 13 }}>I</em>,
     },
     {
       label: 'Strikethrough',
-      shortcut: '⌘⇧X',
+      shortcut: mapShortcut('⌘⇧X'),
       active: editor.isActive('strike'),
       apply: () => { editor.chain().focus().toggleStrike().run(); },
       preview: <s style={{ fontFamily: 'var(--font-body)', fontSize: 13, textDecorationColor: 'currentColor' }}>S</s>,
     },
     {
       label: 'Bullet list',
-      shortcut: '⌘⇧8',
+      shortcut: mapShortcut('⌘⇧8'),
       active: editor.isActive('bulletList'),
       apply: () => { editor.chain().focus().toggleBulletList().run(); },
       preview: (
@@ -139,7 +146,7 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
     },
     {
       label: 'Blockquote',
-      shortcut: '⌘⇧B',
+      shortcut: mapShortcut('⌘⇧B'),
       active: editor.isActive('blockquote'),
       apply: () => { editor.chain().focus().toggleBlockquote().run(); },
       preview: (
@@ -152,49 +159,36 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
   ];
 
   return (
-    <div className="absolute bottom-2 right-2" style={{ zIndex: 10 }}>
-      {/* Trigger button — ⌘ glyph, subtle, always visible */}
+    <div className="absolute top-4 right-2 sm:-right-8 md:-right-12" style={{ zIndex: 10 }}>
+      {/* Trigger button — PenTool icon, subtle, hangs in margin */}
       <button
         ref={triggerRef}
         type="button"
         onMouseDown={e => { e.preventDefault(); setOpen(prev => !prev); }}
         title="Formatting shortcuts"
         aria-label="Show formatting shortcuts"
-        className="flex items-center justify-center rounded-md transition-all duration-150 select-none"
+        className={`flex items-center justify-center rounded-lg transition-all duration-150 shadow-sm border ${open ? 'bg-card text-foreground border-border' : 'bg-muted/80 text-muted-foreground border-transparent hover:bg-card hover:text-foreground hover:border-border'} select-none`}
         style={{
-          width: 22,
-          height: 22,
-          fontSize: 11,
-          fontFamily: 'var(--font-mono)',
-          backgroundColor: open ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.04)',
-          color: open ? '#5a5550' : '#a89e8e',
-          border: '1px solid',
-          borderColor: open ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.07)',
-          lineHeight: 1,
+          width: 32,
+          height: 32,
         }}
       >
-        ⌘
+        <PenTool className="size-4" />
       </button>
 
       {/* Shortcut panel */}
       {open && (
         <div
           ref={panelRef}
-          className="absolute bottom-full right-0 mb-2 rounded-xl shadow-lg overflow-hidden"
+          className="absolute top-full right-0 mt-2 rounded-xl shadow-xl overflow-hidden border border-border"
           style={{
-            backgroundColor: '#FAFAF8',
-            border: '1px solid rgba(0,0,0,0.10)',
+            backgroundColor: 'var(--card)',
             minWidth: 210,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)',
           }}
         >
           {/* Header */}
           <div
-            className="px-3 py-2 text-[10px] font-medium uppercase tracking-widest"
-            style={{
-              color: '#a89e8e',
-              borderBottom: '1px solid rgba(0,0,0,0.06)',
-            }}
+            className="px-3 py-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground border-b border-border"
           >
             Formatting
           </div>
@@ -212,11 +206,11 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
                 }}
                 className="w-full flex items-center gap-3 px-3 py-1.5 text-left transition-colors duration-100"
                 style={{
-                  backgroundColor: action.active ? 'rgba(0,0,0,0.05)' : 'transparent',
-                  color: action.active ? 'var(--text-primary)' : '#5a5550',
+                  backgroundColor: action.active ? 'var(--muted)' : 'transparent',
+                  color: action.active ? 'var(--text-primary)' : 'var(--text-secondary)',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,0,0,0.04)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = action.active ? 'rgba(0,0,0,0.05)' : 'transparent'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--muted-hover)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = action.active ? 'var(--muted)' : 'transparent'; }}
               >
                 {/* Format preview icon */}
                 <span
@@ -225,8 +219,8 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
                     width: 22,
                     height: 22,
                     borderRadius: 5,
-                    backgroundColor: action.active ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.04)',
-                    color: action.active ? 'var(--text-primary)' : '#8a7f72',
+                    backgroundColor: action.active ? 'var(--background)' : 'var(--muted)',
+                    color: action.active ? 'var(--text-primary)' : 'var(--text-muted)',
                   }}
                 >
                   {action.preview}
@@ -240,8 +234,8 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
                   className="text-[10px] tabular-nums"
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    color: '#a89e8e',
-                    backgroundColor: 'rgba(0,0,0,0.05)',
+                    color: 'var(--text-muted)',
+                    backgroundColor: 'var(--muted)',
                     padding: '1px 5px',
                     borderRadius: 4,
                   }}
@@ -254,11 +248,7 @@ function ShortcutHint({ editor }: ShortcutHintProps) {
 
           {/* Footer tip */}
           <div
-            className="px-3 py-2 text-[10px] italic"
-            style={{
-              color: '#b8b0a4',
-              borderTop: '1px solid rgba(0,0,0,0.06)',
-            }}
+            className="px-3 py-2 text-[10px] italic text-muted-foreground border-t border-border"
           >
             Select text first, then apply a format
           </div>

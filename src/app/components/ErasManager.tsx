@@ -172,12 +172,12 @@ export function ErasManager({ entries }: ErasManagerProps) {
           className="w-full text-base bg-transparent outline-none pb-1.5 transition-colors placeholder:text-stone-300"
           style={{
             border: 'none',
-            borderBottom: '1px solid #c8c2b6',
+            borderBottom: '1px solid var(--border)',
             caretColor: '#f59e0b',
             color: 'var(--text-primary)',
           }}
-          onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
-          onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
+          onFocus={e => { e.currentTarget.style.borderBottomColor = 'var(--border-hover)'; }}
+          onBlur={e => { e.currentTarget.style.borderBottomColor = 'var(--border)'; }}
         />
       </div>
 
@@ -191,12 +191,12 @@ export function ErasManager({ entries }: ErasManagerProps) {
           className="w-full text-sm bg-transparent outline-none pb-1.5 resize-none transition-colors placeholder:text-stone-300 leading-relaxed"
           style={{
             border: 'none',
-            borderBottom: '1px solid #c8c2b6',
+            borderBottom: '1px solid var(--border)',
             caretColor: '#f59e0b',
-            color: '#1C1C18',
+            color: 'var(--text-primary)',
           }}
-          onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
-          onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
+          onFocus={e => { e.currentTarget.style.borderBottomColor = 'var(--border-hover)'; }}
+          onBlur={e => { e.currentTarget.style.borderBottomColor = 'var(--border)'; }}
         />
       </div>
 

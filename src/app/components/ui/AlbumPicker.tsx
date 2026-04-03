@@ -99,8 +99,7 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 transition-colors duration-150 select-none"
-        style={{ color: open || hasLinked ? '#5a5550' : '#a89e8e' }}
+        className={`flex items-center gap-1.5 transition-colors duration-150 select-none ${open || hasLinked ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
       >
         <FolderOpen size={13} strokeWidth={1.75} className="shrink-0" />
         <span className="text-xs">
@@ -120,17 +119,12 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
           {linkedAlbums.map(album => (
             <span
               key={album.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs select-none"
-              style={{
-                backgroundColor: 'rgba(0,0,0,0.05)',
-                color: '#5a5550',
-                border: '1px solid rgba(0,0,0,0.08)',
-              }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs select-none bg-muted border border-border text-foreground"
             >
               <span>📷</span>
               <span>{album.name}</span>
               {album.mediaIds.length > 0 && (
-                <span style={{ color: '#a89e8e', fontSize: 10 }}>
+                <span className="text-[10px] text-muted-foreground">
                   {album.mediaIds.length}
                 </span>
               )}
@@ -150,26 +144,18 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
       {/* Dropdown panel */}
       {open && (
         <div
-          className="absolute left-0 top-full mt-2 z-20 rounded-xl overflow-hidden"
-          style={{
-            backgroundColor: '#FAFAF8',
-            border: '1px solid rgba(0,0,0,0.10)',
-            minWidth: 220,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)',
-          }}
+          className="absolute left-0 top-full mt-2 z-20 rounded-xl overflow-hidden bg-card border border-border shadow-md"
+          style={{ minWidth: 220 }}
         >
           {/* Header */}
-          <div
-            className="px-3 py-2 text-[10px] font-medium uppercase tracking-widest"
-            style={{ color: '#a89e8e', borderBottom: '1px solid rgba(0,0,0,0.06)' }}
-          >
+          <div className="px-3 py-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground border-b border-border">
             Albums
           </div>
 
           {/* Album list */}
           <div className="py-1 max-h-52 overflow-y-auto">
             {allAlbums.length === 0 && !creating && (
-              <p className="px-3 py-2 text-xs italic" style={{ color: '#b8b0a4' }}>
+              <p className="px-3 py-2 text-xs italic text-muted-foreground">
                 No albums yet. Create one below.
               </p>
             )}
@@ -180,24 +166,12 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
                   key={album.id}
                   type="button"
                   onClick={() => toggleAlbum(album.id)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors duration-100"
-                  style={{
-                    color: '#5a5550',
-                    backgroundColor: isLinked ? 'rgba(0,0,0,0.04)' : 'transparent',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,0,0,0.04)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = isLinked ? 'rgba(0,0,0,0.04)' : 'transparent'; }}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors duration-100 ${isLinked ? 'bg-muted/80' : 'hover:bg-muted/50'} text-foreground`}
                 >
                   {/* Checkmark */}
                   <span
-                    className="flex items-center justify-center rounded shrink-0"
-                    style={{
-                      width: 16,
-                      height: 16,
-                      border: isLinked ? 'none' : '1.5px solid rgba(0,0,0,0.18)',
-                      backgroundColor: isLinked ? '#5a5550' : 'transparent',
-                      color: 'white',
-                    }}
+                    className={`flex items-center justify-center rounded shrink-0 ${isLinked ? 'bg-foreground text-background' : 'border-[1.5px] border-border bg-transparent'}`}
+                    style={{ width: 16, height: 16 }}
                   >
                     {isLinked && <Check size={10} strokeWidth={3} />}
                   </span>
@@ -207,7 +181,7 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
 
                   {/* Photo count */}
                   {album.mediaIds.length > 0 && (
-                    <span className="text-[10px] shrink-0" style={{ color: '#b8b0a4' }}>
+                    <span className="text-[10px] shrink-0 text-muted-foreground">
                       {album.mediaIds.length} 📷
                     </span>
                   )}
@@ -217,7 +191,7 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
           </div>
 
           {/* New album creation */}
-          <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          <div className="border-t border-border">
             {creating ? (
               <div className="flex items-center gap-2 px-3 py-2">
                 <input
@@ -231,18 +205,14 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
                   }}
                   placeholder="Album name…"
                   maxLength={48}
-                  className="flex-1 text-sm bg-transparent outline-none"
-                  style={{ color: 'var(--text-primary)', caretColor: '#f59e0b' }}
+                  className="flex-1 text-sm bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                  style={{ caretColor: 'var(--primary)' }}
                 />
                 <button
                   type="button"
                   onClick={handleCreateAlbum}
                   disabled={!newName.trim()}
-                  className="text-xs px-2 py-0.5 rounded-md transition-colors disabled:opacity-40"
-                  style={{
-                    backgroundColor: newName.trim() ? '#5a5550' : 'rgba(0,0,0,0.06)',
-                    color: newName.trim() ? 'white' : '#a89e8e',
-                  }}
+                  className={`text-xs px-2 py-0.5 rounded-md transition-colors disabled:opacity-40 ${newName.trim() ? 'bg-foreground text-background' : 'bg-muted/50 text-muted-foreground'}`}
                 >
                   Create
                 </button>
@@ -258,10 +228,7 @@ export function AlbumPicker({ linkedAlbumIds, onChange }: AlbumPickerProps) {
               <button
                 type="button"
                 onClick={() => setCreating(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors"
-                style={{ color: '#8a7f72' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(0,0,0,0.03)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               >
                 <Plus size={13} strokeWidth={2} />
                 New album

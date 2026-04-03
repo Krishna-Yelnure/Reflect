@@ -61,51 +61,51 @@ const moods = [
     value: 'great',
     label: 'Great',
     emoji: '✨',
-    bg: 'bg-amber-50',
-    border: 'border-amber-300',
-    glow: 'shadow-amber-200/60',
-    ring: 'ring-amber-300',
-    text: 'text-amber-700',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/50',
+    glow: 'shadow-amber-500/20',
+    ring: 'ring-amber-500',
+    text: 'text-amber-500',
   },
   {
     value: 'good',
     label: 'Good',
     emoji: '😊',
-    bg: 'bg-stone-50',
-    border: 'border-stone-300',
-    glow: 'shadow-stone-200/60',
-    ring: 'ring-stone-300',
-    text: 'text-stone-600',
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/50',
+    glow: 'shadow-emerald-500/20',
+    ring: 'ring-emerald-500',
+    text: 'text-emerald-500',
   },
   {
     value: 'okay',
     label: 'Okay',
     emoji: '😐',
-    bg: 'bg-stone-50',
-    border: 'border-stone-300',
-    glow: 'shadow-stone-200/60',
-    ring: 'ring-stone-300',
-    text: 'text-stone-600',
+    bg: 'bg-blue-500/10',
+    border: 'border-blue-500/50',
+    glow: 'shadow-blue-500/20',
+    ring: 'ring-blue-500',
+    text: 'text-blue-500',
   },
   {
     value: 'low',
     label: 'Low',
     emoji: '😔',
-    bg: 'bg-stone-100',
-    border: 'border-stone-300',
-    glow: 'shadow-stone-200/60',
-    ring: 'ring-stone-300',
-    text: 'text-stone-500',
+    bg: 'bg-indigo-500/10',
+    border: 'border-indigo-500/50',
+    glow: 'shadow-indigo-500/20',
+    ring: 'ring-indigo-500',
+    text: 'text-indigo-500',
   },
   {
     value: 'difficult',
     label: 'Hard',
     emoji: '😣',
-    bg: 'bg-stone-50',
-    border: 'border-stone-300',
-    glow: 'shadow-stone-200/60',
-    ring: 'ring-stone-300',
-    text: 'text-stone-500',
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/50',
+    glow: 'shadow-rose-500/20',
+    ring: 'ring-rose-500',
+    text: 'text-rose-500',
   },
 ] as const;
 
@@ -335,20 +335,20 @@ function ModeSwitcher({
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-xl w-fit relative" style={{ backgroundColor: '#ddd8cf' }}>
+    <div className="flex items-center gap-1 p-1 rounded-xl w-fit relative" style={{ backgroundColor: 'var(--border)' }}>
       {modes.map(m => (
         <button
           key={m.id}
           onClick={() => onChange(m.id)}
           className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium z-10"
-          style={{ color: mode === m.id ? '#3C3C38' : '#8a7f72' }}
+          style={{ color: mode === m.id ? 'var(--text-body)' : 'var(--text-muted)' }}
         >
           {/* A17: spring-animated active pill (layoutId) */}
           {mode === m.id && (
             <motion.div
               layoutId="mode-pill"
               className="absolute inset-0 rounded-lg shadow-sm"
-              style={{ backgroundColor: 'var(--bg-elevated, #EDE8DF)' }}
+              style={{ backgroundColor: 'var(--card)' }}
               transition={{ type: 'spring', stiffness: 420, damping: 34 }}
             />
           )}
@@ -412,11 +412,11 @@ function ContextualPrompt({
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-3 p-4 rounded-xl border border-stone-200/60"
-        style={{ backgroundColor: '#e8e2d8' }}
+        className="flex items-start gap-3 p-4 rounded-xl border border-border"
+        style={{ backgroundColor: 'var(--muted)' }}
       >
         <span className="text-lg mt-0.5 flex-shrink-0">💬</span>
-        <p className="text-sm italic leading-relaxed" style={{ color: '#5a5550' }}>{continuityPrompt}</p>
+        <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{continuityPrompt}</p>
       </motion.div>
     );
   }
@@ -439,11 +439,11 @@ function ContextualPrompt({
       <motion.div
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-2.5 p-4 rounded-xl border border-stone-200/60"
-        style={{ backgroundColor: '#e8e2d8' }}
+        className="flex items-start gap-2.5 p-4 rounded-xl border border-border"
+        style={{ backgroundColor: 'var(--muted)' }}
       >
         <Sparkles className="size-4 mt-0.5 flex-shrink-0 text-stone-400" />
-        <p className="text-sm italic leading-relaxed" style={{ color: '#5a5550' }}>{prompt}</p>
+        <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{prompt}</p>
       </motion.div>
     );
   }
@@ -473,7 +473,7 @@ function ClosingMoment({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
       className="fixed inset-0 flex flex-col items-center justify-center z-50"
-      style={{ backgroundColor: '#EDE8DF' }}
+      style={{ backgroundColor: 'var(--background)' }}
       onClick={onDone}
     >
       <motion.div
@@ -796,9 +796,9 @@ export function JournalEntry({
             </div>
           </div>
 
-          {/* Deep mode canvas — typewriter scroll. A17: writing-canvas-lined adds faint ruled lines at line-height interval */}
+          {/* Deep mode canvas — typewriter scroll */}
           <div
-            className="flex-1 overflow-y-auto writing-canvas-lined"
+            className="flex-1 overflow-y-auto"
             style={{ scrollPaddingTop: '40vh' }}
           >
             <div className="px-8 pt-[20vh] pb-[50vh] max-w-3xl mx-auto w-full">
@@ -819,7 +819,7 @@ export function JournalEntry({
                 autoFocus
                 minHeight="60vh"
                 style={{ fontFamily: 'var(--font-body)' }}
-                className="deep-write-rte"
+                className="deep-write-rte writing-canvas-lined"
               />
             </div>
           </div>
@@ -1067,7 +1067,7 @@ export function JournalEntry({
 
           {/* Mood */}
           <div className="mb-6">
-            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium mb-3">How are you?</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-3">How are you?</p>
             <div className="flex gap-2 flex-wrap">
               {moods.map(mood => {
                 const selected = entry.mood === mood.value;
@@ -1078,13 +1078,13 @@ export function JournalEntry({
                     className={`
                       flex flex-col items-center gap-1 px-3 pt-3 pb-2 rounded-2xl border-2 transition-all duration-200
                       ${selected
-                        ? `${mood.bg} ${mood.border} shadow-md ${mood.glow} scale-105 ring-2 ${mood.ring} ring-offset-1`
-                        : 'border-stone-200 hover:border-stone-300 shadow-sm'
+                        ? `${mood.bg} ${mood.border} shadow-md ${mood.glow} scale-105 ring-2 ${mood.ring} ring-offset-2 ring-offset-background`
+                        : 'border-border bg-transparent hover:border-foreground/30 hover:bg-muted/30 shadow-sm'
                       }
                     `}
                   >
                     <span className="text-2xl leading-none">{mood.emoji}</span>
-                    <span className={`text-xs font-medium ${selected ? mood.text : 'text-stone-400'}`}>
+                    <span className={`text-xs font-medium ${selected ? mood.text : 'text-muted-foreground'}`}>
                       {mood.label}
                     </span>
                   </button>
@@ -1348,7 +1348,7 @@ export function JournalEntry({
                     focus:outline-none
                     ${selected
                       ? `${mood.bg} ${mood.border} border px-2.5 py-1`
-                      : 'px-1.5 py-1 hover:bg-stone-200/60'
+                      : 'border border-transparent bg-transparent px-2.5 py-1 hover:bg-muted/40'
                     }
                   `}
                 >
@@ -1374,7 +1374,7 @@ export function JournalEntry({
           </div>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-stone-300 shrink-0" />
+          <div className="w-px h-5 bg-border shrink-0" />
 
           {/* Energy — bars only, no labels */}
           <div className="flex items-end gap-1" role="group" aria-label="Energy level">
@@ -1409,7 +1409,7 @@ export function JournalEntry({
             {entry.energy !== undefined && (
               <button
                 onClick={() => updateField('energy', undefined)}
-                className="ml-1 text-xs text-stone-400 hover:text-stone-600 transition-colors self-center leading-none"
+                className="ml-1 text-xs text-muted-foreground hover:text-foreground transition-colors self-center leading-none"
                 aria-label="Clear energy"
               >
                 ✕
@@ -1426,7 +1426,7 @@ export function JournalEntry({
           transition={{ duration: 0.3, delay: 0.22 }}
           className="mb-8"
         >
-          <p className="text-[10px] text-stone-500 uppercase tracking-widest mb-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2.5">
             How did your mind feel?
           </p>
           <div className="flex items-center gap-2">
@@ -1439,9 +1439,9 @@ export function JournalEntry({
             ).map(state => {
               const selected = entry.innerState === state.value;
               const colours: Record<string, string> = {
-                clear:    selected ? 'bg-stone-100 border-stone-400 text-stone-700' : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
-                restless: selected ? 'bg-amber-50 border-amber-300 text-amber-700'      : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
-                heavy:    selected ? 'bg-stone-200 border-stone-400 text-stone-700'     : 'border-stone-300 text-stone-500 hover:border-stone-400 hover:text-stone-700',
+                clear:    selected ? 'bg-muted border-foreground/50 text-foreground' : 'border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground bg-transparent',
+                restless: selected ? 'bg-amber-500/10 border-amber-500/50 text-amber-500' : 'border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground bg-transparent',
+                heavy:    selected ? 'bg-muted/50 border-muted-foreground/80 text-foreground' : 'border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground bg-transparent',
               };
               return (
                 <button
@@ -1481,7 +1481,7 @@ export function JournalEntry({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.05 * index }}
                   >
-                    <Label htmlFor={key} className="text-sm mb-2 block font-medium" style={{ color: '#5a5550' }}>
+                    <Label htmlFor={key} className="text-sm mb-2 block font-medium text-foreground">
                       {label}
                     </Label>
                     <RichTextEditor
@@ -1491,7 +1491,7 @@ export function JournalEntry({
                       placeholder={placeholder}
                       toolbarVariant="full"
                       minHeight={minHeights[key] === 'min-h-[120px]' ? '120px' : minHeights[key] === 'min-h-[80px]' ? '80px' : '100px'}
-                      className="parchment-input rounded-lg"
+                      className="guided-prompt-rte bg-muted/20 border border-transparent hover:border-border focus-within:bg-muted/40 focus-within:border-border rounded-xl px-3 py-2 transition-colors shadow-sm"
                     />
                   </motion.div>
                 );

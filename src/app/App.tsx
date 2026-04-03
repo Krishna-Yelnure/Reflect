@@ -231,7 +231,7 @@ export default function App() {
             Reflect
           </h1>
         </div>
-        <p className="text-[12px] mt-2 text-muted-foreground">
+        <p className="text-[6px] mt-2 text-muted-foreground leading-tight">
           A quiet space to think clearly
         </p>
       </div>
@@ -303,7 +303,7 @@ export default function App() {
           </select>
         </div>
 
-        <p className="text-[10px] text-muted-foreground leading-relaxed mt-2">
+        <p className="text-[6px] text-muted-foreground leading-relaxed mt-2">
           Private. Secure. Always yours.
         </p>
       </div>

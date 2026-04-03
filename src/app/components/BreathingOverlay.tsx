@@ -62,12 +62,12 @@ export function BreathingOverlay({ isOpen, onClose }: BreathingOverlayProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-md"
-          style={{ backgroundColor: 'rgba(237, 232, 223, 0.92)' }}
+          style={{ backgroundColor: 'color-mix(in srgb, var(--background) 95%, transparent)' }}
         >
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-8 right-8 p-3 rounded-full bg-stone-200/50 hover:bg-stone-300/50 transition-colors text-stone-600"
+            className="absolute top-8 right-8 p-3 rounded-full bg-muted/80 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             aria-label="Close breathing tool"
           >
             <X className="size-6" />
@@ -75,8 +75,8 @@ export function BreathingOverlay({ isOpen, onClose }: BreathingOverlayProps) {
 
           {/* Philosophy reminder */}
           <div className="absolute top-24 text-center px-6">
-            <p className="text-stone-400 text-xs tracking-widest uppercase font-medium mb-2">Presence</p>
-            <p className="text-stone-500 text-sm italic" style={{ fontFamily: 'var(--font-display)' }}>
+            <p className="text-muted-foreground text-xs tracking-widest uppercase font-medium mb-2">Presence</p>
+            <p className="text-muted-foreground text-sm italic" style={{ fontFamily: 'var(--font-display)' }}>
               "Returning is the practice."
             </p>
           </div>
@@ -84,7 +84,7 @@ export function BreathingOverlay({ isOpen, onClose }: BreathingOverlayProps) {
           {/* Animated Circle */}
           <div className="relative flex items-center justify-center w-80 h-80">
             {/* Outer ring (static) */}
-            <div className="absolute inset-0 rounded-full border border-stone-300/30 shrink-0" />
+            <div className="absolute inset-0 rounded-full border border-border shrink-0" />
             
             {/* Pulse ring (animated) */}
             <motion.div
@@ -93,7 +93,11 @@ export function BreathingOverlay({ isOpen, onClose }: BreathingOverlayProps) {
                 opacity: getOpacity(),
               }}
               transition={{ ease: "linear", duration: 0.05 }}
-              className="w-40 h-40 rounded-full bg-amber-200/40 border border-amber-300/50"
+              className="w-40 h-40 rounded-full"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--primary) 20%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--primary) 40%, transparent)'
+              }}
             />
 
             {/* Phase Text */}
@@ -102,7 +106,7 @@ export function BreathingOverlay({ isOpen, onClose }: BreathingOverlayProps) {
                 key={phase}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-2xl font-light text-stone-700 tracking-tight"
+                className="text-2xl font-light text-foreground tracking-tight"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
                 {phase.includes('Hold') ? 'Hold' : `Breathe ${phase.toLowerCase()}`}
@@ -115,14 +119,16 @@ export function BreathingOverlay({ isOpen, onClose }: BreathingOverlayProps) {
             {['In', 'Hold (Full)', 'Out', 'Hold (Empty)'].map((p, idx) => (
               <div 
                 key={p} 
-                className={`w-2 h-2 rounded-full transition-all duration-500 ${
-                  phase === p ? 'bg-amber-400 scale-125' : 'bg-stone-300'
-                }`}
+                className="w-2 h-2 rounded-full transition-all duration-500"
+                style={{
+                  backgroundColor: phase === p ? 'var(--primary)' : 'var(--muted)',
+                  transform: phase === p ? 'scale(1.25)' : 'scale(1)'
+                }}
               />
             ))}
           </div>
 
-          <div className="mt-24 text-stone-400 text-[10px] uppercase tracking-widest">
+          <div className="mt-24 text-muted-foreground text-[10px] uppercase tracking-widest">
             Box Breathing · 4-4-4-4
           </div>
         </motion.div>

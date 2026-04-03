@@ -68,7 +68,7 @@ function InnerStateChart({ entries }: { entries: JournalEntry[] }) {
   ];
 
   return (
-    <div className="p-4 rounded-xl border border-stone-200/60" style={{ backgroundColor: 'rgba(253,252,248,0.7)' }}>
+    <div className="p-4 rounded-xl border border-border" style={{ backgroundColor: 'var(--card)' }}>
       <h3 className="text-sm font-medium mb-4 text-stone-600">Mind state this week</h3>
       <div className="flex gap-2 items-stretch">
         {states.map(({ key, label, glyph, gradient, numColor, labelColor, glyphColor, border }) => {
@@ -80,8 +80,8 @@ function InnerStateChart({ entries }: { entries: JournalEntry[] }) {
               key={key}
               className="flex-1 relative flex flex-col items-center justify-center py-5 rounded-xl overflow-hidden transition-transform duration-200 hover:scale-[1.02]"
               style={{
-                background: isActive ? gradient : 'rgba(0,0,0,0.03)',
-                border: isActive ? border : '1px solid rgba(0,0,0,0.06)',
+                background: isActive ? gradient : 'var(--muted)',
+                border: isActive ? border : '1px solid var(--border)',
               }}
             >
               {/* Decorative glyph — large, faded, bottom-right */}
@@ -208,7 +208,7 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
   if (entries.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8 min-h-[70vh] flex items-center justify-center">
-        <div className="p-10 rounded-2xl border border-[rgba(0,0,0,0.04)] bg-white/60 shadow-sm text-center max-w-md w-full">
+        <div className="p-10 rounded-2xl border border-border bg-card/60 shadow-sm text-center max-w-md w-full">
           <div className="w-12 h-12 rounded-full border border-stone-100 bg-stone-50 flex items-center justify-center mx-auto mb-5">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-stone-400">
               <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.3 1.5 1.5 2.5" />
@@ -269,7 +269,7 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-[1fr,360px] gap-6">
         
-        <div className="p-6 rounded-xl border border-[rgba(0,0,0,0.06)] bg-[rgba(253,252,248,0.7)]">
+        <div className="p-6 rounded-xl border border-border" style={{ backgroundColor: 'var(--card)' }}>
           <h3 className="text-sm font-medium mb-6 text-stone-600">Language fingerprint</h3>
           
           <div className="space-y-6">
@@ -309,7 +309,7 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="p-6 rounded-xl border border-[rgba(0,0,0,0.06)] bg-[rgba(253,252,248,0.7)]">
+          <div className="p-6 rounded-xl border border-border" style={{ backgroundColor: 'var(--card)' }}>
             <h3 className="text-sm font-medium mb-4 text-stone-600">Recurring words</h3>
             <div className="flex flex-wrap gap-2 pt-1">
               {recurringWords.length > 0 ? recurringWords.map((w: { word: string; count: number }, i: number) => {
@@ -317,9 +317,9 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
                 const isSecond = i === 1;
                 const baseClass = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border";
                 let styleClass = "bg-white border-stone-200 text-stone-600";
-                if (isTop) styleClass = "bg-indigo-50 border-indigo-100 text-indigo-700";
-                else if (isSecond) styleClass = "bg-emerald-50 border-emerald-100 text-emerald-700";
-                else styleClass = "bg-[#FCFBF8] border-[rgba(0,0,0,0.06)] text-[#787068]";
+                if (isTop) styleClass = "bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400";
+                else if (isSecond) styleClass = "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400";
+                else styleClass = "bg-[var(--bg-main)] border-border text-[var(--text-muted)]";
                 
                 return (
                   <span key={w.word} className={`${baseClass} ${styleClass}`}>
@@ -337,7 +337,7 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
 
       </div>
 
-      <div className="p-6 rounded-xl border border-[rgba(0,0,0,0.06)] bg-[rgba(253,252,248,0.7)] mt-2">
+      <div className="p-6 rounded-xl border border-border mt-2" style={{ backgroundColor: 'var(--card)' }}>
         <h3 className="text-sm font-medium mb-6 text-stone-700">Subtle reflections <span className="text-stone-400 font-normal">· from your entries</span></h3>
         
         {isLoadingAI && (!reflections || reflections.length === 0) ? (
@@ -367,9 +367,9 @@ export function Insights({ entries, sendPrompt }: InsightsProps) {
       </div>
 
       {threadQuestion && (
-        <div className="px-6 py-6 pb-8 rounded-xl border border-[rgba(0,0,0,0.06)] bg-[rgba(253,252,248,0.7)] mt-2 relative overflow-hidden">
+        <div className="px-6 py-6 pb-8 rounded-xl border border-border mt-2 relative overflow-hidden" style={{ backgroundColor: 'var(--card)' }}>
           <div className="absolute top-0 right-0 p-4">
-            <span className="px-3 py-1 bg-[#F5F8E4] text-[#718A3A] text-[10px] uppercase font-bold tracking-wider rounded-full border border-[rgba(0,0,0,0.06)]">bridges to action</span>
+            <span className="px-3 py-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] uppercase font-bold tracking-wider rounded-full border border-border">bridges to action</span>
           </div>
           
           <h3 className="text-sm font-medium mb-6 text-stone-600">One thread to pull</h3>
