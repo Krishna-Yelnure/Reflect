@@ -18,12 +18,16 @@ import {
   isSameMonth,
   getWeek,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Edit, X, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit, X, BookOpen, Image } from 'lucide-react';
 import type { JournalEntry, Era } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 import { erasStorage } from '@/app/utils/eras';
 import { getSmartPrompt } from '@/app/utils/prompts';
 import { getGitaDailyPrompt } from '@/app/utils/prompts-v2';
+import { PhotoStrip } from '@/app/components/ui/PhotoStrip';
+import { PhotoLightbox } from '@/app/components/ui/PhotoLightbox';
+import { db } from '@/app/db';
+import { EmptyIllustration } from '@/app/components/ui/EmptyIllustration';
 
 type ReflectionEntryType = 'weekly' | 'monthly' | 'yearly';
 
@@ -176,6 +180,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
   const handleNextYear = () => setYear(y => y + 1);
   const handleWriteToday = () => onSelectDate(format(new Date(), 'yyyy-MM-dd'));
 
+  // A14-followup: lightbox state for DayView photo taps
+  const [dayViewLightboxId, setDayViewLightboxId] = useState<string | null>(null);
+
 
   useEffect(() => {
     setEras(erasStorage.getAll());
@@ -276,6 +283,10 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: mi * 0.03 }}
               className="rounded-2xl p-4 flex flex-col cursor-pointer group transition-[transform,colors] duration-200"
+            whileHover={{ scale: 1.025 }}
+            // A17: spring hover on heatmap month cards
+            // @ts-expect-error framer-motion whileHover transition
+            whileHoverTransition={{ type: 'spring', stiffness: 400, damping: 30 }}
               style={{
                 backgroundColor: 'var(--card)',
                 border: isCurrent ? '1.5px solid var(--primary)' : '1px solid var(--border-medium)',
@@ -1054,8 +1065,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
 
     return (
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 360, damping: 30 }}
         className="max-w-2xl space-y-6"
       >
         {/* Date heading */}
@@ -1159,6 +1171,49 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           })}
         </div>
 
+        {/* Photos — A14-followup Problem B: words first, photos below */}
+        {entry.mediaIds && entry.mediaIds.length > 0 && (
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <Image size={10} />
+              Photos
+            </p>
+            <PhotoStrip
+              mediaIds={entry.mediaIds}
+              onLightbox={id => setDayViewLightboxId(id)}
+            />
+          </div>
+        )}
+
+        {/* Album links — show name + photo count, no thumbnail strip */}
+        {entry.albumIds && entry.albumIds.length > 0 && (() => {
+          const linkedAlbums = db.albums.getForEntry(entry.albumIds!);
+          if (linkedAlbums.length === 0) return null;
+          return (
+            <div className="space-y-1.5">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                <Image size={10} />
+                Albums
+              </p>
+              {linkedAlbums.map(album => (
+                <div
+                  key={album.id}
+                  className="flex items-center gap-2 text-sm"
+                  style={{ color: '#8a7f72' }}
+                >
+                  <span>📷</span>
+                  <span>{album.name}</span>
+                  {album.mediaIds.length > 0 && (
+                    <span className="text-xs" style={{ color: '#b8b0a4' }}>
+                      — {album.mediaIds.length} {album.mediaIds.length === 1 ? 'photo' : 'photos'}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
         <div className="pt-5 border-t border-stone-200/60">
           <Button
             variant="outline"
@@ -1170,6 +1225,15 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             Edit this entry
           </Button>
         </div>
+
+        {/* Lightbox — rendered at DayView level to allow full-screen overlay */}
+        {dayViewLightboxId && (
+          <PhotoLightbox
+            mediaIds={entry.mediaIds ?? []}
+            initialId={dayViewLightboxId}
+            onClose={() => setDayViewLightboxId(null)}
+          />
+        )}
       </motion.div>
     );
   };

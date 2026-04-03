@@ -13,34 +13,101 @@ interface InsightsProps {
   sendPrompt?: (question: string) => void;
 }
 
-// ── Inner State Chart (Existing) ──────────────────────────────────────────────
+// ── Inner State Chart ─────────────────────────────────────────────────────────
+//
+// Color philosophy:
+//   Clear   → sky blue-teal: open, spacious, calm — like a clear sky
+//   Restless → warm amber-orange: buzzing, kinetic, unsettled energy
+//   Heavy   → deep muted indigo-slate: dense, weighted, pulled inward
+//
 function InnerStateChart({ entries }: { entries: JournalEntry[] }) {
   const dist = useMemo(() => getInnerStateDistribution(entries), [entries]);
 
   if (dist.total < 1) return null;
 
-  const bars: { key: 'clear' | 'restless' | 'heavy'; label: string; colour: string; bg: string }[] = [
-    { key: 'clear',    label: 'Clear',    colour: 'bg-stone-300', bg: 'bg-stone-50' },
-    { key: 'restless', label: 'Restless', colour: 'bg-amber-300',   bg: 'bg-amber-50'   },
-    { key: 'heavy',    label: 'Heavy',    colour: 'bg-stone-300',   bg: 'bg-stone-100'  },
+  const states: {
+    key: 'clear' | 'restless' | 'heavy';
+    label: string;
+    glyph: string;            // tiny symbolic character — gives instant meaning
+    gradient: string;         // CSS gradient for the card background
+    numColor: string;         // large count color
+    labelColor: string;       // label text color
+    glyphColor: string;       // glyph opacity color
+    border: string;           // card border
+  }[] = [
+    {
+      key: 'clear',
+      label: 'Clear',
+      glyph: '◎',
+      gradient: 'linear-gradient(135deg, #E8F4F0 0%, #D4EBE6 100%)',
+      numColor: '#1D6B58',
+      labelColor: '#2E8B72',
+      glyphColor: 'rgba(29,107,88,0.18)',
+      border: '1px solid rgba(29,107,88,0.14)',
+    },
+    {
+      key: 'restless',
+      label: 'Restless',
+      glyph: '~',
+      gradient: 'linear-gradient(135deg, #FEF3E2 0%, #FDDEA8 100%)',
+      numColor: '#92400E',
+      labelColor: '#B45309',
+      glyphColor: 'rgba(146,64,14,0.18)',
+      border: '1px solid rgba(146,64,14,0.14)',
+    },
+    {
+      key: 'heavy',
+      label: 'Heavy',
+      glyph: '▾',
+      gradient: 'linear-gradient(135deg, #E5E4EF 0%, #CCCBDF 100%)',
+      numColor: '#3730A3',
+      labelColor: '#4338CA',
+      glyphColor: 'rgba(55,48,163,0.18)',
+      border: '1px solid rgba(55,48,163,0.14)',
+    },
   ];
 
   return (
     <div className="p-4 rounded-xl border border-stone-200/60" style={{ backgroundColor: 'rgba(253,252,248,0.7)' }}>
       <h3 className="text-sm font-medium mb-4 text-stone-600">Mind state this week</h3>
-      <div className="flex gap-2 items-start justify-between">
-        {bars.map(({ key, label }) => {
+      <div className="flex gap-2 items-stretch">
+        {states.map(({ key, label, glyph, gradient, numColor, labelColor, glyphColor, border }) => {
           const count = dist[key] || 0;
-          const bgClass = key === 'clear' ? 'bg-[#3C3C38]' : key === 'restless' ? 'bg-indigo-50 border-indigo-200' : 'bg-[#3C3C38]';
-          const textClass = key === 'clear' ? 'text-white' : key === 'restless' ? 'text-indigo-600' : 'text-white';
-          const labelClass = key === 'clear' ? 'text-stone-300' : key === 'restless' ? 'text-indigo-400' : 'text-stone-300';
-          
+          const isActive = count > 0;
+
           return (
-            <div key={key} className={`flex-1 flex flex-col items-center justify-center py-4 rounded-lg border border-transparent ${bgClass}`}>
-              <span className={`text-2xl font-light ${textClass}`}>
+            <div
+              key={key}
+              className="flex-1 relative flex flex-col items-center justify-center py-5 rounded-xl overflow-hidden transition-transform duration-200 hover:scale-[1.02]"
+              style={{
+                background: isActive ? gradient : 'rgba(0,0,0,0.03)',
+                border: isActive ? border : '1px solid rgba(0,0,0,0.06)',
+              }}
+            >
+              {/* Decorative glyph — large, faded, bottom-right */}
+              <span
+                className="absolute bottom-1 right-2 text-4xl font-black leading-none pointer-events-none select-none"
+                style={{ color: isActive ? glyphColor : 'rgba(0,0,0,0.05)', fontSize: '2.5rem' }}
+                aria-hidden="true"
+              >
+                {glyph}
+              </span>
+
+              {/* Count */}
+              <span
+                className="text-3xl font-semibold tabular-nums leading-none"
+                style={{ color: isActive ? numColor : '#b0a898' }}
+              >
                 {count}
               </span>
-              <span className={`text-xs mt-1 ${labelClass}`}>{label}</span>
+
+              {/* Label */}
+              <span
+                className="text-[11px] font-medium mt-1.5 tracking-wide uppercase"
+                style={{ color: isActive ? labelColor : '#b0a898' }}
+              >
+                {label}
+              </span>
             </div>
           );
         })}

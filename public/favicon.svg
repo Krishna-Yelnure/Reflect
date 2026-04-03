@@ -1,22 +1,53 @@
-<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <style>
-    path {
-      stroke: #826651; /* Warm dark brown for Light mode tabs */
+    :root {
+      /* --- THEME 1: THE LIBRARY --- */
+      --bg-color: #312922; 
+      --fg-color: #eaddcb; 
+      --bg-grad-url: url(#libraryGrad);
     }
     @media (prefers-color-scheme: dark) {
-      path {
-        stroke: #FAF7F2; /* Soft white/paper color for Dark mode tabs */
+      /* --- THEME 2: THE VAULT --- */
+      :root {
+        --bg-color: #121c2e; 
+        --fg-color: #cbb47c; 
+        --bg-grad-url: url(#vaultGrad);
       }
     }
+    .icon-bg { fill: var(--bg-grad-url); }
+    .icon-letter { 
+      font-family: "Georgia", "Times New Roman", serif; 
+      font-size: 150px; 
+      fill: var(--fg-color); 
+    }
+    .keyhole-shape { fill: var(--bg-color); }
+    .book-stroke { stroke: var(--fg-color); }
   </style>
-  <path d="
-    M 256 160
-    C 240 120, 160 120, 96 120
-    V 340
-    C 160 340, 240 340, 256 400
-    C 272 340, 352 340, 416 340
-    V 120
-    C 352 120, 272 120, 256 160
-    V 400
-  " stroke-width="48" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <defs>
+    <linearGradient id="libraryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#443b33" />
+      <stop offset="100%" stop-color="#312922" />
+    </linearGradient>
+    <linearGradient id="vaultGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f324d" />
+      <stop offset="100%" stop-color="#121c2e" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base App Icon Shape -->
+  <rect width="200" height="200" rx="45" class="icon-bg" />
+
+  <!-- The Serif 'R' -->
+  <text x="100" y="145" text-anchor="middle" class="icon-letter">R</text>
+
+  <!-- The Keyhole Cutout (Simulated by matching background color) -->
+  <circle cx="100" cy="72.5" r="17.5" class="keyhole-shape" />
+  <polygon points="86.5,75 113.5,75 122.5,115 77.5,115" class="keyhole-shape" />
+
+  <!-- The Tiny Book Icon -->
+  <g transform="translate(90, 93) scale(0.8333)" class="book-stroke" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+  </g>
 </svg>

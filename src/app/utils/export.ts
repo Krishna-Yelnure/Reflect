@@ -2,6 +2,7 @@ import type { JournalEntry, ReflectionAnchor, Habit, HabitEngagement, MemoryThre
 import { format, parseISO } from 'date-fns';
 
 import { db } from '@/app/db';
+import { mediaDb } from '@/app/utils/mediaDb';
 
 export function exportToJSON(): void {
   const jsonString = db.backup.exportAll();
@@ -17,6 +18,48 @@ export function exportToJSON(): void {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Export journal + all photo blobs as a single JSON file.
+ * Returns an estimated file size string so the caller can show a warning before triggering.
+ */
+export async function exportWithMedia(): Promise<void> {
+  const jsonString = db.backup.exportAll();
+  const base64Map  = await mediaDb.exportAllAsBase64();
+
+  const fullSnapshot = {
+    ...JSON.parse(jsonString),
+    media: base64Map,   // { [mediaId]: 'data:image/jpeg;base64,...' }
+  };
+
+  const blob = new Blob([JSON.stringify(fullSnapshot, null, 2)], {
+    type: 'application/json',
+  });
+
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href  = url;
+  link.download = `journal-full-export-${format(new Date(), 'yyyy-MM-dd')}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Estimate the size of an exportWithMedia export before running it.
+ * Returns a human-readable string like "~14 MB".
+ */
+export async function estimateMediaExportSize(): Promise<string> {
+  const base64Map   = await mediaDb.exportAllAsBase64();
+  const totalBase64 = Object.values(base64Map).reduce((sum, s) => sum + s.length, 0);
+  // base64 inflates by ~33%; raw size ≈ totalBase64 * 0.75
+  const estimatedBytes = totalBase64 * 0.75;
+  if (estimatedBytes < 1024 * 1024) {
+    return `~${Math.round(estimatedBytes / 1024)} KB`;
+  }
+  return `~${(estimatedBytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function exportToMarkdown(): void {
@@ -135,6 +178,11 @@ export function exportToMarkdown(): void {
       markdown += `**Free write**\n${entry.freeWrite}\n\n`;
     }
 
+    // A14 — note photo count in markdown (blobs can't be inlined in .md)
+    if (entry.mediaIds && entry.mediaIds.length > 0) {
+      markdown += `*[${entry.mediaIds.length} photo${entry.mediaIds.length > 1 ? 's' : ''} attached — use JSON export to include media]*\n\n`;
+    }
+
     markdown += `---\n\n`;
   });
 
@@ -163,6 +211,48 @@ export function importFromJSON(file: File): Promise<{ entriesAdded: number; eras
       }
     };
     
+    reader.onerror = () => reject(new Error('Error reading file'));
+    reader.readAsText(file);
+  });
+}
+
+/**
+ * Import a full JSON snapshot that includes media blobs (produced by exportWithMedia).
+ * Restores both text data (via db.backup.mergeAll) and photos (via mediaDb.importFromBase64).
+ */
+export async function importWithMedia(file: File): Promise<{
+  entriesAdded: number;
+  erasAdded: number;
+  habitsAdded: number;
+  anchorsAdded: number;
+  questionsAdded: number;
+  threadsAdded: number;
+  photosRestored: number;
+}> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const jsonString = e.target?.result as string;
+        const snapshot   = JSON.parse(jsonString);
+
+        // Restore text data
+        const result = db.backup.mergeAll(JSON.stringify(snapshot));
+
+        // Restore photo blobs if present
+        let photosRestored = 0;
+        if (snapshot.media && typeof snapshot.media === 'object') {
+          await mediaDb.importFromBase64(snapshot.media);
+          photosRestored = Object.keys(snapshot.media).length;
+        }
+
+        resolve({ ...result, photosRestored });
+      } catch (error) {
+        reject(error);
+      }
+    };
+
     reader.onerror = () => reject(new Error('Error reading file'));
     reader.readAsText(file);
   });

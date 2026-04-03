@@ -11,6 +11,8 @@ import { preferences } from '@/app/utils/preferences';
 import { questionsStorage } from '@/app/utils/questions';
 import { Button } from '@/app/components/ui/button';
 import { Textarea } from '@/app/components/ui/textarea';
+import { RichTextEditor } from '@/app/components/ui/RichTextEditor';
+import { MarkdownRenderer } from '@/app/components/ui/MarkdownRenderer';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/select';
 import { Label } from '@/app/components/ui/label';
 import { TagManager } from '@/app/components/TagManager';
@@ -28,6 +30,12 @@ import {
 } from '@/app/components/ui/alert-dialog';
 import { BreathingOverlay } from '@/app/components/BreathingOverlay';
 import { StartAssist, type AEEMetrics } from '@/app/components/StartAssist';
+import { PhotoUploader } from '@/app/components/ui/PhotoUploader';
+import { PhotoStrip } from '@/app/components/ui/PhotoStrip';
+import { PhotoLightbox } from '@/app/components/ui/PhotoLightbox';
+import { AlbumPicker } from '@/app/components/ui/AlbumPicker';
+import { db } from '@/app/db';
+import { mediaDb } from '@/app/utils/mediaDb';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -178,8 +186,19 @@ function getClosingLine(): string {
 
 /** Count words in a string — used for quiet word count in Deep Write */
 function countWords(text: string): number {
-  return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+  if (text.trim() === '') return 0;
+  // Strip Markdown syntax before counting — avoids counting **, __, ~~, >, - as words
+  const clean = text
+    .replace(/\*\*|__/g, '')        // bold markers
+    .replace(/[*_]/g, '')           // italic markers
+    .replace(/~~/g, '')             // strikethrough markers
+    .replace(/^[>\-*]\s/gm, '')     // blockquote + list markers at line start
+    .replace(/^\d+\.\s/gm, '')      // ordered list markers
+    .replace(/\s+/g, ' ')           // normalise whitespace
+    .trim();
+  return clean === '' ? 0 : clean.split(/\s+/).length;
 }
+
 
 /**
  * Build a continuity prompt from yesterday's entry.
@@ -316,25 +335,27 @@ function ModeSwitcher({
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-xl w-fit" style={{ backgroundColor: '#ddd8cf' }}>
+    <div className="flex items-center gap-1 p-1 rounded-xl w-fit relative" style={{ backgroundColor: '#ddd8cf' }}>
       {modes.map(m => (
         <button
           key={m.id}
           onClick={() => onChange(m.id)}
-          className={`
-            flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
-            ${mode === m.id
-              ? 'shadow-sm'
-              : 'hover:text-stone-700'
-            }
-          `}
-          style={{
-            backgroundColor: mode === m.id ? '#EDE8DF' : 'transparent',
-            color: mode === m.id ? '#3C3C38' : '#8a7f72',
-          }}
+          className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium z-10"
+          style={{ color: mode === m.id ? '#3C3C38' : '#8a7f72' }}
         >
-          {m.icon}
-          {m.label}
+          {/* A17: spring-animated active pill (layoutId) */}
+          {mode === m.id && (
+            <motion.div
+              layoutId="mode-pill"
+              className="absolute inset-0 rounded-lg shadow-sm"
+              style={{ backgroundColor: 'var(--bg-elevated, #EDE8DF)' }}
+              transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-1.5">
+            {m.icon}
+            {m.label}
+          </span>
         </button>
       ))}
     </div>
@@ -517,6 +538,8 @@ export function JournalEntry({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showBreathing, setShowBreathing] = useState(false);
   const [showStartAssist, setShowStartAssist] = useState(false);
+  const [lightboxId, setLightboxId] = useState<string | null>(null);
+
 
   const prefs = preferences.get();
   const coreValues = preferences.getAnchors().filter((a: ReflectionAnchor) => a.type === 'value' || a.type === 'intention');
@@ -614,6 +637,14 @@ export function JournalEntry({
     setEntry((prev: Partial<JournalEntryType>) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
   }, []);
+
+  // A14 — delete photo: remove from IndexedDB + metadata + entry.mediaIds
+  const handleDeletePhoto = useCallback(async (mediaId: string) => {
+    db.media.delete(mediaId);
+    await mediaDb.deleteBlob(mediaId);
+    const current = entry.mediaIds ?? [];
+    updateField('mediaIds', current.filter(id => id !== mediaId));
+  }, [entry.mediaIds, updateField]);
 
   const setMood = (mood: JournalEntryType['mood']) => {
     setEntry((prev: Partial<JournalEntryType>) => ({ ...prev, mood }));
@@ -722,8 +753,8 @@ export function JournalEntry({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-40 flex flex-col"
-          style={{ backgroundColor: '#EDE8DF' }}
+          className={`fixed inset-0 z-40 flex flex-col relative overflow-hidden${isSaving ? ' save-shimmer-bar' : ''}`}
+          style={{ backgroundColor: 'var(--bg-surface, #EDE8DF)' }}
         >
           {/* Deep mode toolbar */}
           <div className="flex items-center justify-between px-8 py-4 border-b border-stone-200/60">
@@ -765,9 +796,9 @@ export function JournalEntry({
             </div>
           </div>
 
-          {/* Deep mode canvas — typewriter scroll via scroll-pt + overflow-y-auto */}
+          {/* Deep mode canvas — typewriter scroll. A17: writing-canvas-lined adds faint ruled lines at line-height interval */}
           <div
-            className="flex-1 overflow-y-auto"
+            className="flex-1 overflow-y-auto writing-canvas-lined"
             style={{ scrollPaddingTop: '40vh' }}
           >
             <div className="px-8 pt-[20vh] pb-[50vh] max-w-3xl mx-auto w-full">
@@ -779,24 +810,38 @@ export function JournalEntry({
                 className="w-full h2 mb-8 bg-transparent border-none outline-none parchment-input"
                 style={{ fontFamily: 'var(--font-display)', caretColor: '#B8860B' }}
               />
-              <textarea
+              <RichTextEditor
                 value={entry.freeWrite || ''}
-                onChange={e => updateField('freeWrite', e.target.value)}
+                onChange={val => updateField('freeWrite', val)}
                 placeholder="Write freely. No prompts, no fields. Just you and the page."
-                className="w-full deep-write-textarea p"
-                style={{ minHeight: '60vh', fontFamily: 'var(--font-body)' }}
+                showToolbar={false}
+                showShortcutHint
                 autoFocus
-                onKeyDown={e => {
-                  // On Enter, scroll caret into vertical centre
-                  if (e.key === 'Enter') {
-                    requestAnimationFrame(() => {
-                      const el = e.target as HTMLTextAreaElement;
-                      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    });
-                  }
-                }}
+                minHeight="60vh"
+                style={{ fontFamily: 'var(--font-body)' }}
+                className="deep-write-rte"
               />
             </div>
+          </div>
+
+          {/* A14 — Photos below canvas */}
+          <div className="px-8 pb-8 max-w-3xl mx-auto w-full space-y-3">
+            {(entry.mediaIds?.length ?? 0) > 0 && (
+              <PhotoStrip
+                mediaIds={entry.mediaIds!}
+                onDelete={handleDeletePhoto}
+                onLightbox={setLightboxId}
+              />
+            )}
+            <PhotoUploader
+              entryId={entry.id || selectedDate}
+              existingMediaIds={entry.mediaIds ?? []}
+              onChange={(ids) => updateField('mediaIds', ids)}
+            />
+            <AlbumPicker
+              linkedAlbumIds={entry.albumIds ?? []}
+              onChange={(ids) => updateField('albumIds', ids)}
+            />
           </div>
 
           {/* Word count — quiet, bottom-right, fades in once writing starts */}
@@ -819,6 +864,13 @@ export function JournalEntry({
             )}
           </AnimatePresence>
         </motion.div>
+      {lightboxId && (
+        <PhotoLightbox
+          mediaIds={entry.mediaIds ?? []}
+          initialId={lightboxId}
+          onClose={() => setLightboxId(null)}
+        />
+      )}
       </>
     );
   }
@@ -864,9 +916,10 @@ export function JournalEntry({
           </div>
         </div>
 
+        {/* A17: prose-entry applies Lora + text-wrap:pretty + optical-sizing for read mode */}
         <article className="prose prose-stone max-w-none">
           <header className="mb-10 text-center">
-            <h1 className="text-3xl font-light mb-2" style={{ fontFamily: 'var(--font-display)', color: '#1C1C18' }}>
+            <h1 className="text-3xl font-light mb-2" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               {formatEntryDate(selectedDate)}
             </h1>
             {reflectionMeta && (
@@ -875,69 +928,79 @@ export function JournalEntry({
               </span>
             )}
             {entry.whatMatters && !reflectionMeta && (
-              <p className="text-xl italic text-stone-600 mt-4" style={{ fontFamily: 'var(--font-display)' }}>
+              <p className="text-xl italic mt-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>
                 {entry.whatMatters}
               </p>
             )}
           </header>
 
-          <div className="space-y-8 text-lg leading-relaxed text-stone-800" style={{ fontFamily: 'var(--font-body)' }}>
+          <div className="prose-entry space-y-8 text-lg leading-relaxed" style={{ color: 'var(--text-body)' }}>
             {entry.freeWrite ? (
-              <div className="whitespace-pre-wrap">{entry.freeWrite}</div>
+              <MarkdownRenderer content={entry.freeWrite} />
             ) : (
               // Structured content display
               <>
                 {entry.whatHappened && (
                   <section>
                     {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[0].label}</h3>}
-                    <div className="whitespace-pre-wrap">{entry.whatHappened}</div>
+                    <MarkdownRenderer content={entry.whatHappened} />
                   </section>
                 )}
                 {entry.feelings && (
                   <section>
-                    {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3 mb-3">{reflectionMeta.fields[1].label}</h3>}
-                    <div className="whitespace-pre-wrap">{entry.feelings}</div>
+                    {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[1].label}</h3>}
+                    <MarkdownRenderer content={entry.feelings} />
                   </section>
                 )}
                 {reflectionMeta && entry.whatMatters && (
                   <section>
                     <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[2].label}</h3>
-                    <div className="whitespace-pre-wrap">{entry.whatMatters}</div>
+                    <MarkdownRenderer content={entry.whatMatters} />
                   </section>
                 )}
                 {entry.insight && (
                   <section>
                     {reflectionMeta && <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">{reflectionMeta.fields[3].label}</h3>}
-                    <div className="whitespace-pre-wrap">{entry.insight}</div>
+                    <MarkdownRenderer content={entry.insight} />
                   </section>
                 )}
                 {entry.whatIReleased && (
                   <section>
                     <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">Released this year</h3>
-                    <div className="whitespace-pre-wrap italic opacity-90">{entry.whatIReleased}</div>
+                    <div className="italic opacity-90"><MarkdownRenderer content={entry.whatIReleased} /></div>
                   </section>
                 )}
                 {entry.intentionAction && (
                   <section className="pt-6 border-t border-stone-200">
                     <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">Next Step (Action)</h3>
-                    <div className="whitespace-pre-wrap italic opacity-90">{entry.intentionAction}</div>
+                    <div className="italic opacity-90"><MarkdownRenderer content={entry.intentionAction} /></div>
                   </section>
                 )}
                 {entry.intentionRelease && (
                   <section className="pt-6 border-t border-stone-200">
                     <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">To Release</h3>
-                    <div className="whitespace-pre-wrap italic opacity-90">{entry.intentionRelease}</div>
+                    <div className="italic opacity-90"><MarkdownRenderer content={entry.intentionRelease} /></div>
                   </section>
                 )}
                 {entry.intention && (
                   <section className="pt-6 border-t border-stone-200">
                     <h3 className="text-sm font-medium text-stone-500 uppercase tracking-widest mb-3">Intention</h3>
-                    <div className="whitespace-pre-wrap italic opacity-90">{entry.intention}</div>
+                    <div className="italic opacity-90"><MarkdownRenderer content={entry.intention} /></div>
                   </section>
                 )}
               </>
             )}
           </div>
+
+          {/* A14 — Photos in read mode (no delete, lightbox only) */}
+          {entry.mediaIds && entry.mediaIds.length > 0 && (
+            <div className="mt-10">
+              <PhotoStrip
+                mediaIds={entry.mediaIds}
+                onLightbox={setLightboxId}
+              />
+            </div>
+          )}
 
           <footer className="mt-16 pt-8 border-t border-stone-200/60 flex items-center justify-between text-sm text-stone-500">
             {entry.tags && entry.tags.length > 0 && (
@@ -949,6 +1012,13 @@ export function JournalEntry({
             )}
           </footer>
         </article>
+      {lightboxId && (
+        <PhotoLightbox
+          mediaIds={entry.mediaIds ?? []}
+          initialId={lightboxId}
+          onClose={() => setLightboxId(null)}
+        />
+      )}
       </motion.div>
     );
   }
@@ -1025,24 +1095,19 @@ export function JournalEntry({
 
           {/* One line */}
           <div className="mb-8">
-            <Textarea
+            <RichTextEditor
               value={entry.whatHappened || ''}
-              onChange={e => updateField('whatHappened', e.target.value)}
+              onChange={val => updateField('whatHappened', val)}
               placeholder="One thing from today…"
-              className="min-h-[80px] resize-none text-base transition-colors placeholder:text-stone-400"
-              style={{
-                border: 'none',
-                borderBottom: '1px solid #c8c2b6',
-                borderRadius: 0,
-                background: 'transparent',
-                outline: 'none',
-                boxShadow: 'none',
-                caretColor: '#f59e0b',
-                color: '#1C1C18',
-              }}
-              onFocus={e => { e.currentTarget.style.borderBottomColor = '#a89e8e'; }}
-              onBlur={e => { e.currentTarget.style.borderBottomColor = '#c8c2b6'; }}
+              showToolbar={false}
+              showShortcutHint
+              toolbarVariant="minimal"
               autoFocus
+              minHeight="80px"
+              style={{
+                borderBottom: '1px solid #c8c2b6',
+                paddingBottom: '8px',
+              }}
             />
           </div>
 
@@ -1419,15 +1484,14 @@ export function JournalEntry({
                     <Label htmlFor={key} className="text-sm mb-2 block font-medium" style={{ color: '#5a5550' }}>
                       {label}
                     </Label>
-                    <Textarea
+                    <RichTextEditor
                       id={key}
                       value={(entry[key as keyof JournalEntryType] as string) || ''}
-                      onChange={e => updateField(key as keyof JournalEntryType, e.target.value)}
+                      onChange={val => updateField(key as keyof JournalEntryType, val)}
                       placeholder={placeholder}
-                      className={`${minHeights[key] ?? 'min-h-[100px]'} w-full parchment-input`}
-                      style={{
-                        borderRadius: 8,
-                      }}
+                      toolbarVariant="full"
+                      minHeight={minHeights[key] === 'min-h-[120px]' ? '120px' : minHeights[key] === 'min-h-[80px]' ? '80px' : '100px'}
+                      className="parchment-input rounded-lg"
                     />
                   </motion.div>
                 );
@@ -1459,15 +1523,14 @@ export function JournalEntry({
                   <p className="text-xs text-stone-400 mb-3">
                     Not a goal. Not a commitment. Just a direction.
                   </p>
-                  <Textarea
+                  <RichTextEditor
                     id="intention"
                     value={(entry.intention as string) || ''}
-                    onChange={e => updateField('intention', e.target.value)}
+                    onChange={val => updateField('intention', val)}
                     placeholder={meta.placeholder}
-                    className="min-h-[80px] w-full parchment-input"
-                    style={{
-                      borderRadius: 8,
-                    }}
+                    toolbarVariant="full"
+                    minHeight="80px"
+                    className="parchment-input rounded-lg"
                   />
                 </>
               );
@@ -1551,6 +1614,31 @@ export function JournalEntry({
           />
         </motion.div>
 
+        {/* A14 — Photos below tags */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.38 }}
+          className="pt-4 space-y-3 mb-8"
+        >
+          {(entry.mediaIds?.length ?? 0) > 0 && (
+            <PhotoStrip
+              mediaIds={entry.mediaIds!}
+              onDelete={handleDeletePhoto}
+              onLightbox={setLightboxId}
+            />
+          )}
+          <PhotoUploader
+            entryId={entry.id || selectedDate}
+            existingMediaIds={entry.mediaIds ?? []}
+            onChange={(ids) => updateField('mediaIds', ids)}
+          />
+          <AlbumPicker
+            linkedAlbumIds={entry.albumIds ?? []}
+            onChange={(ids) => updateField('albumIds', ids)}
+          />
+        </motion.div>
+
         {/* ── Actions ──────────────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -1570,6 +1658,14 @@ export function JournalEntry({
           </Button>
         </motion.div>
       </motion.div>
+
+      {lightboxId && (
+        <PhotoLightbox
+          mediaIds={entry.mediaIds ?? []}
+          initialId={lightboxId}
+          onClose={() => setLightboxId(null)}
+        />
+      )}
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>

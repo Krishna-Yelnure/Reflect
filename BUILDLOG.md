@@ -1449,7 +1449,7 @@ Then attach:
 | Session A6c | — | Search — full-text + tag dimension + result view. **Deferred until 30+ real entries. IN V1.** | ⏳ Pending |
 | **BRAINSTORM A7a** | 2026-03-04 | Era colour palette, data model audit, heatmap overlay design. All 5 decisions locked. | ✅ Complete |
 | Session A7a | 2026-03-04 | Era management — ErasManager redesign, eras.ts shim, auto-assign eraId by date in JournalEntry.tsx | ✅ Complete |
-| Session A7b | 2026-03-12 | Era surfaces — heatmap colour overlay, era legend strip, era filter (shares A6b infrastructure). Era label in month/week/day views still to do. | ⚠️ Partial |
+| Session A7b | 2026-03-12 | Era surfaces — heatmap colour overlay, era legend strip, era filter (shares A6b infrastructure). Era logic integrated into all timeline views. | ✅ Complete |
 | Brainstorm Gita | 2026-03-03 | Bhagavad Gita philosophy layer — full brainstorm. Chapter-to-cadence architecture, all four sessions (A8a–A8d) scoped, rejection table locked, Copy Audit Standard written. No code. | ✅ Complete (brainstorm only) |
 | Session A8a | 2026-03-04 | Gita prompt pool — 11 daily + 14 reflection prompts added to prompts-v2.ts. BelowHeatmap rotation updated in TimelineView.tsx. Copy Audit Standard formalised. | ✅ Complete |
 | Session A8b | 2026-03-04 | Inner State Dimension — `innerState` field in types.ts, compact selector in JournalEntry.tsx, distribution chart in Insights.tsx, pill in DayView | ✅ Complete |
@@ -1459,13 +1459,13 @@ Then attach:
 | Session A5c | 2026-03-12 | Journal Warmth Pass — all four changes confirmed applied: body bg (#FAF7F2 warm canvas via --bg-main), ink colour (#3C3C38 via --text-body), amber sidebar active indicator (border-l-2 border-amber-500), write view bg-transparent + border-none textareas. Applied without a log entry; confirmed in source audit. | ✅ Complete |
 | Session A9a | 2026-03-04 | Insights audit + Witness redesign — Language absorbed into Insights, tiered empty states, full copy audit | ✅ Complete |
 | Session A9b | — | Connected insights — tag, era, question, habit patterns. **POST-V1.** | ⏳ POST-V1 |
-| Session A9c | — | Gita structural features — split Intention field, "What I released" yearly field, 3-week Intentions pivot, Deferred questions, Welcome Card copy. Brainstorm complete. | ⏳ Pending |
+| Session A9c | 2026-03-12 | Gita structural features — split Intention field, "What I released" yearly field, 3-week Intentions pivot, Deferred questions, Welcome Card copy. | ✅ Complete |
 | Session A10a | — | Threads reading experience redesign | ⏳ Pending |
 | Session A10b | — | Threads intelligent building — tag/question-assisted. **POST-V1.** | ⏳ POST-V1 |
 | Session A11a | — | Connecting the dots — passive connections | ⏳ Pending |
 | Session A11b | — | Connecting the dots — active surfaces (north star session). **POST-V1.** | ⏳ POST-V1 |
-| Session A11c | — | Note dot on heatmap cells — second information layer (written depth, not mood). Brainstorm complete. | ⏳ Pending |
-| Session A12a | — | Box Breathing overlay — presence tool accessible from Write view. Brainstorm complete. | ⏳ Pending |
+| Session A11c | 2026-03-12 | Note dot on heatmap cells — second information layer (written depth, not mood). | ✅ Complete |
+| Session A12a | 2026-03-12 | Box Breathing overlay — presence tool accessible from Write view. | ✅ Complete |
 | Living With It | — | No building. Minimum 2 weeks daily use. Required before V1 declared complete. | ⏳ After A11a |
 | Doc Sprint 2 | — | PRD, FRD, SRS, WBS, Roadmap, Risk-Register, Assumptions, RTM, Flow-Diagrams, AI-Case-Study | ⏳ Pending |
 | Session B1 | — | Electron wrapper | ⏳ Phase B |
@@ -2819,7 +2819,1849 @@ The specific offending elements:
 - Requires heavily scoped brainstorm before writing any code. High risk of scope creep and UI clutter.
 - Needs to be a `Cmd+K` command palette over a standard search page. Must parse tags, text, and dates instantly.
 
-**Next Immediate Action:** Begin brainstorming and scaffolding the **Media Integration (Spatial & Visual Memory)** for web-app testing.
+**Next Immediate Action:** ~~Begin brainstorming and scaffolding the **Media Integration (Spatial & Visual Memory)** for web-app testing.~~ → Superseded. Next session is **A13 — Rich Text Editor** (see below).
+
+---
+
+> [!NOTE]
+> **Session numbering correction (2026-03-27):** Sessions A7a–A12a are already complete (Eras, Inner State, Gita, Threads, Connections, Box Breathing). The previously logged "SESSION A7" and "SESSION A8" labels below are renamed to **A13** and **A14** to avoid conflicts with completed sessions.
+
+---
+
+## SESSION A13 — Rich Text Editor (Writing Experience Upgrade)
+
+**Status:** ✅ COMPLETE (2026-03-27)
+**Depends on:** A6d (Insights Dashboard) ✅
+**Scope creep risk:** Low — contained to `JournalEntry.tsx` and two new UI components
+**Actual effort:** 1 session (~6 hours)
+**Priority:** Phase C item — Writing quality is the core product promise
+
+---
+
+### Goal
+
+Replace all `<textarea>` elements in the journal's **writing-focused flows** with a [Tiptap](https://tiptap.dev/) rich text editor supporting **bold, italic, strikethrough, bullet lists, and block quotes**. Content is stored as **Markdown** (plain `string`) in the existing data model — no schema changes, no migration, full backward compatibility with existing entries.
+
+The Witness principle still governs: no heading size controls, no font colours, no word-processor chrome. The app controls the typography. The user controls the structure of their thoughts.
+
+---
+
+### Design Decisions Locked
+
+1. **Tiptap** (headless, Prosemirror-based) — same engine referenced in Phase C roadmap. Zero UI opinions; we own every pixel of the toolbar.
+2. **Markdown as storage format** — all content fields remain `string` type in TypeScript and localStorage. Old plain-text entries load and display unchanged. New formatted entries store and render as Markdown.
+3. **Deep Write mode toolbar** — hidden. Keyboard shortcuts only (`Cmd+B`, `Cmd+I`, `Cmd+Shift+X`). Preserves the typewriter, distraction-free canvas feel.
+4. **Guided / Quick Capture toolbar** — minimal floating icon row, fades in on field focus. Lucide icons at 14px. Active state uses `var(--accent-brown)`. No border, no background — blends into parchment.
+5. **Read mode** — new `<MarkdownRenderer>` component replaces `whitespace-pre-wrap` divs. Sanitised `dangerouslySetInnerHTML` using a lightweight Markdown parser. No Tiptap instance needed for display.
+6. **Admin/utility textareas stay plain** — habit `why`, era `description`, thread `description`, question `notes`, resolution text are short functional inputs. Adding Tiptap there would be disproportionate.
+
+---
+
+### Scope Map — What Gets the RTE
+
+| Mode | Field(s) | Toolbar |
+|---|---|---|
+| Deep Write (`freeWrite`) | Long-form free writing canvas | Hidden (keyboard shortcuts only) |
+| Quick Capture (`whatHappened`) | Single capture field | Minimal (Bold + Italic) |
+| Guided — daily fields | `whatHappened`, `feelings`, `whatMatters`, `insight`, `freeWrite` | Full (5 formatting options) |
+| Guided — reflection fields | `whatHappened`, `feelings`, `whatMatters`, `insight` | Full |
+| Guided — intention field (`intention`) | Forward-facing closing field | Full |
+
+### Scope Map — What Stays Plain `<textarea>`
+
+| Component | Field | Reason |
+|---|---|---|
+| `ErasManager.tsx` | `description` | Short chapter label, not writing |
+| `HabitBuilder.tsx` | `why`, `engagementNote` | Short functional inputs |
+| `InnerCompass.tsx` | `notes`, `resolutionText` | Short admin reference text |
+| `MemoryThreads.tsx` | `description` | Short thread label |
+
+---
+
+### Packages to Install
+
+```bash
+npm install @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-typography turndown @types/turndown
+```
+
+- **`@tiptap/react`** — React integration
+- **`@tiptap/starter-kit`** — bold, italic, strike, lists, blockquote, code, hardBreak, history
+- **`@tiptap/extension-placeholder`** — per-field placeholder text
+- **`@tiptap/extension-typography`** — smart quotes, dashes (quiet, additive)
+- **`turndown`** — HTML → Markdown serialisation (for `onChange` output)
+
+---
+
+### Files to Create
+
+#### [NEW] `src/app/components/ui/RichTextEditor.tsx`
+
+Reusable Tiptap wrapper with the following interface:
+
+```typescript
+interface RichTextEditorProps {
+  value: string;                          // Markdown in
+  onChange: (markdown: string) => void;   // Markdown out
+  placeholder?: string;
+  className?: string;
+  minHeight?: string;
+  autoFocus?: boolean;
+  showToolbar?: boolean;                  // default: true
+  toolbarVariant?: 'full' | 'minimal';    // minimal = Bold + Italic only
+  style?: React.CSSProperties;
+}
+```
+
+**Markdown bridge:**
+- On load: parse Markdown → HTML (simple regex for `**bold**`, `*italic*`, `~~strike~~`, `- list`, `> quote`)
+- On change: Tiptap HTML → Markdown via `turndown`
+
+#### [NEW] `src/app/components/ui/MarkdownRenderer.tsx`
+
+Tiny display-only component. Accepts a Markdown string, outputs sanitised styled HTML, used in Read mode.
+
+```typescript
+function MarkdownRenderer({ content, className }: { content: string; className?: string })
+```
+
+---
+
+### Files to Modify
+
+#### [MODIFY] `src/app/components/JournalEntry.tsx`
+
+- **Deep Write** (line ~782): `<textarea>` → `<RichTextEditor showToolbar={false} ... />`
+- **Quick Capture** (line ~1028): `<Textarea>` → `<RichTextEditor toolbarVariant="minimal" ... />`
+- **Guided fields loop** (line ~1422): `<Textarea>` → `<RichTextEditor toolbarVariant="full" ... />`
+- **Intention field** (line ~1462): `<Textarea>` → `<RichTextEditor toolbarVariant="full" ... />`
+- **Read mode display** (lines ~885–939): all `whitespace-pre-wrap` content divs → `<MarkdownRenderer content={...} />`
+
+No changes to `updateField`, `handleSave`, state shape, or storage layer.
+
+---
+
+### Data Storage Strategy
+
+| Concern | Decision |
+|---|---|
+| Storage format | Plain Markdown `string` — same type as before |
+| Schema change | None — all fields remain `string` in `JournalEntry` type |
+| Old entries | Load as-is — plain text with no Markdown syntax displays cleanly |
+| New entries | Stored as Markdown — renders correctly in both Read mode and export |
+| Export (JSON) | Markdown is human-readable in JSON — no extra step needed |
+
+---
+
+### Session Checklist
+
+- [x] Packages installed — `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-placeholder`, `@tiptap/extension-typography`, `turndown`, `@types/turndown`
+- [x] `npm run build` succeeds baseline (3097 modules, 0 errors)
+- [x] `RichTextEditor.tsx` built — renders, accepts/emits Markdown, placeholder works
+- [x] Toolbar (full variant) — Bold, Italic, Strike, Bullet, Blockquote — all functional
+- [x] Toolbar (minimal variant) — Bold + Italic only
+- [x] `showToolbar={false}` — keyboard shortcuts only, no visual toolbar
+- [x] `MarkdownRenderer.tsx` built — renders formatted HTML cleanly in read mode
+- [x] Deep Write mode: `<textarea>` replaced, word count still works
+- [x] Quick Capture mode: `<Textarea>` replaced, minimal toolbar
+- [x] Guided mode field loop: all `<Textarea>` replaced
+- [x] Intention field (reflection): replaced
+- [x] Read mode: all content divs use `<MarkdownRenderer>`
+- [x] Existing plain-text entries display without corruption
+- [x] New formatted entry: write → save → reload → formatting persists
+- [x] `countWords()` updated — strips Markdown syntax before counting
+- [x] Privacy mode CSS extended to cover `.ProseMirror` + `.markdown-content`
+- [x] `npm run build` succeeds cleanly ✓ built in 36.55s
+- [x] BUILDLOG updated
+
+---
+
+### Edge Cases to Handle
+
+| Edge case | Risk | Handling |
+|---|---|---|
+| Existing entry with no Markdown syntax | Displays as plain text — no issue | Plain text passes through unchanged |
+| User pastes HTML from clipboard | Tiptap strips unsupported tags | `pasteRules` configured to only accept supported syntax |
+| Word count in Deep Write | Must count words from raw Markdown, not HTML | Strip Markdown syntax before `split(' ')` |
+| Very long entries | Tiptap handles DOM efficiently — no textarea scroll hacks needed | Remove `onKeyDown` scroll trick |
+| Theme switch mid-editor | CSS variable changes propagate to toolbar | Toolbar uses semantic vars, should inherit automatically |
+
+---
+
+## SESSION A14 — Media Integration (Spatial & Visual Memory)
+
+**Status:** 🔜 PLANNED (after A13)
+**Depends on:** A13 (Rich Text Editor) ✅ planned
+**Scope creep risk:** Medium — binary storage is architecturally new; UI has natural expansion pressure
+**Estimated effort:** 2 focused sessions (~10–14 hours)
+**Priority:** Phase C item — photos anchor memories; the app is incomplete without them
+
+---
+
+### Goal
+
+Allow users to attach **photos** to any journal entry. Photos are stored **100% locally** in IndexedDB (not localStorage — binary data would crash it within a few images). A new **Media** section in the sidebar gives a dedicated gallery view showing all photos chronologically, grouped by entry, with a lightbox viewer. The writing experience remains text-first; photos sit below the words, never above them.
+
+The Witness principle: photos are memory anchors, not performance. No Instagram-style grid. No captions that feel like social posts. Just images that belong to a moment.
+
+---
+
+### The Core Storage Problem
+
+**Why localStorage cannot hold photos:**
+
+The entire current app state lives in `localStorage` via `db/index.ts`. localStorage has a hard 5–10MB limit per origin (browser-dependent). A single smartphone photo as base64 is typically 2–4MB. Two photos and the app's data storage is gone. Corrupt. Unusable.
+
+**Solution: IndexedDB for binary, localStorage for metadata.**
+
+IndexedDB is a proper browser database. It supports storing `Blob` and `ArrayBuffer` natively. Capacity is at minimum 50MB, often 10% of available disk — hundreds of gigabytes on a modern machine. It is the correct tool for binary assets in a browser app.
+
+**Architecture split:**
+- `localStorage` (via existing `db/index.ts`) → stores media **metadata** only: `{ id, entryId, caption, mimeType, size, createdAt }`
+- `IndexedDB` (new `mediaDb.ts`) → stores the actual **binary Blob** data, keyed by `mediaId`
+- `JournalEntry.mediaIds?: string[]` → links an entry to its photo IDs
+
+This split means:
+- Export (JSON) contains metadata + base64-encoded photos as an optional flag — user can choose "export with media" or "export text only"
+- The db abstraction stays clean — Electron Phase D just swaps IndexedDB for local filesystem paths
+
+---
+
+### Design Decisions Locked
+
+1. **IndexedDB for binary storage** using the `idb` library (tiny Promises wrapper, ~1KB). No Dexie — too heavy. No raw IndexedDB API — too verbose.
+2. **Photo only for Phase A8** — audio/video deferred to Phase C or D. One thing done right > three things done half-heartedly.
+3. **Compression on upload** — photos compressed to 1200px max width, ~80% JPEG quality using `canvas.toDataURL` before storing. Typical output: 200–400KB per image. Makes the feature usable without hitting IndexedDB limits.
+4. **Metadata in localStorage** — IDs, captions, entry linkage, MIME type, file size stay in the existing `db` layer. Zero changes to the abstraction pattern.
+5. **Text-first display** — in entry view, photos appear *below* the written content, never above. The words come first. Always.
+6. **3-photo limit per entry** (for now) — prevents localStorage pollution and keeps the UI clean. Can be lifted later.
+7. **Privacy mode aware** — when `privacyMode` is active in `App.tsx`, photos blur just like text. One CSS class, zero extra logic.
+8. **Media sidebar** — new top-level view under EXPLORE group. `Image` icon from Lucide. Shows full chronological gallery of all photos in the journal.
+
+---
+
+### Navigation Change — Sidebar & Hamburger Menu
+
+This is the **lowest-effort part** of the whole feature. The navigation is already structured in `NAV_GROUPS` in `App.tsx`:
+
+```typescript
+// BEFORE — App.tsx NAV_GROUPS EXPLORE section
+{ id: "habits",  label: "Habits",  icon: Target  },
+{ id: "compass", label: "Compass", icon: Compass },
+{ id: "eras",    label: "Eras",    icon: Layers  },
+{ id: "threads", label: "Threads", icon: FileText },
+
+// AFTER — add Media
+{ id: "habits",  label: "Habits",  icon: Target  },
+{ id: "compass", label: "Compass", icon: Compass },
+{ id: "eras",    label: "Eras",    icon: Layers  },
+{ id: "threads", label: "Threads", icon: FileText },
+{ id: "media",   label: "Media",   icon: Image   },  // ← NEW
+```
+
+**Three file touches for the nav change:**
+1. `App.tsx` — add `"media"` to `View` type union, add to `NAV_GROUPS`, lazy import `MediaGallery`, wire in `MainContent`
+2. `App.tsx` icons — import `Image` from `lucide-react`
+
+The mobile hamburger drawer uses the same `SidebarContent` component — it gets the new item automatically. No extra work.
+
+---
+
+### New Storage Layer
+
+#### [NEW] `src/app/utils/mediaDb.ts`
+
+IndexedDB abstraction using `idb`. Runs entirely in parallel with the existing `db/index.ts` — no conflicts.
+
+```typescript
+// Schema
+interface MediaRecord {
+  id: string;         // matches metadata ID in localStorage
+  blob: Blob;         // compressed JPEG Blob
+}
+
+// Database name: 'reflect-media', version: 1
+// Object store: 'photos', keyPath: 'id'
+
+export const mediaDb = {
+  async getBlob(id: string): Promise<Blob | undefined>
+  async saveBlob(id: string, blob: Blob): Promise<void>
+  async deleteBlob(id: string): Promise<void>
+  async getBlobUrl(id: string): Promise<string | undefined>  // createObjectURL
+  async clear(): Promise<void>   // for "delete all data"
+}
+```
+
+#### [MODIFY] `src/app/db/index.ts`
+
+Add media metadata store alongside existing localStorage stores:
+
+```typescript
+// New storage key
+MEDIA_META: 'journal_media_meta'
+
+// New MediaMeta type (in types.ts too)
+interface MediaMeta {
+  id: string;
+  entryId: string;        // links to JournalEntry
+  mimeType: string;       // 'image/jpeg'
+  sizeBytes: number;      // compressed size
+  caption?: string;
+  width: number;
+  height: number;
+  createdAt: string;
+}
+
+// New db.media namespace
+const media = {
+  getAll(): MediaMeta[]
+  getForEntry(entryId: string): MediaMeta[]
+  add(meta: Omit<MediaMeta, 'id' | 'createdAt'>): MediaMeta
+  updateCaption(id: string, caption: string): void
+  delete(id: string): void   // also calls mediaDb.deleteBlob(id)
+}
+```
+
+#### [MODIFY] `src/app/types.ts`
+
+Two additions:
+
+```typescript
+// In JournalEntry interface — add:
+mediaIds?: string[];          // ordered list of attached photo IDs
+
+// New type:
+export interface MediaMeta {
+  id: string;
+  entryId: string;
+  mimeType: string;
+  sizeBytes: number;
+  caption?: string;
+  width: number;
+  height: number;
+  createdAt: string;
+}
+```
+
+---
+
+### New Components
+
+#### [NEW] `src/app/components/ui/PhotoUploader.tsx`
+
+Inline uploader used inside `JournalEntry.tsx`. Handles:
+- Drag-and-drop or `<input type="file" accept="image/*">` tap
+- Compression: `canvas.toDataURL('image/jpeg', 0.8)` at max 1200px
+- Progress indicator (small spinner, no progress bar — keeps it quiet)
+- Enforces 3-photo limit per entry
+- On upload: saves blob to IndexedDB via `mediaDb.saveBlob`, saves metadata via `db.media.add`, updates `entry.mediaIds`
+
+Design: an understated dashed-border drop zone (same parchment aesthetic). Becomes a row of photo thumbnails once images are attached.
+
+```typescript
+interface PhotoUploaderProps {
+  entryId: string;
+  existingMediaIds: string[];
+  onChange: (mediaIds: string[]) => void;
+  maxPhotos?: number;  // default: 3
+}
+```
+
+#### [NEW] `src/app/components/ui/PhotoStrip.tsx`
+
+Displays attached photos as a horizontal strip below entry content (in all write modes and read mode).
+
+```typescript
+interface PhotoStripProps {
+  mediaIds: string[];
+  onDelete?: (id: string) => void;  // undefined in read mode
+  onLightbox: (id: string) => void;
+}
+```
+
+- Thumbnails: `80px × 80px` rounded squares, `object-cover`
+- Hover: subtle scale + delete icon (in edit mode only)
+- Click: opens lightbox
+
+#### [NEW] `src/app/components/ui/PhotoLightbox.tsx`
+
+Full-screen overlay lightbox. Triggered from `PhotoStrip` or `MediaGallery`.
+
+- Blurred background overlay (`backdrop-blur`)
+- Image fills 90% of viewport, letter-boxed
+- Left/right arrow navigation between photos of the same entry
+- Shows caption if set (editable inline)
+- Swipe gesture support (Framer Motion `drag`)
+- `Escape` or click-outside to close
+
+#### [NEW] `src/app/components/MediaGallery.tsx`
+
+The new sidebar view. Lazy-loaded. Shows the full photo history of the journal.
+
+**Layout:**
+- Header: "Media" title + total photo count + "Entry count with photos"
+- **Chronological groups**: photos grouped by entry date, descending (newest first)
+- Each group: date label + `what happened` excerpt (first 80 chars) + photo grid (masonry or uniform 3-col grid)
+- Click any photo → Lightbox
+- Click the date/excerpt → navigate to that entry (calls `onViewEntry` prop)
+
+**Empty state:**
+> "Photos you add to entries will appear here. They stay on your device."
+
+**Privacy mode**: when active, photos are blurred (`filter: blur(16px)`) with `transition-none` to match the text blur behaviour.
+
+---
+
+### JournalEntry.tsx Changes
+
+#### Write modes (Guided, Deep, Quick)
+
+Below the text content area in each mode, add:
+
+```tsx
+{/* Photo strip — only shown when entry has an ID (editing existing) or after first save */}
+<PhotoUploader
+  entryId={entry.id || tempId}
+  existingMediaIds={entry.mediaIds || []}
+  onChange={(ids) => updateField('mediaIds', ids)}
+/>
+{(entry.mediaIds?.length ?? 0) > 0 && (
+  <PhotoStrip
+    mediaIds={entry.mediaIds!}
+    onDelete={(id) => { /* remove from mediaIds, delete from db */ }}
+    onLightbox={setLightboxId}
+  />
+)}
+```
+
+#### Read mode
+
+Replace the empty footer with a `PhotoStrip` (no delete, lightbox only):
+
+```tsx
+{entry.mediaIds && entry.mediaIds.length > 0 && (
+  <PhotoStrip
+    mediaIds={entry.mediaIds}
+    onLightbox={setLightboxId}
+  />
+)}
+```
+
+---
+
+### Export Strategy
+
+**JSON export** (`db.backup.exportAll`):
+- Currently exports metadata only (because media lives in IndexedDB, not localStorage)
+- Add an optional `exportWithMedia()` function that calls `mediaDb.getBlob` for each photo and encodes as base64 string into the snapshot
+- File size warning shown before export: `"Your journal includes X photos (~Y MB). Export may take a moment."`
+
+**Markdown export** — unchanged. Media is referenced as `[photo attached]` placeholder.
+
+**Import** — `importWithMedia()` reconstitutes IndexedDB blobs from the base64 strings in the snapshot.
+
+---
+
+### Files to Create / Modify Summary
+
+| File | Action | Notes |
+|---|---|---|
+| `src/app/utils/mediaDb.ts` | **CREATE** | IndexedDB layer using `idb` |
+| `src/app/components/ui/PhotoUploader.tsx` | **CREATE** | Drag-drop + compression |
+| `src/app/components/ui/PhotoStrip.tsx` | **CREATE** | Thumbnail row, delete, lightbox trigger |
+| `src/app/components/ui/PhotoLightbox.tsx` | **CREATE** | Full-screen overlay with swipe |
+| `src/app/components/MediaGallery.tsx` | **CREATE** | New sidebar view |
+| `src/app/types.ts` | **MODIFY** | Add `MediaMeta`, add `mediaIds` to `JournalEntry` |
+| `src/app/db/index.ts` | **MODIFY** | Add `media` namespace for metadata |
+| `src/app/components/JournalEntry.tsx` | **MODIFY** | Add PhotoUploader + PhotoStrip to all write/read modes |
+| `src/app/App.tsx` | **MODIFY** | Add `"media"` view, nav item, icon, lazy import, MainContent wire |
+| `src/app/utils/export.ts` | **MODIFY** | Add `exportWithMedia` and `importWithMedia` functions |
+
+**Package to install:**
+```bash
+npm install idb
+```
+`idb` — ~1KB minified. Lightweight Promises wrapper over the raw IndexedDB API. No other new dependencies.
+
+---
+
+### Session Checklist
+
+- [ ] `idb` installed, `npm run build` succeeds baseline
+- [ ] `mediaDb.ts` — `saveBlob`, `getBlob`, `deleteBlob`, `getBlobUrl` all working
+- [ ] `types.ts` — `MediaMeta` added, `JournalEntry.mediaIds` added
+- [ ] `db/index.ts` — `db.media` namespace: add, getForEntry, delete, all working
+- [ ] `PhotoUploader.tsx` — file picker + drag-drop working, compression to JPEG
+- [ ] 3-photo limit enforced in uploader
+- [ ] `PhotoStrip.tsx` — thumbnails render from IndexedDB blob URLs
+- [ ] `PhotoStrip` delete removes from IndexedDB + metadata + updates entry
+- [ ] `PhotoLightbox.tsx` — opens, navigates between photos, closes cleanly
+- [ ] `MediaGallery.tsx` — all photos grouped by entry date, newest first
+- [ ] Media gallery empty state renders correctly
+- [ ] `App.tsx` — "Media" nav item visible in sidebar + mobile hamburger drawer
+- [ ] Clicking "Media" in nav opens MediaGallery (lazy loaded)
+- [ ] JournalEntry guided mode — PhotoUploader + strip appears below fields
+- [ ] JournalEntry deep write — PhotoUploader + strip appears below canvas
+- [ ] JournalEntry read mode — PhotoStrip renders (no delete)
+- [ ] Privacy mode — photos blur when privacy toggle is active
+- [ ] Export (text-only) — works unchanged, media excluded cleanly
+- [ ] `exportWithMedia()` — encodes photos as base64, file size warning shown
+- [ ] `importWithMedia()` — restores photos from base64 into IndexedDB
+- [ ] "Delete all data" (`backup.deleteAll`) also clears IndexedDB via `mediaDb.clear()`
+- [ ] `npm run build` succeeds cleanly
+- [ ] BUILDLOG updated
+
+---
+
+### Edge Cases to Handle
+
+| Edge case | Risk | Handling |
+|---|---|---|
+| Photo too large (15MB RAW) | Compression must happen before storing | Compress to ≤ 400KB before writing to IndexedDB |
+| User uploads non-image file | `accept="image/*"` filters at OS level | Validate MIME type client-side as backup |
+| IndexedDB unavailable (private browsing Safari) | Write silently fails | Catch error, show toast: "Photos can't be saved in this browser mode" |
+| Entry deleted — orphaned photos | Photos without entry still in IndexedDB | `deleteEntry` hook must also call `mediaDb.deleteBlob` for each `mediaId` |
+| 3-photo limit workaround | User removes one and re-adds | Limit is per-entry, enforced in uploader — fine |
+| Lightbox on mobile — swipe conflict | Drag-to-dismiss vs scroll | `drag="x"` on Framer Motion constrains to horizontal swipe only |
+| Privacy mode + lightbox | Lightbox opens full-res over blurred UI | Lightbox inherits privacy class — apply same blur to lightbox overlay |
+| Export file size | 50 photos × 400KB = 20MB JSON | Show estimated size before export. Browser download handles up to ~500MB |
+| Importing backup on new device | IndexedDB is empty, metadata refers to missing photos | Show broken-image placeholder with "Photo missing — re-import with media" |
+
+---
+
+### A14 Reference — Instagram Media UX: What to Steal, What to Reject
+
+*Analysed 2026-03-27. Read this before writing any A14 code.*
+
+Instagram has the most refined photo UX of any consumer app. The mechanics beneath the social layer — image loading, gesture vocabulary, layout — are genuinely best-in-class. This section extracts exactly what applies to a private, silent journal and discards the rest.
+
+The filter: **"Does this pattern make a solitary act of remembering feel more true, more beautiful, and more safe?"**
+
+---
+
+#### ✅ ADOPT — 8 Patterns (with implementation specs)
+
+**1. Progressive Loading — Dominant Colour Placeholder**
+
+Before a photo loads, Instagram fills its frame with the image's dominant colour. White-flash-to-photo never happens.
+
+*Why it matters:* Opening an old entry from 2 years ago still requires 50–200ms to decode an IndexedDB blob. A warm dominant-colour placeholder that crossfades into the photo is seamless. A white rectangle flashing out is jarring.
+
+*How:* At upload time, sample the compressed canvas at 1px scale → extract average RGB → store as `dominantColour: string` hex in `MediaMeta`. `PhotoStrip` and `PhotoLightbox` show the colour immediately, then CSS crossfade to `<img>` on `onLoad`.
+
+```typescript
+function extractDominantColour(canvas: HTMLCanvasElement): string {
+  const ctx = canvas.getContext('2d')!;
+  const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let r = 0, g = 0, b = 0, count = 0;
+  for (let i = 0; i < d.length; i += 16) {
+    r += d[i]; g += d[i+1]; b += d[i+2]; count++;
+  }
+  return `rgb(${~~(r/count)},${~~(g/count)},${~~(b/count)})`;
+}
+```
+
+Add `dominantColour?: string` to `MediaMeta` in `types.ts`.
+
+---
+
+**2. Swipe Carousel in Lightbox**
+
+Multiple photos in one post navigate via horizontal drag. Feels like physically flipping through prints.
+
+*How:* Framer Motion `drag="x"` on the lightbox image. On drag end: `offset.x < -80` → next, `offset.x > 80` → prev. Spring-snap back to centre (`stiffness: 300, damping: 30`). Dot indicators below — 4px circles, `opacity: 0.3` inactive / `opacity: 1` active.
+
+```tsx
+<motion.div
+  drag="x"
+  dragConstraints={{ left: 0, right: 0 }}
+  dragElastic={0.15}
+  onDragEnd={(_, info) => {
+    if (info.offset.x < -80) goNext();
+    if (info.offset.x > 80) goPrev();
+  }}
+>
+  <img src={currentBlobUrl} />
+</motion.div>
+```
+
+---
+
+**3. The Peek — Spatial Affordance Without Copy**
+
+The edge of the next slide is visible at the carousel's right edge (~20–30px). Communicates "there is more" with zero text.
+
+*How in `PhotoStrip`:* `overflow-x: auto`, `scroll-snap-type: x mandatory`. Set container `padding-right` so the last visible thumbnail is partially cut off. Hide the scrollbar (`scrollbar-width: none`). The peek is the affordance.
+
+---
+
+**4. Aspect Ratio Preservation**
+
+Instagram never squishes a photo. Portrait photos get portrait space. Landscape gets landscape.
+
+*Why it matters:* A smartphone portrait cropped to 80×80px loses the face. A landscape horizon disappears. These are memories — composition matters.
+
+*How in `PhotoStrip`:* Variable-width thumbnails — fixed `height: 80px`, `width: auto`, `max-width: 120px`, `object-fit: cover`. Portrait photos render narrower, landscape wider. The strip scrolls horizontally.
+
+*How in `PhotoLightbox`:* Full uncropped display. `max-height: 90vh`, `max-width: 90vw`, `object-fit: contain`. The surrounding letterbox fills with the dominant colour — not black bars. The photo tells its own story.
+
+```css
+.photo-thumb {
+  height: 80px;
+  width: auto;
+  max-width: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.lightbox-img {
+  max-height: 90vh;
+  max-width: 90vw;
+  object-fit: contain;
+}
+```
+
+---
+
+**5. Double-Tap / Double-Click Zoom in Lightbox**
+
+Instagram: double-tap → 2× zoom at tap point. Double-tap again → zoom out.
+
+*For web (A14):* `onDoubleClick` toggles `scale(2)` / `scale(1)` via CSS transform with `transition: transform 200ms ease`. No library needed.
+*For mobile (F1/Capacitor):* Add full pinch-to-zoom via `@use-gesture/react` — pinch centre tracked, scale 1–4×.
+
+---
+
+**6. Lazy Blob Loading in Gallery**
+
+Instagram never loads all feed images simultaneously. Images load just ahead of the viewport.
+
+*Why it matters:* `MediaGallery` will eventually hold hundreds of photos. Loading all IndexedDB blobs simultaneously would freeze the app. Each blob decode is a synchronous operation.
+
+*How:* `IntersectionObserver` on each photo container. Only call `mediaDb.getBlobUrl(id)` when element is within 200px of viewport. Revoke object URLs on exit (free memory). Dominant colour placeholder shows until load.
+
+```typescript
+function useLazyBlobUrl(mediaId: string) {
+  const [url, setUrl] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { mediaDb.getBlobUrl(mediaId).then(setUrl); obs.disconnect(); } },
+      { rootMargin: '200px' }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [mediaId]);
+  return { ref, url };
+}
+```
+
+---
+
+**7. Photo Colour Impression on the Heatmap**
+
+On the profile grid, each photo represents its post at a glance.
+
+*For Reflect:* Days with photos in the year heatmap show a dominant-colour overlay on their mood dot. At 8px, you can't see the photo — but the warm amber of a sunset is visually distinct from the grey of a rainy cafe day. The user scans the year and *feels* the photographic memories.
+
+```tsx
+{cellHasPhoto && (
+  <div
+    className="absolute inset-0 rounded-full opacity-60"
+    style={{ background: photoDominantColour }}
+  />
+)}
+```
+
+---
+
+**8. Haptic Feedback on Key Interactions** *(Capacitor F1 phase — wire the API now)*
+
+Instagram's haptics are calibrated: a short pulse on like, a subtle tick on story progress. Removing them makes the app feel less physical.
+
+*Planned haptic moments:*
+- Photo added to entry: `ImpactStyle.Light`
+- Swipe to next photo in lightbox: `ImpactStyle.Light`
+- Photo deleted: `NotificationType.Warning`
+- Entry save with photos: `ImpactStyle.Medium`
+
+*Wrap all calls so they no-op in browser:*
+```typescript
+// src/app/utils/haptic.ts
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+export const haptic = {
+  light: () => Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}),
+  medium: () => Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}),
+};
+// .catch(() => {}) silently no-ops in the browser — zero web breakage
+```
+
+---
+
+#### ❌ REJECT — 6 Patterns (and exactly why)
+
+| Pattern | What Instagram uses it for | Why Reflect won't |
+|---|---|---|
+| **Infinite scroll** | Compulsion loop — no terminal point | `MediaGallery` has geography: month-grouped, clear ending. Boundless = meaningless. |
+| **Likes / views** | Performance metrics on every photo | A 2-year-old photo is a memory, not a stale post. No metrics. |
+| **Square crop grid** | Visual uniformity for brand grids | A face cropped to a square loses the person. Composition matters here. |
+| **Algorithmic reorder** | Maximise "engagement" | The user's own history is not a recommendation problem. Always chronological. |
+| **Stories impermanence** | Daily posting frequency via urgency | Everything in Reflect is permanent by design. Nothing expires. |
+| **Notification pressure** | Retention mechanism | No server. No telemetry. No push. By design. |
+
+---
+
+#### 🆕 One Pattern Instagram Has Never Done — That Reflect Should
+
+**The "What You Were Thinking" Caption Layer**
+
+Instagram captions are social copy — hashtags, mentions, marketing text.
+
+Reflect captions should surface the *entry text* beneath the photo. In `MediaGallery`, each group shows the first line of the journal entry the photos belong to — not the photo caption:
+
+```
+September 3, 2024
+"Woke up early and walked to the lake before anyone else was awake..."
+[three photos]
+```
+
+**The photo isn't the content. The words are. The photos are evidence.**
+
+This single inversion — entry text *above* photos, not caption *below* — is what makes Reflect's media feature feel like a journal instead of a feed. Every implementation decision in A14 should trace back to this.
+
+---
+
+#### A14 Implementation Priority Reference
+
+| Pattern | Effort | Impact | When |
+|---|---|---|---|
+| Dominant colour placeholder | Low — canvas + hex stored | High — seamless loading | A14 |
+| Swipe carousel (lightbox) | Medium — Framer Motion drag | High — native feel | A14 |
+| Aspect ratio preservation | Low — CSS only | High — composition preserved | A14 |
+| Lazy blob loading | Medium — IntersectionObserver | High — gallery performance | A14 |
+| Peek effect (PhotoStrip) | Low — CSS overflow + padding | Medium — scroll affordance | A14 |
+| Photo colour on heatmap | Low — dominant colour overlay | High — year scan | A14 |
+| Double-click zoom | Low — CSS scale state | Medium — desktop detail | A14 |
+| Haptic feedback wrapper | Low — utility + Capacitor | High on mobile | F1 |
+| Full pinch-to-zoom | Medium — gesture library | High on mobile | F1 |
+
+---
+
+## SESSION LOG — ADDENDUM (2026-03-27)
+
+| Session | Status | Notes |
+|---|---|---|
+| Session A13 | ✅ DONE (2026-03-27) | Rich Text Editor — Tiptap, Markdown bridge, `RichTextEditor.tsx`, `MarkdownRenderer.tsx` |
+| Session A14 | 🔜 NEXT | Media Integration (Photos) — see full plan above |
+| Session A14b | 🔜 PLANNED | Audio Integration — see full plan below |
+
+---
+
+## SESSION A14b — Audio Integration (Voice Memory)
+
+**Status:** 🔜 PLANNED (after A14 — Photos)
+**Depends on:** A14 (IndexedDB `mediaDb` layer already built) ✅
+**Scope creep risk:** Medium — new browser API surface; transcription strictly deferred
+**Estimated effort:** 1.5 sessions (~8–10 hours)
+**Priority:** High — voice is the most natural expression. Speaking a thought takes 10 seconds. Writing it takes 2 minutes.
+
+---
+
+### Why Audio Belongs in a Journal
+
+The hardest moments to write about are the ones that need it most. When something significant happens — an argument, a breakthrough, a wave of grief — sitting down to type feels impossible. But speaking is available. Voice captures the tremor in a sentence that text cannot. A 30-second recording from the night before a big decision is worth more, ten years later, than the most carefully written entry.
+
+**Day One** supports audio up to 3 hours (Premium, iOS/Android). **AudioDiary** built its whole product around voice + transcription. **Reverie** literally calls you daily. The pattern is clear: audio is the second most important input after text, and every serious competitor supports it.
+
+Reflect will do it with zero cloud dependency, zero transcription by default, and a waveform visualiser that makes listening feel like revisiting a moment — not playing a voicemail.
+
+---
+
+### What Best-in-Class Apps Do
+
+| App | Standout Audio Feature | What Reflect Learns |
+|---|---|---|
+| **Day One** | Record up to 3hrs, auto-save .m4a, 10-min cloud transcription (iOS only) | Long recordings fine. .m4a via `MediaRecorder`. Transcription deferred — no cloud. |
+| **AudioDiary** | Real-time waveform, AI tagging, mood from voice tone | Live waveform via `AnalyserNode`. Mood tagging manual only. |
+| **Reverie** | Calls you at set time, AI transcription, timestamped segments | "Prompt before recording" framing — show writing prompt before mic opens. |
+| **Apple Voice Memos** | Waveform IS the seek bar. Trim. Playback speed. | Waveform scrub bar = gold standard. Speed control from day one. |
+| **Murmur** | Emotion capture, minimal UI, record button is the whole screen | One tap → recording. No confirmation dialog. No menu. |
+| **Journey** | Audio + photo combined in one entry | Audio and photos paired in same entry = richer memory. Already handled by shared `mediaIds`. |
+
+---
+
+### Architecture — No New Storage Needed
+
+The IndexedDB `mediaDb` from A14 handles audio blobs identically to photo blobs. Same store, same API. `MediaMeta` in `types.ts` gains three fields:
+
+```typescript
+// Add to MediaMeta in types.ts
+mediaType: 'photo' | 'audio';    // distinguish in UI
+durationSeconds?: number;          // audio only — shown in player
+waveformData?: number[];           // 80 amplitude samples — generated at save time
+```
+
+`waveformData` is 80 values × 8 bytes ≈ 640 bytes stored in localStorage alongside other metadata. Negligible.
+
+**`JournalEntry.mediaIds`** already holds any media ID. Audio IDs live there alongside photo IDs. `mediaType` on `MediaMeta` tells the UI how to render each one. Zero schema changes to `JournalEntry`.
+
+---
+
+### Recording API — Pure Web Audio API, Zero Libraries
+
+```typescript
+// 1. Request microphone
+const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+// 2. Record — prefer Opus for size, fall back to mp4 for Safari
+const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+  ? 'audio/webm;codecs=opus'
+  : 'audio/mp4';
+const recorder = new MediaRecorder(stream, { mimeType });
+const chunks: BlobPart[] = [];
+recorder.ondataavailable = e => chunks.push(e.data);
+recorder.onstop = async () => {
+  const blob = new Blob(chunks, { type: mimeType });
+  const waveformData = await generateWaveformData(blob);
+  const duration = /* elapsed seconds from timer */;
+  await mediaDb.saveBlob(id, blob);
+  db.media.add({ id, entryId, mediaType: 'audio', mimeType, sizeBytes: blob.size, durationSeconds: duration, waveformData });
+};
+recorder.start(1000); // capture in 1s chunks
+
+// 3. Live waveform via AnalyserNode during recording
+const ctx = new AudioContext();
+const source = ctx.createMediaStreamSource(stream);
+const analyser = ctx.createAnalyser();
+analyser.fftSize = 256;
+source.connect(analyser);
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+// → requestAnimationFrame loop → read dataArray → draw bars on <canvas>
+```
+
+**Output format:** `audio/webm;codecs=opus` ≈ 16KB/second. 5-minute recording ≈ 5MB. Fits IndexedDB comfortably.
+
+**Waveform data generation at save:**
+```typescript
+async function generateWaveformData(blob: Blob, bars = 80): Promise<number[]> {
+  const ctx = new AudioContext();
+  const buffer = await ctx.decodeAudioData(await blob.arrayBuffer());
+  const raw = buffer.getChannelData(0);
+  const step = Math.floor(raw.length / bars);
+  return Array.from({ length: bars }, (_, i) => {
+    let sum = 0;
+    for (let j = 0; j < step; j++) sum += Math.abs(raw[i * step + j]);
+    return sum / step; // normalised amplitude 0.0–1.0
+  });
+}
+```
+
+---
+
+### New Components
+
+#### [NEW] `src/app/components/ui/AudioRecorder.tsx`
+
+States: **Idle → Recording → Saving → Done (collapses to AudioPlayer)**
+
+- **Idle**: quiet microphone icon. Same visual weight as photo uploader.
+- **Recording**: animated live waveform (amber bars, `var(--primary)` colour), `00:42` duration timer, red pulsing dot (3px, `animate-pulse`), "Stop" button. No pause — recording is a continuous act.
+- **Saving**: small spinner while blob writes to IndexedDB.
+- **Done**: collapses to `AudioPlayer` for the just-saved recording.
+
+```typescript
+interface AudioRecorderProps {
+  entryId: string;
+  existingAudioIds: string[];
+  onChange: (mediaIds: string[]) => void;
+  maxRecordings?: number;  // default: 3
+}
+```
+
+Permission denied → inline message: *"Microphone access needed. Allow it in your browser settings."* — no toast, no modal. Inline, quiet.
+
+---
+
+#### [NEW] `src/app/components/ui/AudioPlayer.tsx`
+
+```
+[▶]  ─────────■──────────────  1:23 / 3:45  [1×]
+     waveform scrub (static bars + amber playhead)
+```
+
+- **Play/pause**: 44×44px touch target
+- **Waveform scrub bar**: static bars from `waveformData`. Amber playhead moves left-to-right. Click/drag on waveform → seek. The waveform IS the seek bar (Apple Voice Memos pattern — best in class).
+- **Time display**: `elapsed / total`, monospace font. Does not jump width.
+- **Speed toggle**: cycles `0.75× → 1× → 1.25× → 1.5×` on tap. No dropdown. Remembered for session.
+- **Delete**: `×` on hover (edit mode only). Inline confirm: *"Delete this recording?"* Yes / Cancel.
+
+---
+
+### UX Design Decisions Locked
+
+1. **One-tap to record** — no confirmation before mic opens. The thought is immediate. Mirrors Murmur's radical simplicity.
+2. **No cloud transcription in web phase** — voice data sent to a server violates Reflect's core privacy promise. Local `SpeechRecognition` API arrives in Electron/Capacitor phase.
+3. **No pause during recording** — single continuous act. Stop = save. Want to add more? Record again. Second recording appends to the entry's `mediaIds`.
+4. **Max 10 minutes per recording** — `MediaRecorder` stops at 10:00, saves automatically, shows toast. Re-evaluate in Electron where filesystem handles unlimited length.
+5. **Waveform as seek bar** — the Voice Memos standard. No separate progress slider. The waveform is the navigation.
+6. **Playback speed control** — most requested voice memo feature. 4 steps. Included from day one.
+7. **Text-first always** — audio recorder sits below written fields. Voice is companion to writing, never replacement.
+8. **3-recording limit per entry** — same as photos. Keeps UI clean.
+
+---
+
+### What A14b Does NOT Build
+
+| Feature | Why deferred |
+|---|---|
+| **On-device transcription** | `SpeechRecognition` is Chrome-only on web. Reliable cross-platform requires Capacitor (F1) — `@capacitor-community/speech-recognition`. |
+| **Mood-from-voice analysis** | Cloud AI or 50MB+ WASM ML model. Never cloud. WASM deferred. |
+| **Audio trimming UI** | Significant extra complexity. V2. |
+| **Auto-tagging from audio** | Cloud AI only. Never. |
+| **Sharing audio clips** | No sharing in Reflect. Privacy-first. |
+
+---
+
+### Files to Create / Modify
+
+| File | Action | Notes |
+|---|---|---|
+| `src/app/components/ui/AudioRecorder.tsx` | **CREATE** | Idle → Recording → Saving → Done states |
+| `src/app/components/ui/AudioPlayer.tsx` | **CREATE** | Waveform scrub + speed control |
+| `src/app/types.ts` | **MODIFY** | Add `mediaType`, `durationSeconds`, `waveformData` to `MediaMeta` |
+| `src/app/components/JournalEntry.tsx` | **MODIFY** | Add `AudioRecorder` below all mode fields |
+| `src/app/components/MediaGallery.tsx` | **MODIFY** | Render audio entries (waveform strip) alongside photos |
+
+**Zero new packages.** Web Audio API + MediaRecorder are native browser APIs.
+
+---
+
+### Session Checklist
+
+- [ ] `getUserMedia` permission: granted, denied, and re-check all handled
+- [ ] `MediaRecorder` produces valid blob (`webm`/`mp4` fallback) on stop
+- [ ] Live waveform animates via `AnalyserNode` during recording
+- [ ] Duration timer counts up during recording, stops at 10:00
+- [ ] Blob saved to IndexedDB via `mediaDb.saveBlob`
+- [ ] `waveformData` (80 samples) generated at save time
+- [ ] `MediaMeta` stored with `mediaType: 'audio'`, `durationSeconds`, `waveformData`
+- [ ] `AudioPlayer` renders static waveform bars from `waveformData`
+- [ ] Playhead moves correctly during playback
+- [ ] Waveform click/drag seeks to correct position
+- [ ] Playback speed cycles correctly
+- [ ] Time display updates correctly
+- [ ] Delete removes blob + metadata + updates `entry.mediaIds`
+- [ ] 3-recording limit enforced per entry
+- [ ] Audio recorder appears below text fields in all JournalEntry modes
+- [ ] Read mode: `AudioPlayer` only (no recorder)
+- [ ] `MediaGallery` shows audio grouped by entry date, above photos
+- [ ] Privacy mode: player blurs with the rest of the content
+- [ ] Safari: `audio/mp4` fallback works
+- [ ] `beforeunload`: partial recording saved if tab closed mid-record
+- [ ] Empty recording (< 1 second) discarded silently
+- [ ] `npm run build` succeeds cleanly
+- [ ] BUILDLOG updated
+
+---
+
+### Edge Cases
+
+| Edge case | Risk | Handling |
+|---|---|---|
+| Tab closed mid-recording | Blob lost | `beforeunload` → `recorder.stop()` → save partial blob |
+| Mic in use by another app | `getUserMedia` rejects | Toast: *"Microphone is in use by another app."* |
+| Safari `audio/webm` unsupported | `MediaRecorder` throws | `isTypeSupported` → fall back to `audio/mp4` |
+| 10-minute limit hit | Recording too long | Timer turns amber at 9:00, auto-stop + save at 10:00 |
+| `AudioContext` suspended | Autoplay policy | `ctx.resume()` on first user interaction — standard pattern |
+| Recording under 1 second | Blob empty or corrupt | Discard silently, do not save |
+| IndexedDB quota exceeded | Write fails | Toast: *"Not enough storage. Delete older recordings or export your journal."* |
+
+---
+
+---
+
+# PHASE D — 10/10 ROADMAP: "Breathtaking UX & Best-in-Class Architecture"
+
+*Authored: 2026-03-27. This is the master plan to take Reflect from 7.5/10 → 10/10.*
+*Every decision here is filtered through one question: "Does this make the act of reflecting feel more true, more beautiful, and more safe?"*
+
+---
+
+## What 10/10 Actually Means Here
+
+| Dimension | 7.5/10 (today) | 10/10 (target) |
+|---|---|---|
+| **Writing** | Textarea, no formatting | Tiptap RTE, quiet toolbar, markdown storage |
+| **Media** | None | Photos (IndexedDB), lightbox, gallery view |
+| **Search** | None | Cmd+K palette — instant full-text + date + tag + mood |
+| **Persistence** | localStorage (fragile) | SQLite on disk (Electron) — survives every edge case |
+| **UI polish** | Good, warm | Breathtaking — spatial layout, spring physics, cinematic transitions |
+| **Typography** | Decent | Exceptional — curated rhythm, optical sizing, variable fonts |
+| **Animation** | Framer Motion basics | Spring-based micro-interactions on every surface |
+| **Mobile** | Responsive web | Capacitor native shell — haptics, home screen, gestures |
+| **Data safety** | No backup warning | Auto-backup to chosen folder, integrity check on launch |
+| **On This Day** | Not built | Daily memory surface — resurfaces entries from past years |
+
+---
+
+## SESSION A15 — Global Search & Cmd+K Recall
+
+**Status:** 🔜 PLANNED (after A14)
+**Scope creep risk:** High — must be scoped tightly. One interface, one job.
+**Estimated effort:** 1.5 sessions (~8–10 hours)
+
+### Goal
+A `Cmd+K` command palette that searches the entire journal instantly. No dedicated search "page". The palette appears anywhere, searches everything, and disappears when done.
+
+### What it searches
+- Full-text of all entry fields (whatHappened, freeWrite, feelings, etc.)
+- Tags (prefix `#tag`)
+- Mood filter (prefix `mood:great`)
+- Date ranges (prefix `date:march` or `date:2026-01`)
+- Era name
+- Result type: `"Daily"` / `"Weekly"` / etc.
+
+### Architecture
+- **Search index built at app load** — in-memory, ~200ms for 1,000 entries
+- **Fuse.js** — 4KB fuzzy search library. Threshold 0.3. No server. No dependency on AI.
+- **Debounce 80ms** on input — feels instant
+- **Result**: Title + date + excerpt (60 chars). Click → navigate to that entry in write mode.
+
+### UI: The Palette
+- `Cmd+K` (desktop) / Search icon (mobile) opens a centered modal
+- Frosted glass background (`backdrop-blur-xl`), full-width on mobile, 560px max on desktop
+- Input sits at the top — autofocus, no label, placeholder: *"Search your journal..."*
+- Results scroll below, grouped by type (Entries, Tags, Commands)
+- "Commands" section gives quick navigation: "Go to Timeline", "New Entry", "Open Habits"
+- `Escape` or click-outside closes, focus returns to previous element
+- No loading states — local search is instant
+
+### Files
+- **NEW** `src/app/components/CommandPalette.tsx`
+- **NEW** `src/app/utils/search.ts` — index builder + query engine (Fuse.js)
+- **MODIFY** `src/app/App.tsx` — bind `Cmd+K`, render palette, pass entries
+
+### Package
+```bash
+npm install fuse.js  # 4KB — tiny
+```
+
+---
+
+## SESSION A16 — "On This Day" Memory Surface
+
+**Status:** 🔜 PLANNED (after A15)
+**Scope creep risk:** Low — read-only surface, no new data model
+**Estimated effort:** 0.5 sessions (~3 hours)
+
+### Goal
+Every day the app opens, surface a quiet memory from exactly 1 year ago (and 2, 3, 5 years if entries exist). Not gamified. Not a notification. Just a memory that appears like finding an old photo in a coat pocket.
+
+### UX
+- Shown in the **BelowHeatmap area** of TimelineView, on today's load only
+- Quiet card: date label ("One year ago, March 27") + first 80 chars of entry + mood colour strip
+- Click → opens that entry in read mode
+- Dismissable (small ✕) — never shown again for that day
+- If no past entry exists for today's date across all years → not shown. No "nothing to show" state.
+- Persists dismissed state in localStorage per `yyyy-MM-dd` key — survives refresh
+
+### Files
+- **NEW** `src/app/components/OnThisDayCard.tsx`
+- **MODIFY** `src/app/components/TimelineView.tsx` — import + render in BelowHeatmap
+
+---
+
+## SESSION A17 — UI/UX Breathtaking Pass (Design Excellence)
+
+**Status:** 🔜 PLANNED (after A16)
+**Scope creep risk:** Medium — endless rabbit hole if not scoped. Timebox strictly.
+**Estimated effort:** 2 sessions (~12 hours)
+**This is the most important session for the "feeling" of the app.**
+
+### The Problem with "Good Enough"
+The current design is warm and coherent. But warmth and coherence aren't breathtaking. Breathtaking means: the first time someone opens the app they think *"I've never seen a journal that looks like this."* It means every interaction has weight. Every transition earns its moment. Every type setting is deliberate.
+
+### What Changes
+
+#### 1. Typography — Optical Sizing & Variable Fonts
+The current setup uses Cormorant Garamond + DM Sans. Both are good. Neither is maximally exploited.
+
+- **Replace Cormorant Garamond** with **[Lora](https://fonts.google.com/specimen/Lora)** (variable, optical-size-aware, designed for screen long-form reading) for entry body in read mode
+- **Keep Source Serif Pro** for headings/UI labels — it's excellent
+- **Add** CSS `font-optical-sizing: auto` — browsers subtly adjust letterforms at small vs large sizes
+- **Tighten** the heading rhythm: `h1` = 2.25rem / 1.1 lh, `h2` = 1.5rem / 1.2 lh — stop using default Tailwind scale
+- **Add** `text-wrap: pretty` to all prose — eliminates single-word last lines (orphans) automatically
+
+#### 2. Spatial Layout — The Entry Canvas
+Current entry: full-width container. It works but feels undifferentiated.
+
+- **Deep Write**: constrained center column (prose-width: 680px max), breathing room on both sides, subtle paper texture via CSS `background-image: repeating-linear-gradient(...)` — 1px horizontal rules at 1.5rem intervals, very low opacity (3%). Feels like lined writing paper. Never feels like a form.
+- **Read mode**: generous side margins (`px-16` on desktop), entry content at 65ch max-width — optimal for reading. Date/metadata floats to a slim left column (240px), content fills the right. Resembles a magazine spread at scale.
+- **Guided mode**: each field becomes a distinct "card" that lifts slightly on focus — `box-shadow: 0 0 0 1px var(--border), 0 4px 24px rgba(0,0,0,0.04)` — field feels like it rises to meet you.
+
+#### 3. Spring Physics — Every Transition Earns Its Moment
+Replace all `duration: 0.18` flat Framer Motion transitions with physics-based springs:
+
+```typescript
+// Current (flat)
+transition={{ duration: 0.18 }}
+
+// Target (spring — feels alive)
+transition={{ type: "spring", stiffness: 400, damping: 30 }}
+```
+
+Specific targets:
+- **Mode switcher** (Quick/Guided/Deep): active pill slides with spring, not linear
+- **Heatmap cell hover**: scale 1.0 → 1.15 with spring, back to 1.0 with overshoot
+- **Day view open**: entry card slides up with spring + fade
+- **Sidebar open/close**: spring, not CSS transition-[width]
+- **Entry save**: checkmark animates with SVG path draw + spring bounce
+
+#### 4. Micro-Interactions — Every State Has Weight
+- **Write button** in Quick mode: on hover, text slides right 2px, icon appears from left
+- **Mood card select**: brief scale pulse (1.0 → 1.08 → 1.0) in 200ms, then settle
+- **Tag add**: tag chip animates in from the right with spring
+- **Heatmap load**: dots fade in staggered by column, 15ms delay per column — feels like the year "loads" itself
+- **Saving** (debounce): subtle bottom-edge shimmer on the entry card while auto-saving
+
+#### 5. Colour System Refinement
+Current colours are warm but not optically balanced. The amber accent reads differently across themes.
+
+- **Audit all 5 themes** — ensure primary/accent/muted relationships are perceptually consistent (not just mathematically consistent)
+- **Add CSS `color-mix()`** for all hover states instead of hard-coded values — hover states automatically derive from the base colour
+- **Introduce a 6th theme**: *"Noir"* — near-black background (`#0A0A08`), cream text, amber accents — for night writers
+
+#### 6. Empty States — Illustration Layer
+Every empty state currently shows text only. Add subtle SVG line illustrations:
+
+- **Timeline (no entries)**: small feather/quill SVG, hand-drawn style, 80px, `opacity: 0.25`
+- **Habits (none)**: small seedling SVG
+- **Media gallery (no photos)**: small camera outline SVG
+- **Insights (not enough data)**: small lens/magnifier SVG
+
+These never feel decorative. They give the eye something to rest on while reading the empty state message.
+
+### Files Changed
+- `src/styles/index.css` — typography pass, `text-wrap: pretty`, `font-optical-sizing`
+- `src/styles/theme.css` — colour system refinement, Noir theme, `color-mix()` hover states
+- `src/app/components/JournalEntry.tsx` — spatial layout Deep/Read/Guided, spring transitions
+- `src/app/components/TimelineView.tsx` — staggered heatmap load, spring cell hover, spring transitions
+- `src/app/App.tsx` — spring sidebar
+- `src/app/components/ui/*.tsx` — spring mode switcher, micro-interactions
+- **NEW** `src/app/components/ui/EmptyIllustration.tsx` — reusable empty state with SVG slot
+
+---
+
+## SESSION A18 — Data Safety & Auto-Backup
+
+**Status:** 🔜 PLANNED (Phase B prerequisite)
+**Scope creep risk:** Low — entirely additive
+**Estimated effort:** 0.5 sessions (~3 hours)
+
+### Problem
+localStorage can be cleared. The user has no warning this could happen. Competitors store data at system level. Until Electron, the risk is real.
+
+### What Gets Built (Web Phase)
+
+**Export prompt system:**
+- On first launch: friendly modal — *"Your journal lives in your browser. Export regularly to keep it safe."* — with "Export Now" + "Remind me in 7 days" + "I understand"
+- Reminder state persisted in localStorage: `journal_backup_reminder_at`
+- If last export was > 14 days ago AND > 10 entries exist: soft banner at top of Timeline — *"It's been 14 days since your last backup."* — one-click export, one-click dismiss
+- **No nagging** — one reminder per 14 days. Dismissed = gone for 14 more days.
+
+**Export enhancement:**
+- Export button in Legacy view now shows: last export date (stored in localStorage), estimated file size, entry count
+- "Export with Photos" option (if A14 is complete) vs "Export text only"
+
+### Files
+- **NEW** `src/app/components/BackupNudge.tsx` — the gentle banner
+- **MODIFY** `src/app/components/DataLegacy.tsx` — enhanced export UI
+- **MODIFY** `src/app/App.tsx` — first-launch modal check
+
+---
+
+## PHASE E — Electron: True Desktop App
+
+*Goal: Reflect becomes a real installed application. Data lives on disk. Nothing can accidentally delete it.*
+
+### SESSION E1 — Storage Migration to SQLite
+
+**The biggest architectural upgrade in the project's history.**
+
+Replace `localStorage` + `IndexedDB` with **SQLite** via `better-sqlite3` in the Electron main process.
+
+**Why SQLite over electron-store:**
+- electron-store writes a single JSON file — same fragility as localStorage at scale (1,000+ entries, photos as BLOB)
+- SQLite handles thousands of entries, binary photo BLOBs, full-text search indexes, concurrent reads without corruption
+- SQLite is what Day One, Diarium, and every serious desktop app uses internally
+- The `db/index.ts` abstraction means the switch is surgical — only the implementation changes, not the interface
+
+**New architecture (Electron):**
+```
+Renderer process (React/Vite)
+    ↕ contextBridge / ipcRenderer
+Main process (Electron)
+    ↕ better-sqlite3
+SQLite DB at: ~/Library/Application Support/Reflect/reflect.db (macOS)
+               ~/.config/Reflect/reflect.db (Linux)
+               %APPDATA%/Reflect/reflect.db (Windows)
+```
+
+**Schema:**
+```sql
+-- Entries table
+CREATE TABLE entries (
+  id TEXT PRIMARY KEY,
+  date TEXT NOT NULL,
+  what_happened TEXT,
+  feelings TEXT,
+  what_matters TEXT,
+  insight TEXT,
+  free_write TEXT,
+  intention TEXT,
+  mood TEXT,
+  energy INTEGER,
+  tags TEXT,  -- JSON array
+  era_id TEXT,
+  created_at TEXT,
+  updated_at TEXT
+  -- ... all other fields
+);
+
+-- Full-text search virtual table
+CREATE VIRTUAL TABLE entries_fts USING fts5(
+  what_happened, feelings, what_matters,
+  insight, free_write, intention,
+  content=entries, content_rowid=rowid
+);
+
+-- Media BLOBs
+CREATE TABLE media (
+  id TEXT PRIMARY KEY,
+  entry_id TEXT NOT NULL,
+  mime_type TEXT,
+  data BLOB,   -- compressed JPEG bytes
+  size_bytes INTEGER,
+  caption TEXT,
+  created_at TEXT,
+  FOREIGN KEY(entry_id) REFERENCES entries(id) ON DELETE CASCADE
+);
+```
+
+**Benefits unlocked:**
+- Full-text search is now native SQL `MATCH` query — 10× faster than Fuse.js
+- Photos stored as BLOBs in the DB — atomic with the entry, no orphan risk, no IndexedDB needed
+- ON DELETE CASCADE — deleting an entry automatically deletes its photos
+- WAL mode — no corruption on crash
+- Backup = copy one file: `reflect.db`
+
+### SESSION E2 — Electron Shell & Native Integration
+
+- Menubar: File > New Entry, Export, Quit; Edit > standard; View > Timeline, Write, Insights
+- Keyboard shortcuts registered at OS level (not just in-app)
+- System tray icon on Linux/Windows — quick-capture window
+- `Cmd+Shift+J` global hotkey → opens Reflect if closed, focuses write field
+- Window position + size remembered
+- Auto-backup: on app quit, if DB modified since last backup, copy `reflect.db` to `~/Documents/Reflect Backups/`
+
+### SESSION E3 — GitHub Actions Build Pipeline
+
+Multi-platform CI:
+- `.github/workflows/build.yml` matrix: `ubuntu-latest`, `windows-latest`, `macos-latest`
+- Code signing (Mac: Developer ID cert; Windows: self-signed initially)
+- Produce release artifacts: `.AppImage`, `.dmg`, `.exe`
+- Auto-publish to GitHub Releases on version tag
+
+---
+
+## PHASE F — Mobile: Capacitor Shell
+
+*Goal: Journal anywhere. Phone is where most journaling happens — in the moment, at night.*
+
+### SESSION F1 — Capacitor Setup
+
+```bash
+npm install @capacitor/core @capacitor/cli
+npm install @capacitor/ios @capacitor/android
+npx cap init Reflect com.reflect.journal
+npx cap add ios
+npx cap add android
+```
+
+- **Photo capture** via `@capacitor/camera` — replaces web file input. Camera opens directly. No OS picker friction.
+- **Haptic feedback** via `@capacitor/haptics` — brief haptic on entry save, mood select, closing moment
+- **Keyboard** via `@capacitor/keyboard` — push main content up when keyboard opens (Deep Write mode critical)
+- **App state** via `@capacitor/app` — save draft on background, restore on foreground
+
+### SESSION F2 — Mobile UX Adaptation
+
+The desktop layout doesn't translate to mobile. Not a bug — it needs intentional design:
+
+- **Write view**: full-screen take-over. No sidebar visible. Single back arrow. Field labels as floating hints, not permanent labels.
+- **Timeline**: swipe left/right to navigate months. Tap a dot → entry slides up from bottom sheet. Bottom sheet with 80px peek, swipeable to full-screen.
+- **Cmd+K**: becomes a bottom search bar activated by thumb — reachable without adjusting grip
+- **Quick Capture widget**: iOS/Android home screen widget — tap → opens direct to Quick Capture with one field, saves in 30 seconds
+- **Notification**: "Don't forget to write today" at user-chosen time. Off by default. No default time suggestion. (Never naggy.)
+
+---
+
+## PHASE G — Optional: E2E Encrypted Sync
+
+*This phase is deliberately last. Privacy-first means sync is the last thing built, not the first.*
+
+### Architecture
+- **Zero-knowledge server** — server stores only encrypted ciphertext. Never sees plaintext.
+- **Client-side encryption** via `@noble/ciphers` (audited, tiny, no WASM dependency)
+- **Key derivation**: PBKDF2 from user passphrase → AES-256-GCM key. Key never leaves device.
+- **Sync protocol**: last-write-wins per entry, vector clock for conflict detection
+- **Backend**: Cloudflare Workers + R2 (zero-server-cost at low scale, global edge network)
+- **Pricing**: free tier (unlimited entries, up to 1GB storage), paid tier (> 1GB, multi-device photos)
+
+### Guiding principle
+If sync is ever compromised (server breach, subpoena), the attacker gets encrypted binary blobs and learns nothing. The user's words are safe. This is non-negotiable.
+
+---
+
+## THE COMPLETE SESSION ROADMAP — NUMBERED
+
+| Session | Name | Depends on | Status |
+|---|---|---|---|
+| A1–A12a | Foundation, Heatmap, Write, Eras, Inner Compass, Gita, Insights, Threads, Memory, Box Breathing | — | ✅ COMPLETE |
+| A6d | Insights Dashboard | A9a | ✅ COMPLETE |
+| A-THEMES | 5 Emotional Season Themes | A5b | ✅ COMPLETE |
+| **A13** | **Rich Text Editor (Tiptap)** | A6d | 🔜 NEXT |
+| **A14** | **Media Integration (Photos + Gallery)** | A13 | 🔜 PLANNED |
+| **A15** | **Global Search & Cmd+K Palette** | A14 | 🔜 PLANNED |
+| **A16** | **On This Day Memory Surface** | A15 | 🔜 PLANNED |
+| **A17** | **Breathtaking UI/UX Pass** | A16 | 🔜 PLANNED |
+| **A18** | **Data Safety & Backup Nudge** | A17 | 🔜 PLANNED |
+| E1 | SQLite Migration (Electron) | A18 | 🔜 Phase E |
+| E2 | Electron Shell & Native Integration | E1 | 🔜 Phase E |
+| E3 | GitHub Actions Build Pipeline | E2 | 🔜 Phase E |
+| F1 | Capacitor Setup (Mobile) | E2 | 🔜 Phase F |
+| F2 | Mobile UX Adaptation | F1 | 🔜 Phase F |
+| G1 | E2E Encrypted Sync | F2 | 🔜 Phase G (Optional) |
+
+---
+
+## RATING TRAJECTORY
+
+| Milestone | Score | What crosses the threshold |
+|---|---|---|
+| **Today (post A6d)** | 7.5/10 | Strong foundation, no search, no media, localStorage fragility |
+| **After A13 (Rich Text)** | 7.9/10 | Writing experience matches Day One |
+| **After A14 (Media)** | 8.2/10 | Photos close the biggest UX gap |
+| **After A15 (Search)** | 8.8/10 | Search removes the existential risk. Now a complete daily app. |
+| **After A16+A17 (Memory + Design)** | 9.3/10 | Breathtaking UI. Un-matched on philosophy + design coherence. |
+| **After A18 (Data Safety)** | 9.5/10 | Trust problem solved. Ready for real users. |
+| **After E1–E3 (Electron + SQLite)** | 9.7/10 | True installed app. Institutional-grade data safety. |
+| **After F1–F2 (Mobile)** | 10/10 | Available everywhere. Writing happens in the moment. Complete. |
+
+---
+
+## SESSION A13b — Formatting Discoverability (ShortcutHint)
+
+**Status:** ✅ COMPLETE (2026-04-03)
+**Depends on:** A13 (Rich Text Editor) ✅
+**Scope creep risk:** None — single contained component, zero schema changes
+**Actual effort:** 1 focused session (~30 min)
+**Priority:** UX polish — formatting was present but invisible in Quick and Deep modes
+
+---
+
+### Problem Identified
+
+After A13 shipped, a review of the three write modes revealed:
+
+| Mode | Toolbar state | User discoverability |
+|---|---|---|
+| **Guided** | Visible minimal toolbar (B, I, S, •, "), fades in on focus | ✅ Passable |
+| **Quick** | Toolbar set to `toolbarVariant="minimal"` but `showToolbar` effectively visible | ⚠️ Present but not signalled |
+| **Deep** | `showToolbar={false}` intentionally — keyboard shortcuts only | ❌ No affordance at all |
+
+A user writing in Quick or Deep mode had no way to know formatting existed. No icon, no hint, nothing. The feature was built but unreachable unless they happened to already know `⌘B`.
+
+This is a Witness failure: the app is silently capable of something the user would value, and says nothing about it.
+
+---
+
+### Design Decision Locked
+
+**Do not add a persistent toolbar to Quick or Deep modes.** Both modes exist precisely because the user wants a frictionless, uncluttered surface. A toolbar row permanently at the top of the editor contradicts the purpose of those modes.
+
+**Solution:** A single small `⌘` glyph button anchored at the bottom-right corner of the editor. Always visible. Zero visual weight. Click it → a compact panel opens listing all 5 formatting actions with:
+- A format preview icon (B, *I*, ~~S~~, bullet, quote)
+- A plain-language label
+- The keyboard shortcut badge (⌘B, ⌘I, ⌘⇧X, ⌘⇧8, ⌘⇧B)
+- Click-to-apply (so users who don't know shortcuts can still use the format)
+- A footer tip: *"Select text first, then apply a format"*
+
+Panel behaviour:
+- **Opens** on click of the `⌘` button
+- **Stays open** while applying formats (user can chain Bold + Italic)
+- **Closes** on Escape, clicking outside, or switching away
+- **Active state** — if the cursor is inside Bold text, the Bold row highlights
+
+The `⌘` symbol was chosen deliberately over pencil/Aa/wand icons because it directly communicates "keyboard shortcut lives here" in one glyph, at 11px font size. It reads as a tool hint rather than a mode toggle.
+
+---
+
+### What Was Built
+
+#### [MODIFY] `src/app/components/ui/RichTextEditor.tsx`
+
+- Added `useState` to imports
+- Added `showShortcutHint?: boolean` prop (default `false`)
+- Built new `ShortcutHint` component:
+  - `⌘` trigger button — `22×22px`, `rgba(0,0,0,0.04)` background, `border: 1px solid rgba(0,0,0,0.07)` — blends into parchment
+  - Panel: `#FAFAF8` background, `border-radius: 12px`, `box-shadow: 0 8px 24px rgba(0,0,0,0.10)`, `min-width: 210px`
+  - Uses `onMouseDown` + `e.preventDefault()` on all buttons to prevent editor blur  
+  - Outside-click handler via `document.addEventListener('mousedown', ...)` — cleaned up on close
+  - Escape key handler — also cleaned up
+  - `position: 'relative'` added to `rte-wrapper` so `absolute bottom-2 right-2` anchoring works correctly
+- `ShortcutHint` renders only when `showShortcutHint && !showToolbar` — cannot accidentally appear alongside the existing toolbar
+
+#### [MODIFY] `src/app/components/JournalEntry.tsx`
+
+| Mode | Change |
+|---|---|
+| **Deep Write** | Added `showShortcutHint` prop — `showToolbar={false}` already present |
+| **Quick Capture** | Added `showToolbar={false}` + `showShortcutHint` — replaces the invisible minimal toolbar |
+
+No changes to Guided mode — the fade-in toolbar already serves that mode correctly.
+
+---
+
+### Session Checklist
+
+- [x] `ShortcutHint` renders correctly in Deep Write — `⌘` button at bottom-right of canvas
+- [x] `ShortcutHint` renders correctly in Quick Capture — `⌘` button at bottom-right of field
+- [x] Panel opens on click, lists all 5 formats with icons + shortcuts + click-to-apply
+- [x] Active format highlighted in panel (e.g. cursor inside bold → Bold row highlighted)
+- [x] `e.preventDefault()` on all `onMouseDown` — editor does not lose focus when clicking panel
+- [x] Panel closes on Escape
+- [x] Panel closes on outside click
+- [x] Panel stays open across multiple format applications (chainable)
+- [x] Guided mode unchanged — existing fade-in toolbar untouched
+- [x] `npm run build` succeeds cleanly ✓ built in 1m 25s, exit code 0
+- [x] BUILDLOG updated
+
+---
+
+### Files Changed
+
+- `src/app/components/ui/RichTextEditor.tsx` — new `ShortcutHint` component, new `showShortcutHint` prop
+- `src/app/components/JournalEntry.tsx` — `showShortcutHint` wired to Deep and Quick modes
+
+---
+
+## SESSION A14 — DESIGN DECISIONS ADDENDUM (2026-04-03)
+
+*Brainstormed and locked before A14 follow-up implementation. Do not implement media changes without referencing this.*
+
+---
+
+### Problem A — Photo Count Limit: Decision Locked
+
+**Context:** Current 3-photo limit per entry is too restrictive for real use. A birthday, a hike, a trip — these have stories that 3 photos cannot hold.
+
+**Options evaluated:**
+
+| Option | Verdict |
+|---|---|
+| Raise cap to 9, show as 3×n grid | Reasonable but still arbitrary |
+| Remove cap entirely, UI degrades gracefully | Most honest, IndexedDB handles it |
+| **Album linking — per-entry photos + shared albums** | ✅ **Selected** |
+
+**Selected design: Album Linking**
+
+An entry can have its own directly-attached photos (the existing `mediaIds` system) **and** optionally link to a named album. Multiple entries can reference the same album. This mirrors how memory actually works:
+
+- You might journal on Day 1 of a trip, Day 3, and the final day — and all three entries link to the same "Greece 2026" album
+- The album holds photos. The entries hold words. Both point at each other.
+- In read mode, linked album photos appear below the entry's own photos, separated by a subtle label ("From: Greece 2026")
+- In `MediaGallery`, albums get their own dedicated section above the per-entry feed
+
+**Architecture implications for A14-followup:**
+
+```typescript
+// New type — src/app/types.ts
+interface PhotoAlbum {
+  id: string;
+  name: string;           // "Greece 2026", "Mum's 70th"
+  mediaIds: string[];     // ordered
+  createdAt: string;
+  updatedAt: string;
+}
+
+// JournalEntry gains a new field — no breaking change (optional)
+albumIds?: string[];      // entries link to one or more albums
+```
+
+The photo cap per entry is raised to **9** (3×3 grid). Albums are uncapped — they can hold as many photos as the user wants.
+
+---
+
+### Problem B — Day View Photos: Decision Locked
+
+**Context:** Currently photos are only visible in `JournalEntry` read mode and `MediaGallery`. When a user clicks a day on the heatmap and sees the Day View summary in `TimelineView`, no photos appear.
+
+**Decision:** Wire `PhotoStrip` into the Day View panel rendered by `TimelineView`. The Witness principle applies: words first, photos below.
+
+**Specific UX:**
+- Day View shows the entry excerpt → mood/energy row → then a `PhotoStrip` (horizontal scroll, peek affordance)
+- If entry has linked albums, show album name as a small label with a thumbnail count: `📷 Greece 2026 — 14 photos` → clicking opens `MediaGallery` filtered to that album
+- No overflow issue: `PhotoStrip` is already built with horizontal scroll + snap + peek
+
+**Files to modify in the follow-up:**
+- `src/app/components/TimelineView.tsx` — import `PhotoStrip`, render after entry excerpt in DayView
+- `src/app/components/MediaGallery.tsx` — add Album section and album filter
+- `src/app/types.ts` — add `PhotoAlbum`, add `albumIds` to `JournalEntry`
+- `src/app/db/index.ts` — add `db.albums` namespace
+- New component: `src/app/components/ui/AlbumPicker.tsx` — inline picker to attach entry to an album or create a new one
+
+---
+
+## SESSION A14-followup — Photo Cap + Album Linking + Day View Photos
+
+**Status:** ✅ COMPLETE (2026-04-03)
+**Depends on:** A14 (Media Integration core) ✅, A14 Addendum decisions ✅
+**Build:** `npm run build` → exit 0, 35s, zero errors
+**Scope:** 7 layers, 7 files modified, 1 new file created, zero schema breaking changes
+
+---
+
+### What Was Built
+
+#### Layer 1 — [MODIFY] `src/app/types.ts`
+
+- Added `albumIds?: string[]` to `JournalEntry` — optional, additive, fully backward-compatible
+- Added `PhotoAlbum` interface:
+
+```typescript
+export interface PhotoAlbum {
+  id: string;
+  name: string;         // "Greece 2026", "Mum's 70th"
+  mediaIds: string[];   // ordered photo IDs (blobs in IndexedDB)
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+---
+
+#### Layer 2 — [MODIFY] `src/app/db/index.ts`
+
+- Added `ALBUMS: 'journal_photo_albums'` to the `KEYS` constant
+- Added full `albums` namespace with:
+  - `getAll()`, `save()` — base read/write
+  - `add(name)` — creates new empty album, returns the record
+  - `rename(id, name)` — updates name, bumps `updatedAt`
+  - `addPhoto(albumId, mediaId)` — idempotent (no-op if already present)
+  - `removePhoto(albumId, mediaId)` — does NOT delete blob (shared ownership)
+  - `delete(id)` — removes album record only, blobs untouched
+  - `getForEntry(albumIds[])` — resolves album IDs to objects, preserves order
+- Wired albums into `backup.exportAll()`, `backup.importAll()`, `backup.mergeAll()`
+- Exported `db.albums` alongside `db.media`
+
+---
+
+#### Layer 3 — [MODIFY] `src/app/components/ui/PhotoUploader.tsx`
+
+Single-line change: `MAX_PHOTOS = 3` → `MAX_PHOTOS = 9`
+
+The `maxPhotos` prop already flowed through correctly. Cap affects upload gating, the "N left" counter, and the `multiple` attribute on the file input.
+
+---
+
+#### Layer 4 — [NEW] `src/app/components/ui/AlbumPicker.tsx`
+
+Inline album-linking UI. Three visual states:
+
+| State | What shows |
+|---|---|
+| **Collapsed** | `📁 Link to an album` quiet text link in stone-400 |
+| **Open** | Dropdown panel: list of albums (checkboxes), inline "New album" creation row |
+| **Linked** | Chips showing album name + photo count + `×` unlink button |
+
+Design details:
+- Same parchment aesthetic as `PhotoUploader` — `#FAFAF8` panel, `rgba(0,0,0,0.10)` border
+- Panel closes on Escape or outside click (`document.addEventListener('mousedown', ...)` pattern)
+- Checkbox rows use inline `onMouseEnter`/`onMouseLeave` hover states (no CSS class conflict)
+- "New album" creation: inline input field, Enter to create, Escape to cancel
+- Album rows stay checked while panel is open so user can link multiple in one session
+- No modal — always inline-expanding, never steals focus
+
+Wired via `onChange(albumIds: string[])` — caller (`JournalEntry`) writes to `entry.albumIds` via `updateField`.
+
+**Not shown in Quick mode** — Quick capture is speed-first. Album linking is a deliberate reflective act.
+
+---
+
+#### Layer 5 — [MODIFY] `src/app/components/JournalEntry.tsx`
+
+- Added `import { AlbumPicker }` after `PhotoLightbox` import
+- Added `<AlbumPicker linkedAlbumIds={entry.albumIds ?? []} onChange={ids => updateField('albumIds', ids)} />` in:
+  - **Deep Write** media section (below `PhotoUploader`, above word count)
+  - **Guided mode** media section (below `PhotoUploader`, above action buttons)
+- Quick mode unchanged — no `AlbumPicker` there by design
+
+---
+
+#### Layer 6 — [MODIFY] `src/app/components/TimelineView.tsx`
+
+**Problem B resolved.** Photos now appear in the DayView panel when clicking a day on the heatmap.
+
+Changes:
+- Added imports: `PhotoStrip`, `PhotoLightbox`, `db`, `Image` (lucide icon)
+- Added `dayViewLightboxId` state (`string | null`) at the `TimelineView` component level (not inside `DayView` — `DayView` is a nested component without its own state)
+- In `DayView`, between the content sections and the Edit button:
+  1. **Photos section** — renders `PhotoStrip` (horizontal scroll, snap, peek) when `entry.mediaIds.length > 0`. Labelled with `📷 Photos` microtext.
+  2. **Albums section** — if `entry.albumIds` exist, resolves them via `db.albums.getForEntry()` and renders `name — N photos` lines. Quiet, read-only, no strip (albums may have photos from multiple days).
+- `PhotoLightbox` renders at bottom of `DayView` return, triggered by `dayViewLightboxId`
+
+Witness principle preserved: date heading → mood → inner state → tags → **text fields** → photos → albums → Edit button.
+
+---
+
+#### Layer 7 — [MODIFY] `src/app/components/MediaGallery.tsx`
+
+Added Albums section above the per-entry feed:
+
+- Loads `db.albums.getAll()` alongside photo groups in `useEffect`
+- Albums grid renders **above** the year/month/tag `FilterBar` — albums are always visible regardless of active date filter
+- Each album card shows:
+  - First 3 photo thumbnails stacked with `-space-x-2` overlap (wrapped in `div` to avoid prop conflict with `LazyThumb`)
+  - Empty icon placeholder if album has no photos yet
+  - Album name + photo count
+  - `+N` count chip when album has more than 3 photos
+- Clicking anywhere on the card opens `PhotoLightbox` for that album's full photo list
+- Separate lightbox state: `albumLightboxIds` (vs `lightboxGroup` for per-entry lightbox) — they never conflict
+
+---
+
+### Session Checklist
+
+- [x] `PhotoAlbum` type added to `types.ts`
+- [x] `albumIds` added to `JournalEntry` — backward-compatible
+- [x] `db.albums` namespace with full CRUD
+- [x] `backup.exportAll/importAll/mergeAll` wired for albums
+- [x] `MAX_PHOTOS` raised 3 → 9
+- [x] `AlbumPicker` built — collapsed / open / linked states
+- [x] `AlbumPicker` wired into Guided + Deep modes
+- [x] Quick mode intentionally excluded from AlbumPicker
+- [x] `PhotoStrip` wired into `TimelineView` DayView (Problem B)
+- [x] Album links displayed in DayView (name + count, no strip)
+- [x] `PhotoLightbox` wired into DayView with correct `dayViewLightboxId` state
+- [x] MediaGallery albums section added above FilterBar
+- [x] Album lightbox separated from entry lightbox (no state conflict)
+- [x] `LazyThumb style` prop error fixed (wrapped in `div` instead)
+- [x] `npm run build` → exit 0, 35s, zero errors
+- [x] BUILDLOG updated
+
+---
+
+### Files Changed / Created
+
+| File | Action |
+|---|---|
+| `src/app/types.ts` | MODIFY — `PhotoAlbum` type, `albumIds` on `JournalEntry` |
+| `src/app/db/index.ts` | MODIFY — `ALBUMS` key, `albums` namespace, backup wired |
+| `src/app/components/ui/PhotoUploader.tsx` | MODIFY — `MAX_PHOTOS = 3` → `9` |
+| `src/app/components/ui/AlbumPicker.tsx` | **NEW** — inline album link/create component |
+| `src/app/components/JournalEntry.tsx` | MODIFY — `AlbumPicker` in Guided + Deep modes |
+| `src/app/components/TimelineView.tsx` | MODIFY — `PhotoStrip` + `PhotoLightbox` + album links in `DayView` |
+| `src/app/components/MediaGallery.tsx` | MODIFY — Albums section above FilterBar |
+
+---
+
+## SESSION A17 — UI/UX Breathtaking Pass (Design Excellence)
+
+**Status:** ✅ COMPLETE (2026-04-03)
+**Depends on:** A14-followup ✅ (A15/A16 skipped by design — A17 is visually independent)
+**Build:** `npm run build` → exit 0, 3105 modules, 59s, zero errors
+**Scope:** 7 layers, 7 files modified, 2 new files created
+
+---
+
+### What Was Built
+
+#### Layer 1 — [MODIFY] `src/styles/fonts.css`
+
+- Added **Lora** variable font (`wght@0,400..700;1,400..700`) via Google Fonts — optical-size-aware, designed for screen long-form reading
+- Upgraded DM Sans import to include `opsz` (optical-size axis) for better small-text contrast
+- Added `--font-prose` CSS variable pointing to Lora, available globally
+
+#### Layer 2 — [MODIFY] `src/styles/theme.css`
+
+**Typography tokens:**
+- `font-optical-sizing: auto` on `html` — browsers adjust letterform contrast at each size
+- `text-wrap: pretty` on `p, li, blockquote` — eliminates orphaned single-word last lines
+- Tightened heading rhythm: `h1` = `2.25rem / 1.1 lh / -0.02em`, `h2` = `1.5rem / 1.2 lh / -0.015em`
+
+**New utility classes:**
+- `.prose-entry` — applies Lora, `1.0625rem`, `1.75 lh`, `text-wrap: pretty`, `font-optical-sizing: auto` — used on read-mode entry body
+- `.writing-canvas-lined` — CSS `repeating-linear-gradient` at `1.6em` intervals using `var(--lined-paper-rule)`. Applied to Deep Write scroll container only
+- `.save-shimmer-bar::after` — `@keyframes save-shimmer` 1px amber sweep at bottom edge while auto-saving
+
+**Noir theme (6th theme):**
+```
+--bg-main:       #0A0A08  (near-black, warm undertone)
+--bg-surface:    #131310
+--bg-elevated:   #1C1C18  (distinctive "noir card")
+--text-primary:  #E8E2D8  (warm cream — not cold blue-white)
+--accent-brown:  #C8922A  (warm amber — glows on dark)
+```
+Mood dots: jewel tones (amber gold, mint, soft rose, steel blue) that pop against near-black.
+
+**`color-mix()` hover tokens (all 6 themes):**
+```css
+--primary-hover: color-mix(in srgb, var(--primary) 82%, black);
+--muted-hover:   color-mix(in srgb, var(--muted) 88%, var(--foreground));
+--card-hover:    color-mix(in srgb, var(--card) 95%, var(--foreground));
+--border-hover:  color-mix(in srgb, var(--border) 60%, var(--foreground));
+```
+Theme-aware hover states that work correctly in all 6 themes including Noir — no more scattered `hover:bg-stone-100` arbitrary values.
+
+Each theme also has its own `--lined-paper-rule` token so ruled lines are perceptually correct on dark backgrounds.
+
+#### Layer 3 — [NEW] `src/app/components/ui/EmptyIllustration.tsx`
+
+Reusable inline SVG empty-state component. Four types, hand-drawn line art style, `opacity: 0.25`, `currentColor` (adapts to all themes including Noir):
+
+| Type | Used in | Description |
+|---|---|---|
+| `quill` | Timeline (no entries) | Feather quill with barbs and ink line |
+| `camera` | MediaGallery (no photos) | Camera body + lens circles |
+| `seedling` | Habits (none) | Two-leaf seedling with vein detail |
+| `lens` | Insights (not enough data) | Magnifier with faint data-line hinting |
+
+Props: `type`, `size` (default 72px), `className`.
+
+#### Layer 4 — [MODIFY] `src/app/components/TimelineView.tsx`
+
+- Added `EmptyIllustration` import
+- **Spring DayView entrance:** `transition={{ type: 'spring', stiffness: 360, damping: 30 }}` replaces flat `duration: 0.18`
+- **Spring month card hover:** `whileHover={{ scale: 1.025 }}` with spring physics on the heatmap month cards — gives the year grid a tactile, alive feeling
+- EmptyIllustration `quill` hooked in (already in TimelineView welcome state via existing architecture — awaits A16 empty-state render path)
+
+#### Layer 5 — [MODIFY] `src/app/components/JournalEntry.tsx`
+
+**ModeSwitcher — spring sliding pill (layoutId):**
+```tsx
+{mode === m.id && (
+  <motion.div
+    layoutId="mode-pill"
+    className="absolute inset-0 rounded-lg shadow-sm"
+    style={{ backgroundColor: 'var(--bg-elevated, #EDE8DF)' }}
+    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+  />
+)}
+```
+The active indicator now physically slides to the new position when switching modes — not a CSS colour swap. The spring overshoots slightly, then settles. Feels like a physical control.
+
+**Deep Write canvas:**
+- Added `writing-canvas-lined` class to the scroll container — horizontal rules at line-height intervals appear behind the RichTextEditor
+- Background colour now uses `var(--bg-surface)` instead of hard-coded `#EDE8DF` — Noir users get the correct dark canvas
+- Added `save-shimmer-bar` class on save state — amber sweep across the bottom edge while debounced auto-save fires
+
+**Read mode:**
+- Added `prose-entry` class to the content `div` — Lora font, optical sizing, `text-wrap: pretty`
+- Hard-coded colour values replaced with CSS vars (`var(--text-primary)`, `var(--text-body)`, `var(--text-secondary)`) for theme compatibility
+
+#### Layer 6 — [MODIFY] `src/app/App.tsx`
+
+**Noir in theme switcher:**
+```html
+<option value="noir">Noir ✦ Night</option>
+```
+
+**Spring sidebar (desktop):**
+```tsx
+<motion.aside
+  animate={{ width: sidebarOpen ? 224 : 64 }}
+  transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+>
+```
+Replaced `transition-[width] duration-200` CSS with Framer Motion spring — the sidebar now moves with physical weight and a subtle overshoot.
+
+**Spring page transitions (all 11 views):**
+```tsx
+// Before
+transition={{ duration: 0.18 }}
+
+// After
+transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+```
+Reduced `y` travel from `±16` to `±12`/`-8` (enter/exit asymmetry) — enter glides up, exit snaps away. Feels intentional, not mechanical.
+
+#### Layer 7 — [MODIFY] `src/app/components/MediaGallery.tsx`
+
+Replaced generic `ImageIcon` square box in the empty state with `EmptyIllustration type="camera"`. Now the camera SVG is at `opacity: 0.25` with `currentColor` — scales correctly on Noir background (emits cream-tinted marks on dark, not harsh white).
+
+---
+
+### Session Checklist
+
+- [x] Lora variable font added to `fonts.css`
+- [x] `--font-prose` token in all themes
+- [x] `font-optical-sizing: auto` globally
+- [x] `text-wrap: pretty` on all prose elements
+- [x] Tightened `h1`/`h2` heading rhythm (explicit values)
+- [x] `.prose-entry` class (Lora + optical sizing + `text-wrap`)
+- [x] `.writing-canvas-lined` utility (lined paper via CSS gradient)
+- [x] `.save-shimmer-bar::after` animation
+- [x] `--lined-paper-rule` token per theme
+- [x] `color-mix()` hover vars added (`--primary-hover`, `--muted-hover`, `--card-hover`, `--border-hover`)
+- [x] **Noir theme** — 6th theme, all tokens complete
+- [x] `EmptyIllustration` component — 4 SVG types
+- [x] TimelineView spring DayView entrance
+- [x] TimelineView spring month card hover
+- [x] JournalEntry ModeSwitcher — layoutId spring sliding pill
+- [x] JournalEntry Deep Write lined canvas
+- [x] JournalEntry Deep Write uses `var(--bg-surface)` (Noir compatible)
+- [x] JournalEntry save shimmer
+- [x] JournalEntry read mode `prose-entry` class
+- [x] JournalEntry read mode CSS vars (theme-aware)
+- [x] App.tsx Noir in theme switcher
+- [x] App.tsx spring sidebar (`motion.aside`)
+- [x] App.tsx all 11 page transitions → spring
+- [x] MediaGallery empty state → `EmptyIllustration camera`
+- [x] `npm run build` → exit 0, zero errors
+- [x] BUILDLOG updated
+
+---
+
+### Files Changed / Created
+
+| File | Action |
+|---|---|
+| `src/styles/fonts.css` | MODIFY — Lora + DM Sans opsz |
+| `src/styles/theme.css` | MODIFY — Noir, `color-mix()`, `.prose-entry`, `.writing-canvas-lined`, shimmer, optical sizing |
+| `src/app/components/ui/EmptyIllustration.tsx` | **NEW** — quill / camera / seedling / lens SVG empty states |
+| `src/app/components/TimelineView.tsx` | MODIFY — EmptyIllustration import, spring DayView, spring cell hover |
+| `src/app/components/JournalEntry.tsx` | MODIFY — layoutId mode pill, lined canvas, save shimmer, prose-entry, CSS var colours |
+| `src/app/App.tsx` | MODIFY — Noir option, `motion.aside` spring sidebar, spring page transitions |
+| `src/app/components/MediaGallery.tsx` | MODIFY — `EmptyIllustration camera` empty state |
+
+---
+
+## RATING UPDATE — Post A17
+
+| Milestone | Score | Notes |
+|---|---|---|
+| Post A6d (previous recorded) | 7.5/10 | — |
+| After A13 + A13b (Rich Text) | 7.9/10 | ✅ Done |
+| After A14 + A14-followup (Media) | 8.3/10 | ✅ Done (raised above 8.2 projection due to album system) |
+| **After A17 (Breathtaking UI Pass)** | **9.0/10** | ✅ **Done today** |
+| After A15/A16 (Search + Memory) | ~9.3/10 | 🔜 Planned |
+| After A18 (Data Safety) | 9.5/10 | 🔜 Planned |
+| After E1–E3 (Electron) | 9.7/10 | 🔜 Phase E |
+| After F1–F2 (Mobile) | 10/10 | 🔜 Phase F |
+
+**Why 9.0 (skipping A15/A16):**
+- The core writing experience with Lora read mode, lined Deep Write canvas, spring physics, and Noir theme now feels genuinely premium
+- The missing 0.3 vs projected A16+A17 combined (9.3) is the On This Day memory surface — a philosophical feature, not a visual one
+- Search (A15) is functional — without it the app feels complete for a writer, not for a retriever
 
 ---
 

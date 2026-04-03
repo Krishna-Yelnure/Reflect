@@ -1,11 +1,15 @@
 @custom-variant dark (&:is(.dark *));
 
+/* ── A17: Prose font — Lora for read-mode entry body ─────────────────────── */
+/* Applied via .prose-entry class on read-mode text containers */
+
 :root, .theme-morning-light {
   --font-size: 16px;
 
   /* ── Typefaces ── */
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-prose:   'Lora', Georgia, serif;                /* A17: entry read mode */
   --font-mono:    'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* ── Morning Light (Default) ── */
@@ -35,6 +39,9 @@
   --border-medium: rgba(104, 92, 74, 0.12);
   --border-heavy: rgba(104, 92, 74, 0.20);
   --selection-bg: rgba(107, 91, 74, 0.15);
+
+  /* A17: lined writing paper rule colour (Deep Write canvas) */
+  --lined-paper-rule: rgba(107, 91, 74, 0.07);
 }
 
 .theme-midnight {
@@ -64,6 +71,8 @@
   --border-medium: rgba(255, 255, 255, 0.10);
   --border-heavy: rgba(255, 255, 255, 0.15);
   --selection-bg: rgba(255, 255, 255, 0.10);
+
+  --lined-paper-rule: rgba(255, 255, 255, 0.05);
 }
 
 .theme-forest {
@@ -93,6 +102,8 @@
   --border-medium: rgba(47, 62, 46, 0.12);
   --border-heavy: rgba(47, 62, 46, 0.20);
   --selection-bg: rgba(47, 62, 46, 0.12);
+
+  --lined-paper-rule: rgba(47, 62, 46, 0.06);
 }
 
 .theme-minimal {
@@ -122,6 +133,8 @@
   --border-medium: rgba(0, 0, 0, 0.10);
   --border-heavy: rgba(0, 0, 0, 0.80); /* Sharp dark borders */
   --selection-bg: rgba(0, 0, 0, 0.08);
+
+  --lined-paper-rule: rgba(0, 0, 0, 0.05);
 }
 
 .theme-warm {
@@ -151,10 +164,46 @@
   --border-medium: rgba(92, 58, 33, 0.12);
   --border-heavy: rgba(92, 58, 33, 0.20);
   --selection-bg: rgba(217, 119, 70, 0.15);
+
+  --lined-paper-rule: rgba(92, 58, 33, 0.07);
 }
 
-/* Base mappings for components to ingest CSS vars */
-:root, .theme-morning-light, .theme-midnight, .theme-forest, .theme-minimal, .theme-warm {
+/* ── A17: Noir Theme ─────────────────────────────────────────────────────────
+   Near-black background, cream text, warm amber accent.
+   For night writers. The most dramatic and premium-feeling theme.
+   ─────────────────────────────────────────────────────────────────────────── */
+.theme-noir {
+  --bg-main:            #0A0A08;   /* Near-black, warm undertone */
+  --bg-surface:         #131310;   /* Slightly lifted surface */
+  --bg-elevated:        #1C1C18;   /* Cards — the distinctive "noir card" */
+
+  --text-primary:       #E8E2D8;   /* Warm cream — not cold blue-white */
+  --text-secondary:     #B8AFA0;   /* Warm stone mid-tone */
+  --text-muted:         #6E6860;   /* Dark warm grey */
+  --text-body:          #D4CEC5;   /* Reading text — softer than primary */
+
+  --accent-brown:       #C8922A;   /* Warm amber — glows on dark */
+  --accent-brown-dark:  #A87420;
+  --accent-brown-light: #E8B454;
+
+  /* Moods — jewel tones that pop against near-black */
+  --mood-dot-great:     #E8B454;   /* Amber gold */
+  --mood-dot-good:      #4ECCA3;   /* Mint/teal */
+  --mood-dot-okay:      #8B8680;   /* Warm grey */
+  --mood-dot-difficult: #E87070;   /* Soft rose */
+  --mood-dot-low:       #6090C8;   /* Steel blue */
+  --mood-dot-none:      rgba(255, 255, 255, 0.04);
+
+  --border-light: rgba(255, 255, 255, 0.04);
+  --border-medium: rgba(255, 255, 255, 0.08);
+  --border-heavy: rgba(255, 255, 255, 0.14);
+  --selection-bg: rgba(200, 146, 42, 0.15);   /* Amber tint selection */
+
+  --lined-paper-rule: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Base component token mappings ───────────────────────────────────────── */
+:root, .theme-morning-light, .theme-midnight, .theme-forest, .theme-minimal, .theme-warm, .theme-noir {
   --background:         var(--bg-main);
   --foreground:         var(--text-body);
   --card:               var(--bg-elevated);
@@ -180,6 +229,12 @@
   --switch-background:  var(--border-heavy);
   --ring:               var(--border-heavy);
   --radius:             0.625rem;
+
+  /* A17: color-mix() hover states — theme-aware, work in all 6 themes */
+  --primary-hover:      color-mix(in srgb, var(--primary) 82%, black);
+  --muted-hover:        color-mix(in srgb, var(--muted) 88%, var(--foreground));
+  --card-hover:         color-mix(in srgb, var(--card) 95%, var(--foreground));
+  --border-hover:       color-mix(in srgb, var(--border) 60%, var(--foreground));
 }
 
 @theme inline {
@@ -241,6 +296,8 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* A17: optical sizing — browsers adjust letterform contrast at each size */
+    font-optical-sizing: auto;
   }
 
   body {
@@ -248,15 +305,22 @@
     font-family: var(--font-body);
   }
 
-  h1, h2 {
+  /* A17: Tightened heading rhythm — explicit values, not Tailwind defaults */
+  h1 {
     font-family: var(--font-display);
+    font-size: 2.25rem;      /* 36px */
     font-weight: 300;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
-  h1 { font-size: var(--text-3xl); }
-  h2 { font-size: var(--text-2xl); }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;       /* 24px */
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
 
   h3 {
     font-family: var(--font-body);
@@ -295,5 +359,55 @@
 
   .font-mono {
     font-family: var(--font-mono);
+  }
+
+  /* A17: Prose class — Lora for entry read-mode body text */
+  .prose-entry {
+    font-family: var(--font-prose);
+    font-size: 1.0625rem;    /* 17px — slightly larger for reading comfort */
+    line-height: 1.75;
+    letter-spacing: 0.005em;
+    /* A17: eliminates orphaned single-word last lines automatically */
+    text-wrap: pretty;
+    font-optical-sizing: auto;
+  }
+
+  /* A17: text-wrap: pretty on all prose-like containers */
+  p, li, blockquote {
+    text-wrap: pretty;
+  }
+
+  /* A17: lined writing paper — applied to Deep Write canvas only */
+  .writing-canvas-lined {
+    background-image: repeating-linear-gradient(
+      transparent,
+      transparent calc(1.6em - 1px),
+      var(--lined-paper-rule) calc(1.6em - 1px),
+      var(--lined-paper-rule) 1.6em
+    );
+    background-attachment: local;  /* lines scroll with content */
+  }
+
+  /* A17: save shimmer animation */
+  @keyframes save-shimmer {
+    0%   { transform: translateX(-100%); opacity: 0; }
+    20%  { opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+  }
+
+  .save-shimmer-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--primary),
+      transparent
+    );
+    animation: save-shimmer 1.6s ease-in-out;
   }
 }

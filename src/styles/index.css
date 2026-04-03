@@ -264,3 +264,48 @@ input[type="text"].parchment-input:focus {
   outline: none;                   /* Truly invisible */
 }
 
+
+/* ─── Rich Text Editor (SESSION A13) ────────────────────────────────────── */
+
+.rte-wrapper {
+  position: relative;
+  cursor: text;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-muted);
+  font-style: italic;
+  pointer-events: none;
+  height: 0;
+}
+
+/* ProseMirror base overrides */
+.ProseMirror {
+  outline: none;
+  caret-color: #f59e0b;
+  color: var(--text-body);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Shared prose: edit (prose-journal) + read (markdown-content) */
+.prose-journal p, .markdown-content p { margin: 0 0 0.75em; line-height: 1.75; color: var(--text-body); }
+.prose-journal strong, .markdown-content strong { font-weight: 600; color: var(--text-primary); }
+.prose-journal em, .markdown-content em { font-style: italic; }
+.prose-journal s, .markdown-content s { text-decoration: line-through; opacity: 0.6; }
+.prose-journal ul, .markdown-content ul { list-style: none; padding-left: 1.25em; margin: 0.5em 0 0.75em; }
+.prose-journal ul li, .markdown-content ul li { position: relative; padding-left: 0.25em; margin-bottom: 0.3em; color: var(--text-body); }
+.prose-journal ul li::before, .markdown-content ul li::before { content: '\2013'; position: absolute; left: -1em; color: var(--text-muted); }
+.markdown-content ul.ordered { counter-reset: list-counter; }
+.markdown-content ul.ordered li { counter-increment: list-counter; }
+.markdown-content ul.ordered li::before { content: counter(list-counter) '.'; position: absolute; left: -1.5em; color: var(--text-muted); }
+.prose-journal blockquote, .markdown-content blockquote { border-left: 2px solid var(--text-muted); margin: 0.75em 0; padding: 0.5em 0 0.5em 1em; color: var(--text-secondary); font-style: italic; opacity: 0.85; }
+.prose-journal blockquote p, .markdown-content blockquote p { margin: 0; }
+
+/* Privacy Mode: cover RTE + MarkdownRenderer */
+.privacy-mode main .ProseMirror, .privacy-mode main .markdown-content { filter: blur(4px); opacity: 0.7; transition: filter 0.2s ease, opacity 0.2s ease; }
+.privacy-mode main .ProseMirror:hover, .privacy-mode main .ProseMirror:focus, .privacy-mode main .markdown-content:hover { filter: blur(0); opacity: 1; }

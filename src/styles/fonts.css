@@ -1,8 +1,14 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Typography
-   Display: Cormorant Garamond — ultra-light, editorial, book-like
-   Body:    DM Sans — clean, warm, humanist sans
-   Mono:    System monospace — for dates, labels, stats
+   Typography — A17 Breathtaking Pass
+   Display: Cormorant Garamond — ultra-light, editorial, book-like (headings/UI)
+   Body:    DM Sans — clean, warm, humanist sans (UI chrome)
+   Prose:   Lora — variable serif, optical-size-aware, designed for screen reading
+            Used exclusively for entry body text in read/view mode
+   Mono:    System monospace — dates, labels, stats
    ───────────────────────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+/* Cormorant Garamond + DM Sans (display + UI) */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+
+/* Lora — variable weight, optical sizing, for entry prose read mode */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');

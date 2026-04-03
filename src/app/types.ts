@@ -28,6 +28,16 @@ export interface JournalEntry {
   createdAt?: string;
   updatedAt?: string;
 
+  // ── A14 — Media ────────────────────────────────────────────────────────────
+  // Ordered list of MediaMeta IDs attached directly to this entry.
+  // Blobs live in IndexedDB (mediaDb.ts); metadata lives in localStorage (db.media).
+  mediaIds?: string[];
+
+  // A14-followup — Album Linking
+  // IDs of PhotoAlbums this entry is linked to.
+  // Albums are shared across entries (e.g. a trip spanning multiple days).
+  albumIds?: string[];
+
   // ── Activation Energy Engine (AEE) fields ──
   clarity?: number;
   resistance?: number;
@@ -36,6 +46,35 @@ export interface JournalEntry {
   activationLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
   firstStep?: string;
   startedAt?: string;
+}
+
+// ── Media ─────────────────────────────────────────────────────────────────────
+// A14 — Photo metadata stored in localStorage (db.media namespace).
+// The actual binary Blob lives in IndexedDB (mediaDb.ts), keyed by id.
+
+export interface MediaMeta {
+  id: string;
+  entryId: string;            // links to JournalEntry.id
+  mimeType: string;           // always 'image/jpeg' after compression
+  sizeBytes: number;          // compressed size in bytes
+  caption?: string;
+  width: number;              // compressed image dimensions
+  height: number;
+  dominantColour: string;     // rgb(r,g,b) sampled at upload — used as placeholder while blob loads
+  createdAt: string;
+}
+
+// ── Photo Albums ──────────────────────────────────────────────────────────────
+// A14-followup — named collections of photos that span multiple entries.
+// Multiple entries can share the same album (e.g. a 3-day trip).
+// The album holds photos; entries hold words. Both reference each other.
+
+export interface PhotoAlbum {
+  id: string;
+  name: string;         // user-chosen label: "Greece 2026", "Mum's 70th"
+  mediaIds: string[];   // ordered list of photo IDs (blobs in IndexedDB)
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ── Insight ───────────────────────────────────────────────────────────────────

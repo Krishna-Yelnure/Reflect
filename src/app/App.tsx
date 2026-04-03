@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   BookOpen,
+  Image,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/app/components/ui/sonner";
@@ -27,15 +28,20 @@ import { JournalEntry } from "@/app/components/JournalEntry";
 import { TimelineView } from "@/app/components/TimelineView";
 
 // Secondary views — loaded on demand
-const Insights       = lazy(() => import('@/app/components/Insights').then(m => ({ default: m.Insights })));
-const MoodChart      = lazy(() => import('@/app/components/MoodChart').then(m => ({ default: m.MoodChart })));
-const InnerCompass   = lazy(() => import('@/app/components/InnerCompass').then(m => ({ default: m.InnerCompass })));
+const Insights        = lazy(() => import('@/app/components/Insights').then(m => ({ default: m.Insights })));
+const MoodChart       = lazy(() => import('@/app/components/MoodChart').then(m => ({ default: m.MoodChart })));
+const InnerCompass    = lazy(() => import('@/app/components/InnerCompass').then(m => ({ default: m.InnerCompass })));
 const PrivacySettings = lazy(() => import('@/app/components/PrivacySettings').then(m => ({ default: m.PrivacySettings })));
-const ErasManager    = lazy(() => import('@/app/components/ErasManager').then(m => ({ default: m.ErasManager })));
-const MemoryThreads  = lazy(() => import('@/app/components/MemoryThreads').then(m => ({ default: m.MemoryThreads })));
-const DataLegacy     = lazy(() => import('@/app/components/DataLegacy').then(m => ({ default: m.DataLegacy })));
-const HabitBuilder   = lazy(() => import('@/app/components/HabitBuilder').then(m => ({ default: m.HabitBuilder })));
+const ErasManager     = lazy(() => import('@/app/components/ErasManager').then(m => ({ default: m.ErasManager })));
+const MemoryThreads   = lazy(() => import('@/app/components/MemoryThreads').then(m => ({ default: m.MemoryThreads })));
+const DataLegacy      = lazy(() => import('@/app/components/DataLegacy').then(m => ({ default: m.DataLegacy })));
+const HabitBuilder    = lazy(() => import('@/app/components/HabitBuilder').then(m => ({ default: m.HabitBuilder })));
+// A14 — Media Gallery
+const MediaGallery    = lazy(() => import('@/app/components/MediaGallery').then(m => ({ default: m.MediaGallery })));
+
 import { storage } from "@/app/utils/storage";
+import { mediaDb } from "@/app/utils/mediaDb";
+import { db } from "@/app/db";
 import type { JournalEntry as JournalEntryType } from "@/app/types";
 
 type View =
@@ -48,7 +54,8 @@ type View =
   | "eras"
   | "threads"
   | "legacy"
-  | "habits";
+  | "habits"
+  | "media";    // A14
 
 // ── Navigation groups ──────────────────────────────────────────────────────
 const NAV_GROUPS = [
@@ -73,6 +80,7 @@ const NAV_GROUPS = [
       { id: "compass"   as View, label: "Compass",    icon: Compass },
       { id: "eras"      as View, label: "Eras",       icon: Layers },
       { id: "threads"   as View, label: "Threads",    icon: FileText },
+      { id: "media"     as View, label: "Media",      icon: Image },   // A14
     ],
   },
   {
@@ -167,6 +175,16 @@ export default function App() {
 
   const handleDeleteEntry = (date: string) => {
     const entryToDelete = storage.getEntryByDate(date);
+
+    // A14 — delete any photos attached to this entry before removing it from storage
+    if (entryToDelete?.mediaIds && entryToDelete.mediaIds.length > 0) {
+      const blobIds = db.media.deleteForEntry(entryToDelete.id);
+      mediaDb.deleteBlobs(blobIds).catch(() => {
+        // Non-fatal: metadata already gone; orphan blobs won't cause visible issues
+        console.warn('[App] Some photo blobs could not be deleted from IndexedDB');
+      });
+    }
+
     storage.deleteEntry(date);
     loadEntries();
     setCurrentView('timeline');
@@ -281,6 +299,7 @@ export default function App() {
             <option value="forest" className="bg-background text-foreground">Forest</option>
             <option value="minimal" className="bg-background text-foreground">Minimal (Greyscale Moods)</option>
             <option value="warm" className="bg-background text-foreground">Warm</option>
+            <option value="noir" className="bg-background text-foreground">Noir ✦ Night</option>
           </select>
         </div>
 
@@ -309,53 +328,59 @@ export default function App() {
     <Suspense fallback={<ViewFallback />}>
       <AnimatePresence mode="wait">
         {currentView === "write" && (
-          <motion.div key="write" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="write" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <JournalEntry selectedDate={selectedDate} onSave={handleSaveEntry} onCancel={() => setCurrentView("timeline")} onDelete={handleDeleteEntry} allEntries={entries} onViewEntry={handleEditEntry} initialReflectionType={pendingReflectionType} initialQuestionId={activeQuestionId} initialMode={pendingMode} />
           </motion.div>
         )}
         {currentView === "timeline" && (
-          <motion.div key="timeline" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="timeline" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <TimelineView entries={entries} onSelectDate={handleSelectDate} onEditEntry={handleEditEntry} onReflectionEntry={handleReflectionEntry} activeIntention={activeIntention} />
           </motion.div>
         )}
         {currentView === "mood" && (
-          <motion.div key="mood" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="mood" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <MoodChart entries={entries} />
           </motion.div>
         )}
         {currentView === "insights" && (
-          <motion.div key="insights" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="insights" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <Insights entries={entries} sendPrompt={handleWriteAboutQuestion} />
           </motion.div>
         )}
         {currentView === "compass" && (
-          <motion.div key="compass" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="compass" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <InnerCompass onWriteAbout={handleWriteAboutQuestion} entries={entries} onViewEntry={handleEditEntry} />
           </motion.div>
         )}
         {currentView === "privacy" && (
-          <motion.div key="privacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="privacy" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <PrivacySettings entries={entries} onImport={loadEntries} />
           </motion.div>
         )}
         {currentView === "eras" && (
-          <motion.div key="eras" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="eras" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <ErasManager entries={entries} />
           </motion.div>
         )}
         {currentView === "threads" && (
-          <motion.div key="threads" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="threads" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <MemoryThreads entries={entries} onViewEntry={handleEditEntry} />
           </motion.div>
         )}
         {currentView === "legacy" && (
-          <motion.div key="legacy" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="legacy" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <DataLegacy entries={entries} />
           </motion.div>
         )}
         {currentView === "habits" && (
-          <motion.div key="habits" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.18 }}>
+          <motion.div key="habits" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
             <HabitBuilder entries={entries} />
+          </motion.div>
+        )}
+        {/* A14 — Media Gallery */}
+        {currentView === "media" && (
+          <motion.div key="media" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 32 }}>
+            <MediaGallery entries={entries} onViewEntry={handleEditEntry} privacyMode={privacyMode} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -366,15 +391,12 @@ export default function App() {
     <div className={`min-h-screen flex bg-background text-foreground ${privacyMode ? 'privacy-mode' : ''}`}>
       <Toaster position="top-center" />
 
-      {/* ── Desktop Sidebar ── */}
+      {/* ── Desktop Sidebar — A17: motion.aside spring width ── */}
       {/* A5c — sidebar recedes into the page: no white bg, thin warm border only */}
-        <aside
-          className={`
-            hidden md:flex flex-col shrink-0
-            border-r border-border bg-card shadow-xl
-            transition-[width] duration-200 sticky top-0 h-screen overflow-hidden
-            ${sidebarOpen ? "w-56" : "w-16"}
-          `}
+        <motion.aside
+          animate={{ width: sidebarOpen ? 224 : 64 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+          className="hidden md:flex flex-col shrink-0 border-r border-border bg-card shadow-xl sticky top-0 h-screen overflow-hidden"
         >
         {sidebarOpen ? (
           <>
@@ -418,7 +440,7 @@ export default function App() {
             })}
           </div>
         )}
-      </aside>
+      </motion.aside>
 
       {/* ── Mobile header + drawer ── */}
       <div className="flex flex-col flex-1 min-w-0">

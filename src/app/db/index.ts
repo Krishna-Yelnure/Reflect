@@ -20,6 +20,8 @@ import type {
   MemoryThread,
   PersistentQuestion,
   LongFormReflection,
+  MediaMeta,
+  PhotoAlbum,
 } from '@/app/types';
 
 // ── Storage keys ────────────────────────────────────────────────────────────
@@ -35,6 +37,8 @@ const KEYS = {
   THREADS:       'journal_threads',
   QUESTIONS:     'journal_questions',
   LONGFORM:      'journal_longform',
+  MEDIA_META:    'journal_media_meta',   // A14 — photo metadata only (blobs in IndexedDB)
+  ALBUMS:        'journal_photo_albums', // A14-followup — named album collections
 } as const;
 
 // ── Low-level read/write ─────────────────────────────────────────────────────
@@ -433,12 +437,141 @@ const longform = {
   },
 };
 
+// ── Media Metadata (A14) ──────────────────────────────────────────────────────
+// Stores ONLY metadata in localStorage. Blobs live in IndexedDB (mediaDb.ts).
+
+const mediaMeta = {
+  getAll(): MediaMeta[] {
+    return read<MediaMeta[]>(KEYS.MEDIA_META, []);
+  },
+
+  save(items: MediaMeta[]): void {
+    write(KEYS.MEDIA_META, items);
+  },
+
+  /** All photos for a specific entry, in insertion order. */
+  getForEntry(entryId: string): MediaMeta[] {
+    return this.getAll().filter(m => m.entryId === entryId);
+  },
+
+  /** Add metadata for a newly uploaded photo. Returns the saved record. */
+  add(meta: Omit<MediaMeta, 'id' | 'createdAt'>): MediaMeta {
+    const newMeta: MediaMeta = {
+      ...meta,
+      id: newId('media'),
+      createdAt: nowISO(),
+    };
+    const all = this.getAll();
+    all.push(newMeta);
+    this.save(all);
+    return newMeta;
+  },
+
+  /** Update the caption on an existing photo. */
+  updateCaption(id: string, caption: string): void {
+    const all = this.getAll();
+    const index = all.findIndex(m => m.id === id);
+    if (index !== -1) {
+      all[index] = { ...all[index], caption };
+      this.save(all);
+    }
+  },
+
+  /**
+   * Delete metadata for a photo.
+   * NOTE: caller must also call mediaDb.deleteBlob(id) to remove the binary data.
+   */
+  delete(id: string): void {
+    this.save(this.getAll().filter(m => m.id !== id));
+  },
+
+  /** Delete all metadata for an entry (called when deleting an entry). */
+  deleteForEntry(entryId: string): string[] {
+    const all      = this.getAll();
+    const toDelete = all.filter(m => m.entryId === entryId).map(m => m.id);
+    this.save(all.filter(m => m.entryId !== entryId));
+    return toDelete; // return IDs so caller can delete blobs too
+  },
+};
+
+// ── Photo Albums (A14-followup) ────────────────────────────────────────────────────
+// Named collections of photos that can be shared across multiple entries.
+// Blobs still live in IndexedDB (mediaDb.ts). This stores metadata only.
+
+const albums = {
+  getAll(): PhotoAlbum[] {
+    return read<PhotoAlbum[]>(KEYS.ALBUMS, []);
+  },
+
+  save(items: PhotoAlbum[]): void {
+    write(KEYS.ALBUMS, items);
+  },
+
+  /** Create a new empty album with a user-chosen name. */
+  add(name: string): PhotoAlbum {
+    const album: PhotoAlbum = {
+      id:       newId('album'),
+      name:     name.trim(),
+      mediaIds: [],
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
+    };
+    const all = this.getAll();
+    all.push(album);
+    this.save(all);
+    return album;
+  },
+
+  /** Rename an existing album. */
+  rename(id: string, name: string): void {
+    const all = this.getAll();
+    const i = all.findIndex(a => a.id === id);
+    if (i !== -1) {
+      all[i] = { ...all[i], name: name.trim(), updatedAt: nowISO() };
+      this.save(all);
+    }
+  },
+
+  /** Add a photo (by mediaId) to an album. No-ops if already present. */
+  addPhoto(albumId: string, mediaId: string): void {
+    const all = this.getAll();
+    const i = all.findIndex(a => a.id === albumId);
+    if (i !== -1 && !all[i].mediaIds.includes(mediaId)) {
+      all[i] = { ...all[i], mediaIds: [...all[i].mediaIds, mediaId], updatedAt: nowISO() };
+      this.save(all);
+    }
+  },
+
+  /** Remove a photo from an album. Does NOT delete the blob — it may still be entry-direct. */
+  removePhoto(albumId: string, mediaId: string): void {
+    const all = this.getAll();
+    const i = all.findIndex(a => a.id === albumId);
+    if (i !== -1) {
+      all[i] = { ...all[i], mediaIds: all[i].mediaIds.filter(id => id !== mediaId), updatedAt: nowISO() };
+      this.save(all);
+    }
+  },
+
+  /** Delete an album record entirely. Does NOT delete blobs or metadata. */
+  delete(id: string): void {
+    this.save(this.getAll().filter(a => a.id !== id));
+  },
+
+  /** Get album objects for a given list of album IDs. Preserves order. */
+  getForEntry(albumIds: string[]): PhotoAlbum[] {
+    if (!albumIds || albumIds.length === 0) return [];
+    const all = this.getAll();
+    return albumIds.map(id => all.find(a => a.id === id)).filter((a): a is PhotoAlbum => a !== undefined);
+  },
+};
+
 // ── Full Export / Import ──────────────────────────────────────────────────────
 
 const backup = {
   /**
    * Export ALL data as a single JSON snapshot.
    * This is the user's complete journal — every piece of data.
+   * Media blobs are NOT included here — use exportWithMedia() in export.ts for that.
    */
   exportAll(): string {
     const snapshot = {
@@ -455,6 +588,8 @@ const backup = {
         threads:       threads.getAll(),
         questions:     questions.getAll(),
         longform:      longform.getAll(),
+        mediaMeta:     mediaMeta.getAll(),   // metadata only, no blobs
+        albums:        albums.getAll(),      // A14-followup
       },
     };
     return JSON.stringify(snapshot, null, 2);
@@ -480,6 +615,8 @@ const backup = {
       if (d.threads)      threads.save(d.threads);
       if (d.questions)    questions.save(d.questions);
       if (d.longform)     longform.save(d.longform);
+      if (d.mediaMeta)    mediaMeta.save(d.mediaMeta);
+      if (d.albums)       albums.save(d.albums);    // A14-followup
 
       return true;
     } catch (error) {
@@ -533,6 +670,8 @@ const backup = {
       threadsAdded   = mergeArr(threads, d.threads);
       questionsAdded = mergeArr(questions, d.questions);
       mergeArr(longform, d.longform);
+      mergeArr(mediaMeta, d.mediaMeta);
+      mergeArr(albums, d.albums);   // A14-followup
       // Preferences: merge only if current device has no prefs at all (first install)
       if (d.preferences && !prefs.get().theme) prefs.save(d.preferences);
 
@@ -545,9 +684,12 @@ const backup = {
 
   /**
    * Wipe all data. Irreversible.
+   * Also triggers mediaDb.clear() — caller must import and call that separately
+   * since mediaDb is async (IndexedDB). See PrivacySettings.tsx for the pattern.
    */
   deleteAll(): void {
     Object.values(KEYS).forEach(key => localStorage.removeItem(key));
+    // Caller must also: await mediaDb.clear()
   },
 };
 
@@ -560,6 +702,7 @@ const backup = {
  *   import { db } from '@/app/db';
  *   const allEntries = db.entries.getAll();
  *   db.habits.add({ name: 'Morning walk', why: 'Clears my head', isArchived: false });
+ *   db.media.getForEntry(entryId);
  */
 export const db = {
   entries,
@@ -572,5 +715,7 @@ export const db = {
   threads,
   questions,
   longform,
+  media: mediaMeta,   // A14 — photo metadata namespace
+  albums,             // A14-followup — named album collections
   backup,
 };
