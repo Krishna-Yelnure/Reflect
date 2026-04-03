@@ -309,3 +309,12 @@ input[type="text"].parchment-input:focus {
 /* Privacy Mode: cover RTE + MarkdownRenderer */
 .privacy-mode main .ProseMirror, .privacy-mode main .markdown-content { filter: blur(4px); opacity: 0.7; transition: filter 0.2s ease, opacity 0.2s ease; }
 .privacy-mode main .ProseMirror:hover, .privacy-mode main .ProseMirror:focus, .privacy-mode main .markdown-content:hover { filter: blur(0); opacity: 1; }
+
+/* ── Hide Scrollbars (App-wide) ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
