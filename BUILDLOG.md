@@ -4967,4 +4967,30 @@ Project rating increased from **9.1** to **9.5 / 10**.
 
 ---
 
+## SESSION A17d: Adaptive Time-of-Day UI & Magazine Read Layout (2026-04-11)
+
+**Objective**: Complete Tier 2 of the UI/UX Research by implementing a contextually aware background layer, overhauling the desktop reading experience, and heavily refining mobile proportions.
+
+**Execution:**
+1. **Time-of-Day Atmospheric Tint (`theme.css` & `App.tsx`)**:
+   - Built a dynamic background wash linked to the user's system clock via `dataset.timeOfDay`.
+   - The UI shifts seamlessly using a CSS `mix-blend-mode: overlay/multiply` pseudolayer without breaking components or needing a hard theme reload.
+   - Morning brightens (`rgba(255, 255, 255, 0.2)`). Afternoon is neutral. Evening washes everything in a warm, low-glare terracotta hue. Night dims the interface ambiently down.
+2. **Desktop Magazine-Spread Edition (`JournalEntry.tsx`)**:
+   - Dismantled the static 1-column `max-w-2xl` generic view for screen widths above 1280px (`xl`).
+   - Built a responsive 2-column bespoke editorial layout using CSS Flexbox/Grid offsets.
+   - The Date, Tags, and Mood metrics sit securely in an elegant sticky `<aside>` on the left rail.
+   - The prose operates independently on the right in a 70 character width column mapped to `text-wrap: pretty`.
+3. **Responsive Timeline Footer Iteration (`TimelineView.tsx` & `App.tsx`)**:
+   - Shrunk the global "Private. Secure. Always yours." disclaimer using optical CSS `scale-[0.65]` tracking from an origin point, effectively bypassing minimum browser font-sizing securely without losing sharpness.
+   - Overhauled the Timeline view's Daily quote/mood footer into a unified CSS Grid (`grid-cols-[160px_1fr_160px]`). It dynamically shapes itself onto a single, space-efficient line on desktop screens, while cleanly and predictably wrapping into two perfectly aligned rows for tight mobile viewports (preventing content overlap/horizontal crushing).
+
+**Result**: 
+The web app is fully responsive, tactile, and physically aware of its environment. The magazine-style reading layout elevates the structural "premium" feeling of reviewing old journal entries to an editorial tier. Responsive behavior across mobile/tablet/desktop is structurally solid and verified.
+
+**Updated Rating Impact**:
+Project rating safely reaches the projected Tier 2 mark: **9.7 / 10**.
+
+---
+
 *End of BUILDLOG.md*
