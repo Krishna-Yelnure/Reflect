@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
 import {
@@ -105,6 +105,19 @@ export default function App() {
   const [pendingReflectionType, setPendingReflectionType] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
   const [pendingMode, setPendingMode] = useState<'quick' | 'guided' | 'deep' | 'read'>('guided');
   const [theme, setTheme] = useState<string>("default");
+
+  // A17d — Time of day adaptive tint
+  const timeOfDay = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 17) return 'afternoon';
+    if (hour >= 17 && hour < 21) return 'evening';
+    return 'night';
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.timeOfDay = timeOfDay;
+  }, [timeOfDay]);
 
   useEffect(() => { 
     loadEntries(); 
@@ -303,7 +316,7 @@ export default function App() {
           </select>
         </div>
 
-        <p className="text-[6px] text-muted-foreground leading-relaxed mt-2">
+        <p className="text-[10px] opacity-40 mt-2 transform scale-[0.65] origin-left font-medium tracking-widest uppercase">
           Private. Secure. Always yours.
         </p>
       </div>
@@ -312,14 +325,14 @@ export default function App() {
 
   // ── Main content ───────────────────────────────────────────────────────
   const ViewFallback = () => (
-    <div className="flex flex-col gap-6 p-8 max-w-4xl mx-auto w-full pt-12 animate-pulse">
-      <div className="h-8 bg-muted rounded-md w-1/3 mb-4"></div>
-      <div className="h-4 bg-muted rounded-md w-full"></div>
-      <div className="h-4 bg-muted rounded-md w-5/6"></div>
-      <div className="h-4 bg-muted rounded-md w-4/6"></div>
+    <div className="flex flex-col gap-6 p-8 max-w-4xl mx-auto w-full pt-12">
+      <div className="h-8 skeleton w-1/3 mb-4 rounded-md"></div>
+      <div className="h-4 skeleton w-full rounded-md"></div>
+      <div className="h-4 skeleton w-5/6 rounded-md"></div>
+      <div className="h-4 skeleton w-4/6 rounded-md"></div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <div className="h-48 bg-muted rounded-xl"></div>
-        <div className="h-48 bg-muted rounded-xl"></div>
+        <div className="h-48 skeleton rounded-xl"></div>
+        <div className="h-48 skeleton rounded-xl"></div>
       </div>
     </div>
   );

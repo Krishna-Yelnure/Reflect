@@ -345,3 +345,175 @@ export function computeJournalContext(allEntries: JournalEntryType[], selectedDa
     recentThemes: themes.length > 0 ? themes : undefined,
   };
 }
+
+// ─── Bhagavad Gita Quotes of the Day ────────────────────────────────────────
+// Source: burningforsuccess.com/bhagavad-gita-quotes/
+// Rotated daily by day-of-year index for consistent one-per-day display.
+
+export const gitaDailyQuotes: string[] = [
+  // Top quotes
+  "You have the right to perform your prescribed duty, but you are not entitled to the fruits of action.",
+  "When meditation is mastered, the mind is unwavering like the flame of a lamp in a windless place.",
+  "Better indeed is knowledge than mechanical practice. Better than knowledge is meditation. But better still is surrender of attachment to results.",
+  "The soul is never born and never dies; it is unborn, eternal, ever-existing, and primeval.",
+  "Cultivate an evenness of mind in success and failure; this equanimity makes a man wise.",
+  "He who sees the imperishable in the midst of the perishable attains immortality.",
+  "Perform your duty with detachment and a steadfast heart, and you will be free from bondage.",
+  "Resist the pull of greed and desire; they cloud judgment and bind the spirit.",
+  "True heroism lies in self-control rather than the violence of the battlefield.",
+  "Rise above despair by acting with courage, not by fleeing from duty.",
+  // Duty and Action
+  "Act without attachment to results; action itself, done well, purifies the heart.",
+  "A man must do his work with sincerity, not for praise nor for blame.",
+  "Even small actions, when done with right intent, create great ripples of change.",
+  "Let your work be your worship; dedication transforms labor into liberation.",
+  "Do your duty steadily; the mind becomes steady by disciplined action.",
+  "Action is superior to inaction; inaction breeds confusion and fear.",
+  "Face the task before you with courage; procrastination multiplies suffering.",
+  "Work without selfish desire and you will find freedom in the midst of activity.",
+  "A disciplined life of duty steadies emotion and sharpens wisdom.",
+  "Serve with humility and the heart learns generosity, not entitlement.",
+  // Detachment
+  "Detach from the fruit of action and remain balanced; that is the mark of the wise.",
+  "Attachment binds the soul; freedom comes from seeing self beyond possession.",
+  "Let pleasures and pains come and go; hold steady as the ocean holds its depths.",
+  "The secret of peace is nonattachment to the shifting image of the world.",
+  "Release desire and your mind becomes a clear mirror of truth.",
+  "Clinging creates fear; releasing creates courage.",
+  "Do what is right without clinging to praise or blame.",
+  "When the heart does not grasp, sorrow has no anchor to hold it.",
+  "Detachment is not indifference; it is enlightened engagement without ownership.",
+  "Be free from craving and you will see your path clearly.",
+  // Self-Knowledge
+  "He who knows the self sees the self in all beings and all beings in the self.",
+  "Self-knowledge is the lamp that banishes the darkness of ignorance.",
+  "Look inward; the battlefield of life is won by understanding the heart.",
+  "Discover who you are beyond roles and names; that discovery is liberation.",
+  "The mind that knows itself becomes the master of circumstance.",
+  "Awareness of the unchanging self makes all change manageable.",
+  "The seeker who turns inward will find the teacher within.",
+  "Understanding your nature stops the endless chase after false satisfactions.",
+  "Self-knowledge is the foundation upon which right action stands.",
+  "When you know yourself, neither praise nor blame can disturb your peace.",
+  // Courage and Fearlessness
+  "Be bold in doing what is right; fear fades when duty is clear.",
+  "Face adversity with a steady heart; strength grows in trials.",
+  "Fear is a shadow; truth is the sun that dissolves it.",
+  "Stand firm in your values, and storms will pass like distant clouds.",
+  "True fearlessness emerges when the self is known and anchored.",
+  "Courage is acting in spite of the inner tremor, guided by wisdom.",
+  "Let duty be your shield; fear cannot pierce a resolved spirit.",
+  "Bravery without wisdom is reckless; courage with insight is liberation.",
+  "When you do right for the right reason, doubt loses its hold.",
+  "Fortitude is the mind's ability to remain calm in the face of change.",
+  // Devotion
+  "Surrender to the divine with a pure heart, and the world's burden becomes light.",
+  "Devotion means single-pointed love that dissolves separateness.",
+  "A devoted heart finds guidance even in silence.",
+  "True devotion is service without expectation; it purifies both giver and receiver.",
+  "When you fix your mind on the Divine, confusion yields to clarity.",
+  "Let love be your discipline; devotion fosters inner steadiness.",
+  "The devoted soul finds joy not in possession but in union.",
+  "Devotion channels willpower into peaceful, purposeful action.",
+  "Faith is the candle that lights the path when reason is clouded.",
+  "Loyalty to truth and love dissolves the ego's barriers.",
+  // Wisdom and Discrimination
+  "Discriminate between the eternal and the temporary; act from the eternal.",
+  "Knowledge precedes action; wisdom guides it to fruit without attachment.",
+  "A discriminating mind sees through illusion and chooses rightly.",
+  "Temper passion with reason and your decisions will be steady.",
+  "True wisdom is calm; it does not tremble before praise or blame.",
+  "Learn to listen inwardly; the still voice of wisdom will answer.",
+  "Discernment protects the heart from unnecessary suffering.",
+  "The wise are guided by inner truth, not by shifting opinion.",
+  "Knowledge without practice is hollow; applied wisdom changes life.",
+  "See things as they are, and your path becomes simple.",
+  // Equanimity
+  "Be steadfast in joy and sorrow alike; equanimity is the sign of a mature heart.",
+  "A balanced mind navigates life's extremes with dignity.",
+  "Accept success and failure with the same calm breath.",
+  "When the mind is undisturbed, every situation becomes a teacher.",
+  "Let neither praise inflate you nor blame deflate you; remain centered.",
+  "Equanimity is an inner lighthouse when outer seas are stormy.",
+  "Cultivate evenness of mind through steady practice and compassion.",
+  "The one who is not shaken by gain or loss walks free.",
+  "A composed mind sees choices clearly; panic obscures them.",
+  "Balance in heart and mind is the root of effective action.",
+  // Leadership and Responsibility
+  "Lead by example; duty well performed illuminates the path for others.",
+  "A leader's first duty is to be steady and just, not popular.",
+  "Responsibility calls for courage, humility, and clear-sightedness.",
+  "True authority comes from service, not domination.",
+  "Decisions anchored in dharma uplift both leader and led.",
+  "A responsible heart weighs consequences for the common good.",
+  "Steadfast leaders act without selfish motive and inspire confidence.",
+  "Take up your role with humility; leadership is service in action.",
+  "Clarity of purpose prevents wavering and builds trust.",
+  "Leadership requires inner discipline more than outer command.",
+  // Purpose and Dharma
+  "Follow your dharma even if imperfectly; avoid another's duty perfectly.",
+  "Purpose aligned with dharma transforms labor into a path of growth.",
+  "Do what is yours to do; comparison steals your focus and peace.",
+  "Dharma is the compass that keeps you steady through life's storms.",
+  "Act in accordance with conscience, and results will unfold rightly.",
+  "Embrace your role with integrity; purpose clarifies even mundane acts.",
+  "Living your duty faithfully is the truest form of success.",
+  "When actions are rooted in duty, fear dissolves and courage grows.",
+  "Let dharma guide your choices; it steadies ambition with meaning.",
+  "Purpose discovered through service becomes a source of enduring joy.",
+  // Mind and Meditation
+  "A disciplined mind is your greatest ally; train it through steady practice.",
+  "Calm the restless mind with breath and focus; clarity will follow.",
+  "Meditation lights the inner lamp that dispels the darkness of doubt.",
+  "Control the mind and you control your destiny.",
+  "Stillness is not escape but the ground from which wise action springs.",
+  "The mind that rests in itself is no longer victim of circumstance.",
+  "Regular practice molds attention into a tool for insight.",
+  "Let thoughts come and go like clouds; remain the sky.",
+  "Meditation strengthens the inner witness that sees beyond turmoil.",
+  "When the mind is clear, truth speaks plainly and action follows.",
+  // Life and Death
+  "The soul neither kills nor is killed; it transcends birth and death.",
+  "Death is a change of garments; the essence remains forever.",
+  "Seeing life as continuous eases grief and encourages right living.",
+  "Do not mourn the body; nurture the immortal within.",
+  "Understanding mortality makes present moments precious and purposeful.",
+  "Life's impermanence is a call to live with clarity and compassion.",
+  "When you know the self is timeless, fear of death fades.",
+  "Let awareness of death teach you to act rightly today.",
+  "Life and death are two phases of the same river; do not cling to the shore.",
+  "Embrace the cycle; freedom lies in seeing beyond beginnings and endings.",
+  // Change and Impermanence
+  "All things change; the wise remain steady through transformation.",
+  "Clinging to the transient breeds suffering; flow with change instead.",
+  "Accept the flux of life and find freedom in adaptive clarity.",
+  "Impermanence invites us to value the present without grasping.",
+  "Change is a teacher; resist it and you learn nothing.",
+  "Let go of fixed images of how things should be and notice what is.",
+  "When expectations fall away, true appreciation arises.",
+  "To flow with change is to live with intelligence, not anxiety.",
+  "Transform fear of loss into curiosity about what comes next.",
+  "Impermanence is the canvas on which life paints meaning.",
+  // Inner Strength
+  "Strength of spirit is built through right action, thought, and detachment.",
+  "The inner fortress is forged by patience, practice, and courage.",
+  "Endurance in adversity shapes character and reveals deeper reserves of power.",
+  "Calm resolve backed by discipline is the source of true strength.",
+  "Stand firm in your principles, and the world will shape around you.",
+  "Inner strength is not loud; it is a quiet confidence in right action.",
+  "When you align purpose with practice, strength arises naturally.",
+  "Face challenges as opportunities to cultivate steadiness and grace.",
+  "The disciplined heart weathers storms without losing its center.",
+  "True power is gentle, rooted in awareness and compassion.",
+];
+
+/**
+ * Returns one Bhagavad Gita quote per calendar day.
+ * Uses day-of-year index so the same quote shows all day, changing at midnight.
+ */
+export function getDailyGitaQuote(): string {
+  const now = new Date();
+  const startOfYr = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now.getTime() - startOfYr.getTime()) / 86400000);
+  return gitaDailyQuotes[dayOfYear % gitaDailyQuotes.length];
+}

@@ -230,6 +230,15 @@
   --ring:               var(--border-heavy);
   --radius:             0.625rem;
 
+  /* A17c: Fluid Typography Tokens */
+  --text-xs:   clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
+  --text-sm:   clamp(0.75rem, 0.7rem + 0.3vw,  0.875rem);
+  --text-base: clamp(0.9rem,  0.85rem + 0.35vw, 1rem);
+  --text-lg:   clamp(1.0rem,  0.95rem + 0.5vw,  1.125rem);
+  --text-xl:   clamp(1.2rem,  1.1rem + 0.8vw,   1.5rem);
+  --text-2xl:  clamp(1.4rem,  1.2rem + 1.2vw,   2rem);
+  --text-3xl:  clamp(1.6rem,  1.4rem + 1.5vw,   2.5rem);
+
   /* A17: color-mix() hover states — theme-aware, work in all 6 themes */
   --primary-hover:      color-mix(in srgb, var(--primary) 82%, black);
   --muted-hover:        color-mix(in srgb, var(--muted) 88%, var(--foreground));
@@ -308,7 +317,7 @@
   /* A17: Tightened heading rhythm — explicit values, not Tailwind defaults */
   h1 {
     font-family: var(--font-display);
-    font-size: 2.25rem;      /* 36px */
+    font-size: var(--text-3xl);      /* Fluid */
     font-weight: 300;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -316,7 +325,7 @@
 
   h2 {
     font-family: var(--font-display);
-    font-size: 1.5rem;       /* 24px */
+    font-size: var(--text-2xl);      /* Fluid */
     font-weight: 300;
     line-height: 1.2;
     letter-spacing: -0.015em;
@@ -409,5 +418,69 @@
       transparent
     );
     animation: save-shimmer 1.6s ease-in-out;
+  }
+
+  /* ── A17c: Accessibility & Micro-Delight ─────────────────────────────── */
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: var(--radius-md, 8px);
+  }
+  
+  button:focus-visible,
+  a:focus-visible {
+    box-shadow: 0 0 0 3px var(--selection-bg);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--border-light) 25%,
+      var(--border-medium) 50%,
+      var(--border-light) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1.4s ease infinite;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  @keyframes skeleton-sweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── A17d: Adaptive Time-of-Day Tint ─────────────────────────────────── */
+  
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background-color: transparent;
+    transition: background-color 3s ease-in-out;
+  }
+  
+  html[data-time-of-day="morning"] body::after {
+    background-color: rgba(255, 255, 255, 0.2);
+    mix-blend-mode: overlay;
+  }
+  
+  html[data-time-of-day="evening"] body::after {
+    background-color: rgba(217, 119, 70, 0.05); /* warm terracotta wash */
+    mix-blend-mode: multiply;
+  }
+  
+  html[data-time-of-day="night"] body::after {
+    background-color: rgba(0, 0, 0, 0.1);
+    mix-blend-mode: multiply;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

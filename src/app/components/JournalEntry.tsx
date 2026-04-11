@@ -529,7 +529,7 @@ export function JournalEntry({
     whatIReleased: '',
   });
   const [prompt, setPrompt] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [showClosingMoment, setShowClosingMoment] = useState(false);
   const [closingLine, setClosingLine] = useState('');
   const [similarEntries, setSimilarEntries] = useState<JournalEntryType[]>([]);
@@ -659,7 +659,7 @@ export function JournalEntry({
   // ── Save ───────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
-    setIsSaving(true);
+    setSaveState('saving');
 
     const hasContent =
       entry.whatHappened ||
@@ -670,13 +670,11 @@ export function JournalEntry({
 
     if (!hasContent && !entry.mood) {
       toast.error('Add at least some thoughts or select a mood');
-      setIsSaving(false);
+      setSaveState('idle');
       return;
     }
 
     // A7a — auto-assign eraId by date. Silent, zero friction.
-    // Find the first era whose date range covers this entry's date.
-    // Reflection entries (synthetic date keys) are skipped — they don't belong to a day.
     const autoEraId = (() => {
       if (selectedDate.startsWith('reflection-')) return undefined;
       const allEras = erasStorage.getAll();
@@ -704,19 +702,22 @@ export function JournalEntry({
       storage.addEntry(newEntry);
     }
 
-    setIsSaving(false);
     setHasUnsavedChanges(false);
 
-    // Show closing moment for new entries, not for quick edits
     if (!existing) {
-      // Special first-entry closing moment — one time only
+      setSaveState('idle');
       const isFirstEntry = allEntries.filter(e => !e.date.startsWith('reflection-')).length === 0;
       const line = isFirstEntry ? 'Your first entry. The map has begun.' : getClosingLine();
       setClosingLine(line);
       setShowClosingMoment(true);
     } else {
-      toast.success('Entry updated');
-      onSave();
+      setSaveState('saved');
+      // allow path draw to animate before unmounting
+      setTimeout(() => {
+        toast.success('Entry updated');
+        onSave();
+        setSaveState('idle'); // cleanup in case of fast remount
+      }, 700);
     }
   };
 
@@ -753,7 +754,7 @@ export function JournalEntry({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={`fixed inset-0 z-40 flex flex-col relative overflow-hidden${isSaving ? ' save-shimmer-bar' : ''}`}
+          className={`fixed inset-0 z-40 flex flex-col relative overflow-hidden${saveState === 'saving' ? ' save-shimmer-bar' : ''}`}
           style={{ backgroundColor: 'var(--bg-surface, #EDE8DF)' }}
         >
           {/* Deep mode toolbar */}
@@ -787,11 +788,30 @@ export function JournalEntry({
               </button>
               <button
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={saveState !== 'idle'}
                 className="button-primary flex items-center gap-1.5"
+                style={{ width: '100px', justifyContent: 'center' }}
               >
-                <Save className="size-3.5" />
-                {isSaving ? 'Saving…' : 'Save'}
+                {saveState === 'saved' ? (
+                  <motion.svg viewBox="0 0 24 24" width={16} height={16}>
+                    <motion.path
+                      d="M5 13l4 4L19 7"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                    />
+                  </motion.svg>
+                ) : (
+                  <>
+                    <Save className="size-3.5" />
+                    {saveState === 'saving' ? 'Saving…' : 'Save'}
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -885,41 +905,40 @@ export function JournalEntry({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
-        className="max-w-2xl mx-auto px-6 py-12"
+        className="max-w-2xl mx-auto px-6 py-12 xl:max-w-[1100px] xl:px-12 xl:flex xl:items-start xl:gap-16"
       >
-        <div className="flex items-center justify-between mb-10">
-          <button
-            onClick={onCancel}
-            className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors"
-          >
-            <ChevronLeft className="size-4" />
-            Back
-          </button>
-          <div className="flex items-center gap-3">
+        <aside className="xl:w-[260px] xl:shrink-0 xl:sticky xl:top-24">
+          <div className="flex items-center justify-between mb-10 xl:mb-16">
             <button
-              onClick={() => handleModeChange('guided')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-stone-200/60"
-              style={{ color: '#8a7f72' }}
+              onClick={onCancel}
+              className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors"
             >
-              <Edit3 className="size-4" />
-              Edit
+              <ChevronLeft className="size-4" />
+              Back
             </button>
-            {onDelete && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                title="Delete Entry"
+                onClick={() => handleModeChange('guided')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-stone-200/60"
+                style={{ color: '#8a7f72' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                <Edit3 className="size-4" />
+                <span className="hidden sm:inline">Edit</span>
               </button>
-            )}
+              {onDelete && (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  title="Delete Entry"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* A17: prose-entry applies Lora + text-wrap:pretty + optical-sizing for read mode */}
-        <article className="prose prose-stone max-w-none">
-          <header className="mb-10 text-center">
-            <h1 className="text-3xl font-light mb-2" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+          <header className="mb-10 text-center xl:text-left">
+            <h1 className="text-3xl font-light mb-2 xl:text-4xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               {formatEntryDate(selectedDate)}
             </h1>
             {reflectionMeta && (
@@ -928,12 +947,41 @@ export function JournalEntry({
               </span>
             )}
             {entry.whatMatters && !reflectionMeta && (
-              <p className="text-xl italic mt-4" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>
+              <p className="text-xl italic mt-4 xl:mt-6" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-secondary)' }}>
                 {entry.whatMatters}
               </p>
             )}
-          </header>
 
+            {/* Desktop-only: Mood on left rail */}
+            {entry.mood && !reflectionMeta && (
+              <div className="mt-8 hidden xl:flex items-center gap-3">
+                {(() => {
+                  const m = moods.find(x => x.value === entry.mood);
+                  if (!m) return null;
+                  return (
+                    <>
+                      <span className={`flex items-center justify-center size-8 rounded-full ${m.bg} border ${m.border} text-lg`}>
+                        {m.emoji}
+                      </span>
+                      <span className="text-sm text-stone-500 font-medium">Feeling {m.label.toLowerCase()}</span>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Desktop-only: Tags on left rail */}
+            {entry.tags && entry.tags.length > 0 && (
+              <div className="mt-6 hidden xl:flex flex-wrap gap-2">
+                {entry.tags.map((tag: string) => (
+                  <span key={tag} className="px-2 py-1 bg-stone-100 rounded-md text-xs text-stone-500">#{tag}</span>
+                ))}
+              </div>
+            )}
+          </header>
+        </aside>
+
+        <article className="prose prose-stone max-w-none flex-1 xl:max-w-[70ch] xl:pt-28">
           <div className="prose-entry space-y-8 text-lg leading-relaxed" style={{ color: 'var(--text-body)' }}>
             {entry.freeWrite ? (
               <MarkdownRenderer content={entry.freeWrite} />
@@ -1002,7 +1050,7 @@ export function JournalEntry({
             </div>
           )}
 
-          <footer className="mt-16 pt-8 border-t border-stone-200/60 flex items-center justify-between text-sm text-stone-500">
+          <footer className="mt-16 pt-8 border-t border-stone-200/60 flex items-center justify-between text-sm text-stone-500 xl:hidden">
             {entry.tags && entry.tags.length > 0 && (
               <div className="flex gap-2">
                 {entry.tags.map((tag: string) => (
@@ -1337,9 +1385,12 @@ export function JournalEntry({
             {moods.map(mood => {
               const selected = entry.mood === mood.value;
               return (
-                <button
+                <motion.button
                   key={mood.value}
                   onClick={() => updateField('mood', selected ? undefined : mood.value)}
+                  whileTap={{ scale: 0.95 }}
+                  animate={selected ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
                   aria-pressed={selected}
                   aria-label={mood.label}
                   title={mood.label}
@@ -1368,7 +1419,7 @@ export function JournalEntry({
                       </motion.span>
                     )}
                   </AnimatePresence>
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -1652,9 +1703,27 @@ export function JournalEntry({
           <Button variant="outline" onClick={handleCancel} className="button-secondary">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="button-primary gap-2">
-            <Save className="size-4" />
-            {isSaving ? 'Saving…' : 'Save Entry'}
+          <Button onClick={handleSave} disabled={saveState !== 'idle'} className="button-primary gap-2" style={{ width: '120px', justifyContent: 'center' }}>
+            {saveState === 'saved' ? (
+              <motion.svg viewBox="0 0 24 24" width={16} height={16}>
+                <motion.path
+                  d="M5 13l4 4L19 7"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                />
+              </motion.svg>
+            ) : (
+              <>
+                <Save className="size-4" />
+                {saveState === 'saving' ? 'Saving…' : 'Save Entry'}
+              </>
+            )}
           </Button>
         </motion.div>
       </motion.div>

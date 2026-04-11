@@ -84,10 +84,10 @@ export function TagManager({ selectedTags, onChange, allEntries }: TagManagerPro
           {selectedTags.map(tag => (
             <motion.span
               key={tag}
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85 }}
-              transition={{ duration: 0.12 }}
+              initial={{ opacity: 0, x: 10, scale: 0.7 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 30 }}
               layout
               className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md"
               style={{ backgroundColor: 'rgba(0,0,0,0.05)', color: '#525252' }}

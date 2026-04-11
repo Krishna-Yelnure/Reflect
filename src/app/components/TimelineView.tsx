@@ -23,7 +23,7 @@ import type { JournalEntry, Era } from '@/app/types';
 import { Button } from '@/app/components/ui/button';
 import { erasStorage } from '@/app/utils/eras';
 import { getSmartPrompt } from '@/app/utils/prompts';
-import { getGitaDailyPrompt } from '@/app/utils/prompts-v2';
+import { getGitaDailyPrompt, getDailyGitaQuote } from '@/app/utils/prompts-v2';
 import { PhotoStrip } from '@/app/components/ui/PhotoStrip';
 import { PhotoLightbox } from '@/app/components/ui/PhotoLightbox';
 import { db } from '@/app/db';
@@ -279,9 +279,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           return (
             <motion.div
               key={name}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: mi * 0.03 }}
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: mi * 0.04, type: 'spring', stiffness: 340, damping: 28 }}
               className="rounded-2xl p-4 flex flex-col cursor-pointer group transition-[transform,colors] duration-200"
             whileHover={{ scale: 1.025 }}
             // A17: spring hover on heatmap month cards
@@ -431,6 +431,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
       return topMood ? (MOOD_PHRASE[topMood] ?? null) : null;
     })();
 
+    // Daily Gita quote — rotates every calendar day from the full 151-quote pool
+    const dailyGitaQuote = getDailyGitaQuote();
+
     return (
       <div className="mt-3 shrink-0 max-w-[1200px] mx-auto w-full px-2 pb-2">
         {insight && (
@@ -444,25 +447,50 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             <span className="text-[11px] text-muted-foreground">{insight}</span>
           </motion.div>
         )}
-        <div className="flex items-center justify-between px-4 opacity-60">
-          <div className="flex gap-1.5 items-center">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mr-1">Mood</span>
-            <div className="w-[10px] h-[10px] rounded-full bg-border" title="No entry" />
+
+        <div className="flex items-center justify-between px-4 mt-1 mb-1">
+          {/* Left: Mood */}
+          <div className="flex gap-1.5 items-center w-[160px] shrink-0 opacity-60">
+            <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mr-1">Mood</span>
+            <div className="w-[8px] h-[8px] rounded-full bg-border" title="No entry" />
             {MOOD_ORDER.map(m => (
-              <div key={m} className="w-[10px] h-[10px] rounded-full" style={{ backgroundColor: MOOD_CELL_STYLE[m] }} title={MOOD_LABEL[m]} />
+              <div key={m} className="w-[8px] h-[8px] rounded-full" style={{ backgroundColor: MOOD_CELL_STYLE[m] }} title={MOOD_LABEL[m]} />
             ))}
           </div>
-          {isCurrentViewYear && daysLeft > 0 && (
-            <span className="text-[10px] font-medium text-muted-foreground">
-              <span className="font-bold text-primary">{daysLeft}</span> days left in {year}
-            </span>
-          )}
-          {currentYearEra && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Chapter:</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{currentYearEra.name}</span>
-            </div>
-          )}
+
+          {/* Center: Quote */}
+          <motion.div
+            key={dailyGitaQuote}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex-1 flex justify-center px-4"
+          >
+            <p
+              className="text-[11px] italic text-center leading-relaxed"
+              style={{
+                fontFamily: 'ui-serif, Georgia, serif',
+                color: 'var(--foreground)',
+                opacity: 0.45,
+              }}
+            >
+              &ldquo;{dailyGitaQuote}&rdquo;
+            </p>
+          </motion.div>
+
+          {/* Right: Days Left & Era */}
+          <div className="flex items-center justify-end gap-3 w-[160px] shrink-0 opacity-60">
+            {isCurrentViewYear && daysLeft > 0 && (
+              <span className="text-[9px] font-medium text-muted-foreground">
+                <span className="font-bold text-primary">{daysLeft}</span> days left in {year}
+              </span>
+            )}
+            {currentYearEra && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Chapter:</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-primary">{currentYearEra.name}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
