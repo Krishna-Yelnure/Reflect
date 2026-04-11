@@ -448,9 +448,9 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
           </motion.div>
         )}
 
-        <div className="flex items-center justify-between px-4 mt-1 mb-1">
+        <div className="grid grid-cols-2 md:grid-cols-[160px_1fr_160px] gap-y-3 gap-x-2 items-center px-4 mt-1 mb-1">
           {/* Left: Mood */}
-          <div className="flex gap-1.5 items-center w-[160px] shrink-0 opacity-60">
+          <div className="flex gap-1.5 items-center justify-start opacity-60">
             <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mr-1">Mood</span>
             <div className="w-[8px] h-[8px] rounded-full bg-border" title="No entry" />
             {MOOD_ORDER.map(m => (
@@ -458,12 +458,12 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             ))}
           </div>
 
-          {/* Center: Quote */}
+          {/* Center: Quote (Full width row on mobile, center column on desktop) */}
           <motion.div
             key={dailyGitaQuote}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 flex justify-center px-4"
+            className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-1 flex justify-center px-4"
           >
             <p
               className="text-[11px] italic text-center leading-relaxed"
@@ -477,17 +477,17 @@ export function TimelineView({ entries, onSelectDate, onEditEntry, onReflectionE
             </p>
           </motion.div>
 
-          {/* Right: Days Left & Era */}
-          <div className="flex items-center justify-end gap-3 w-[160px] shrink-0 opacity-60">
+          {/* Right: Days Left & Era (Right side mobile, Right column desktop) */}
+          <div className="flex items-center justify-end gap-3 opacity-60 md:col-start-3 md:row-start-1">
             {isCurrentViewYear && daysLeft > 0 && (
-              <span className="text-[9px] font-medium text-muted-foreground">
+              <span className="text-[9px] font-medium text-muted-foreground text-right">
                 <span className="font-bold text-primary">{daysLeft}</span> days left in {year}
               </span>
             )}
             {currentYearEra && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 hidden sm:flex">
                 <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">Chapter:</span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-primary">{currentYearEra.name}</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-primary truncate max-w-[80px]">{currentYearEra.name}</span>
               </div>
             )}
           </div>
